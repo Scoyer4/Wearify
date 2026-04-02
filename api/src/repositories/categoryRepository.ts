@@ -1,5 +1,5 @@
-import supabase from "../config/db";
-import { Category, CategoryInsert } from "../models/Category";
+import supabase from "../config/db"; 
+import { Category, CategoryInsert } from "../models/category";
 
 export const categoryRepository = {
   getAll: async (): Promise<Category[]> => {
@@ -10,20 +10,18 @@ export const categoryRepository = {
 
     if (error) throw new Error(error.message);
 
-    return data ?? [];
+    return data as Category[];
   },
-
 
   create: async (category: CategoryInsert): Promise<Category> => {
     const { data, error } = await supabase
       .from("categories")
-      .insert([category]) // SIEMPRE array
+      .insert(category)
       .select()
       .single();
 
     if (error) throw new Error(error.message);
 
-    return data!;
+    return data as Category;
   }
-
 };

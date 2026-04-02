@@ -1,10 +1,11 @@
 export interface Category {
-  id?: number;
+  id: number;
   name: string;
-  created_at?: string;
+  slug: string | null;
 }
 
 export type CategoryInsert = {
+  id?: never;
   name: string;
-  created_at?: string | null;
+  slug: string;
 };

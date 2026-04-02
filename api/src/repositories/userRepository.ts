@@ -1,31 +1,38 @@
 import supabase from "../config/db";
-import { User, UserInsert } from "../models/User";
+import { User, UserInsert, UserUpdate } from "../models/user";
 
 export const userRepository = {
   create: async (user: UserInsert): Promise<User> => {
     const { data, error } = await supabase
       .from("users")
-      .insert([user]) // SIEMPRE array
+      .insert(user)
       .select()
       .single();
 
     if (error) throw new Error(error.message);
-
-    return data!;
+    return data as User;
   },
 
-  findByFirebaseUid: async (firebase_uid: string): Promise<User | null> => {
+  findById: async (id: string): Promise<User | null> => {
     const { data, error } = await supabase
       .from("users")
       .select("*")
-      .eq("firebase_uid", firebase_uid)
+      .eq("id", id)
       .maybeSingle();
 
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    return data;
+    if (error) throw new Error(error.message);
+    return data as User | null;
   },
 
+  update: async (id: string, updates: UserUpdate): Promise<User> => {
+    const { data, error } = await supabase
+      .from("users")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data as User;
+  }
 };

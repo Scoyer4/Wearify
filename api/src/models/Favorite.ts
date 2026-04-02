@@ -1,6 +1,5 @@
 export interface Favorite {
-  id?: number;
-  user_id: number;
-  listing_id: number;
+  user_id: string;
+  product_id: string;
   created_at?: string;
 }

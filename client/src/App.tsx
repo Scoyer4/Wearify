@@ -29,7 +29,7 @@ function App() {
         <h1 style={{ color: '#007bff' }}>Wearify </h1>
       </header>
 
-      <main style={{ padding: '2rem' }}>
+      <main style={{ padding: '1rem' }}>
         {!session ? (
           <AuthForm />
         ) : (

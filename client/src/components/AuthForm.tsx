@@ -60,7 +60,7 @@ export const AuthForm: React.FC = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', height: '200px', width: '300px',padding: '10px',gap: '15px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
           <label htmlFor="email">Email</label>
           <input 
@@ -69,7 +69,7 @@ export const AuthForm: React.FC = () => {
             value={email} 
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)} 
             required 
-            style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }} 
+            style={{ backgroundColor: '#c6c6c9', color: 'black', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }} 
           />
         </div>
 
@@ -81,11 +81,12 @@ export const AuthForm: React.FC = () => {
             value={password} 
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)} 
             required 
-            style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }} 
+            style={{ backgroundColor: '#c6c6c9', color: 'black', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }} 
           />
         </div>
 
         <button 
+          id='enviar'
           type="submit" 
           disabled={loading} 
           style={{ 
@@ -110,10 +111,10 @@ export const AuthForm: React.FC = () => {
         }} 
         style={{ 
           marginTop: '20px', 
-          background: 'none', 
+          background: 'none',
+          fontWeight: 'bold',
           border: 'none', 
-          color: '#007bff', 
-          textDecoration: 'underline', 
+          color: '#1385ff',
           cursor: 'pointer', 
           width: '100%',
           textAlign: 'center'

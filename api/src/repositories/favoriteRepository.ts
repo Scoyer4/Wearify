@@ -1,47 +1,36 @@
 import supabase from '../config/db';
-import { Favorite } from '../models/Favorite';
+import { Favorite } from '../models/favorite';
 
 export const favoriteRepository = {
-  add: async (user_Id: number, listing_Id: number): Promise<Favorite> => {
+  add: async (userId: string, productId: string): Promise<Favorite> => {
     const { data, error } = await supabase
-    .from('favorites')
-    .insert([
-      { user_id: user_Id, listing_id: listing_Id }
-    ])
-    .select()
-    .single();
+      .from('favorites')
+      .insert({ user_id: userId, product_id: productId })
+      .select()
+      .single();
 
-    if (error) {
-      throw new Error(error.message);
-    }
-      return data!;
+    if (error) throw new Error(error.message);
+    return data as Favorite;
   },
 
-  remove: async (user_Id: number, listing_Id: number): Promise<boolean> => {
+  remove: async (userId: string, productId: string): Promise<boolean> => {
     const { error } = await supabase
       .from('favorites')
       .delete()
-      .eq('user_id', user_Id)
-      .eq('listing_id', listing_Id)
+      .eq('user_id', userId)
+      .eq('product_id', productId);
 
-    if (error) {
-      throw new Error(error.message);
-    }
-    
+    if (error) throw new Error(error.message);
     return true;
   },
 
-  getByUser: async (user_Id: number): Promise<Favorite[]> => {
+  getByUser: async (userId: string): Promise<any[]> => {
     const { data, error } = await supabase
       .from('favorites')
-      .select('*')
-      .eq('user_id', user_Id)
-      .order('created_at', { ascending: false });
+      .select('*, products(*)') 
+      .eq('user_id', userId);
 
-    if (error) {
-      throw new Error(error.message);
-    }
-    
+    if (error) throw new Error(error.message);
     return data ?? [];
   }
-}
+};

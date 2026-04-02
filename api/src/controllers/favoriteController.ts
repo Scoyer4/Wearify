@@ -1,48 +1,52 @@
 import { Request, Response } from "express";
 import { favoriteRepository } from "../repositories/favoriteRepository";
-import { userRepository } from "../repositories/userRepository";
 
 export const favoriteController = {
   add: async (req: Request, res: Response) => {
-    const firebaseUid = (req as any).user.uid;
-    const { listing_id } = req.body;
+    try {
+      const userId = (req as any).user.id;
+      const { product_id } = req.body;
 
-    const user = await userRepository.findByFirebaseUid(firebaseUid);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      if (!product_id) {
+        return res.status(400).json({ error: "El product_id es obligatorio" });
+      }
+
+      const favorite = await favoriteRepository.add(userId, product_id);
+      return res.status(201).json(favorite);
+    } catch (error: any) {
+      console.error("Error adding favorite:", error);
+      if (error.message.includes('23505')) {
+         return res.status(409).json({ error: "Este producto ya está en favoritos" });
+      }
+      return res.status(500).json({ error: "Error al añadir a favoritos" });
     }
-
-    const favorite = await favoriteRepository.add(user.id!, listing_id);
-    return res.status(201).json(favorite);
   },
 
   remove: async (req: Request, res: Response) => {
-    const firebaseUid = (req as any).user.uid;
-    const { listing_id } = req.body;
+    try {
+      const userId = (req as any).user.id;
+      const { product_id } = req.body;
 
-    const user = await userRepository.findByFirebaseUid(firebaseUid);
-    if (!user) {
-      return res.status(404).json({ error: "User not found in database" });
+      if (!product_id) {
+        return res.status(400).json({ error: "El product_id es obligatorio" });
+      }
+
+      await favoriteRepository.remove(userId, product_id);
+      return res.json({ message: "Producto eliminado de favoritos" });
+    } catch (error: any) {
+      console.error("Error removing favorite:", error);
+      return res.status(500).json({ error: "Error al eliminar de favoritos" });
     }
-
-    const deleted = await favoriteRepository.remove(user.id!, listing_id);
-
-    if (!deleted) {
-      return res.status(404).json({ error: "Favorite not found" });
-    }
-
-    return res.json({ message: "Favorite removed" });
   },
 
   getMyFavorites: async (req: Request, res: Response) => {
-    const firebaseUid = (req as any).user.uid;
-
-    const user = await userRepository.findByFirebaseUid(firebaseUid);
-    if (!user) {
-      return res.status(404).json({ error: "User not found in database" });
+    try {
+      const userId = (req as any).user.id;
+      const favorites = await favoriteRepository.getByUser(userId);
+      return res.json(favorites);
+    } catch (error: any) {
+      console.error("Error fetching favorites:", error);
+      return res.status(500).json({ error: "Error al obtener los favoritos" });
     }
-
-    const favorites = await favoriteRepository.getByUser(user.id!);
-    return res.json(favorites);
   }
-}
+};

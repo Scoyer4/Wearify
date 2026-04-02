@@ -1,38 +1,63 @@
 import { Request, Response } from 'express';
-import admin from '../services/firebase';
 import { userRepository } from '../repositories/userRepository';
 
 export const userController = {
+  // 1. Registro de perfil 
   create: async (req: Request, res: Response) => {
-    const { firebase_uid, username, email, password } = req.body;
+    const { id, username, email } = req.body; 
 
     try {
-      const firebaseUser = await admin.auth().createUser({
-        password,
-        email
-      })
-
       const user = await userRepository.create({
-        firebase_uid: firebaseUser.uid,
+        id, 
         username,
         email
       });
 
-      return res.status(201).json(user);
-    } catch (error) {
-      return res.status(500).json({ error: "Error creating user." })
+      return res.status(201).json({
+        message: "Profile created successfully",
+        user
+      });
+    } catch (error: any) {
+      console.error("Error creating user profile:", error);
+      return res.status(500).json({ error: error.message || "Error creating user profile." });
     }
   },
 
+  // 2. Obtener mi perfil
   getMe: async (req: Request, res: Response) => {
-    const firebaseUid = (req as any).user.uid;
+    try {
+      const supabaseId = (req as any).user.id;
+      const user = await userRepository.findById(supabaseId);
 
-    const user = await userRepository.findByFirebaseUid(firebaseUid);
+      if (!user) {
+        return res.status(404).json({ error: "User profile not found in DB" });
+      }
 
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.json(user);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Error fetching user data." });
     }
+  },
 
-    return res.json(user);
+  updateMe: async (req: Request, res: Response) => {
+    try {
+      const supabaseId = (req as any).user.id;
+      
+      const existingUser = await userRepository.findById(supabaseId);
+      if (!existingUser) {
+        return res.status(404).json({ error: "User profile not found" });
+      }
+
+      const updatedUser = await userRepository.update(supabaseId, req.body);
+      
+      return res.json({
+        message: "Profile updated successfully",
+        user: updatedUser
+      });
+    } catch (error: any) {
+      console.error("Error updating user:", error);
+      return res.status(500).json({ error: error.message || "Error updating user data." });
+    }
   }
-}
+};

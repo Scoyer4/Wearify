@@ -1,21 +1,28 @@
 export interface User {
-  id?: number;
-  firebase_uid: string;
-  username: string;
+  id: string;
   email: string;
+  username: string | null;
+  full_name: string | null;
+  avatar_url: string | null;
+  bio: string | null;
   created_at?: string | null;
-};
+}
 
 export type UserInsert = {
-  firebase_uid: string;
+  id: string; // OBLIGATORIO: Es el UUID que viene de Supabase Auth
   email: string;
   username: string;
+  full_name?: string | null;
+  avatar_url?: string | null;
+  bio?: string | null;
   created_at?: string | null;
 };
 
 export type UserUpdate = {
-  firebase_uid?: string;
-  email?: string;
+  // El ID no se actualiza nunca
+  // El email normalmente se gestiona desde Supabase Auth, mejor no tocarlo aquí
   username?: string;
-  created_at?: string | null;
+  full_name?: string | null;
+  avatar_url?: string | null;
+  bio?: string | null;
 };

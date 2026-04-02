@@ -4,8 +4,8 @@ import { Database } from '../config/database.types';
 
 dotenv.config();
 
-const dbUrl = process.env.DATABASE_URL || '';
-const dbApiKey = process.env.DATABASE_API_KEY || '';
+const dbUrl = process.env.SUPABASE_URL || '';
+const dbApiKey = process.env.SUPABASE_ANON_KEY || '';
 
 const supabase = createClient<Database>(
   dbUrl,
