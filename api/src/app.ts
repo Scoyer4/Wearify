@@ -37,7 +37,7 @@ app.use((err: any, req: any, res: any, next: any) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/api/listings", productRoutes);
+app.use("/api/products", productRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/favorites", favoriteRoutes);
