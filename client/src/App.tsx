@@ -5,14 +5,17 @@ import { Session } from '@supabase/supabase-js'
 import { getProducts, getProductById, getUserById } from './services/api'
 import { CreateProductForm } from './components/CreateProductForm'
 import { Producto } from './types'
+import { useCart } from './context/cartContext' // <-- Importamos el hook para usar el carrito
 import './App.css'
 
 function App() {
+const { añadirAlCarrito, carrito } = useCart();
+
   const [session, setSession] = useState<Session | null>(null)
   const [productos, setProductos] = useState<Producto[]>([])
   const [estadoApi, setEstadoApi] = useState<string>('Cargando...')
   
-  const [vistaActual, setVistaActual] = useState<'productos' | 'perfil' | 'detalle'>('productos')
+  const [vistaActual, setVistaActual] = useState<'productos' | 'perfil' | 'detalle' | 'carrito'>('productos')
   const [productoSeleccionado, setProductoSeleccionado] = useState<Producto | null>(null)
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
 
@@ -113,6 +116,16 @@ function App() {
             className={`nav-link ${vistaActual === 'perfil' ? 'active' : ''}`}
           >
             Mi Perfil
+          </button>
+          <button 
+            onClick={() => {
+              setVistaActual('carrito')
+              setMostrarFormulario(false)
+            }}
+            className={`nav-link ${vistaActual === 'carrito' ? 'active' : ''}`}
+            style={{ fontWeight: 'bold', color: carrito.length > 0 ? '#28a745' : 'inherit' }}
+          >
+            Carrito ({carrito.reduce((total, item) => total + item.cantidad, 0)})
           </button>
         </nav>
       </header>
@@ -264,9 +277,23 @@ function App() {
                       )}
                     </div>
 
-                    <button className="btn-primary full-width-btn">
-                      Contactar al vendedor
-                    </button>
+                    <div style={{ display: 'flex', gap: '10px', marginTop: '1rem' }}>
+                      <button 
+                        className="btn-primary full-width-btn" 
+                        style={{ backgroundColor: '#333', borderColor: '#333' }}
+                        onClick={() => añadirAlCarrito(productoSeleccionado)}
+                      >
+                        Añadir al carrito 🛒
+                      </button>
+                      
+                      <button 
+                        className="btn-primary full-width-btn"
+                        style={{ backgroundColor: '#28a745', borderColor: '#28a745' }}
+                        onClick={() => alert('Simulando redirección a la pasarela de pago...')}
+                      >
+                        Comprar ya 💳
+                      </button>
+                    </div>
                   </div>
                 </div>
               )
@@ -356,6 +383,70 @@ function App() {
           </section>
         )}
 
+        {/* ======================================= */}
+        {/* VISTA 4: CARRITO                        */}
+        {/* ======================================= */}
+        {vistaActual === 'carrito' && (
+          <section className="cart-section">
+            <div className="section-header">
+              <h2 className="section-title">Tu Carrito de Compra</h2>
+            </div>
+
+            {carrito.length === 0 ? (
+              <div className="empty-state">
+                <p className="empty-state-text">Aún no has añadido nada a tu carrito.</p>
+                <button 
+                  onClick={() => setVistaActual('productos')} 
+                  className="btn-primary"
+                  style={{ marginTop: '1rem' }}
+                >
+                  Ir al catálogo
+                </button>
+              </div>
+            ) : (
+              <div style={{ maxWidth: '800px', margin: '0 auto', backgroundColor: 'white', padding: '2rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                {carrito.map((item) => (
+                  <div key={item.id} style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid #eee', padding: '1rem 0', alignItems: 'center' }}>
+                    
+                    {item.image_url ? (
+                      <img src={item.image_url} alt={item.title} style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
+                    ) : (
+                      <div style={{ width: '80px', height: '80px', backgroundColor: '#eee', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem' }}>Sin foto</div>
+                    )}
+                    
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{ margin: '0 0 0.5rem 0' }}>{item.title || item.name}</h3>
+                      <p style={{ margin: 0, color: '#666' }}>Cantidad: <strong>{item.cantidad}</strong></p>
+                      {item.size && <p style={{ margin: 0, color: '#666' }}>Talla: {item.size}</p>}
+                    </div>
+
+                    <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>
+                      {item.price * item.cantidad} €
+                    </div>
+                  </div>
+                ))}
+
+                <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '2px solid #333', paddingTop: '1.5rem' }}>
+                  <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Total a pagar:</span>
+                  <span style={{ fontSize: '2rem', fontWeight: 'bold', color: '#28a745' }}>
+                    {carrito.reduce((total, item) => total + (item.price * item.cantidad), 0)} €
+                  </span>
+                </div>
+
+                <button 
+                  className="btn-primary full-width-btn"
+                  style={{ backgroundColor: '#28a745', borderColor: '#28a745', marginTop: '1.5rem', fontSize: '1.2rem', padding: '15px' }}
+                  onClick={() => {
+                    alert('¡Simulación de compra completada con éxito!');
+                    // Aquí en el futuro vaciarías el carrito
+                  }}
+                >
+                  Proceder al Pago Seguro 🔒
+                </button>
+              </div>
+            )}
+          </section>
+        )}
       </main>
     </div>
   )
