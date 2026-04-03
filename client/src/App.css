@@ -13,6 +13,11 @@ body {
   color: #333;
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* =========================================
    LAYOUT PRINCIPAL Y HEADER
    ========================================= */
@@ -32,6 +37,16 @@ body {
 
 .logo-title {
   color: #007bff;
+  transition: opacity 0.2s;
+  user-select: none; 
+}
+
+.clickable-logo {
+  cursor: pointer;
+}
+
+.logo-title:hover {
+  opacity: 0.8; 
 }
 
 .nav-menu {
@@ -57,13 +72,24 @@ body {
 
 .main-content {
   padding: 2rem; 
-  max-width: 1200px; /* Lo hacemos más ancho (antes 1000px) */
-  margin: 0 auto; /* Esto es lo que centra el contenido en la pantalla */
-  width: 100%; /* Se asegura de ocupar lo que necesite */
+  max-width: 1200px; 
+  margin: 0 auto; 
+  width: 100%; 
+}
+
+.section-header {
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.8rem;
 }
 
 /* =========================================
-   PANTALLAS DE LOGIN Y PERFIL
+   PANTALLAS DE LOGIN
    ========================================= */
 .login-screen {
   display: flex; 
@@ -74,6 +100,17 @@ body {
   background-color: #f4f7f6;
 }
 
+.login-logo-large {
+  font-size: 3.5rem; 
+  margin-bottom: 0.5rem;
+}
+
+.login-subtitle {
+  color: #666; 
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
 .login-box {
   background-color: white; 
   padding: 2rem; 
@@ -81,30 +118,29 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.profile-section {
-  background-color: #fff; 
-  padding: 2rem; 
-  border-radius: 12px; 
-  border: 1px solid #eee;
-}
-
-.profile-header {
-  display: flex; 
-  justify-content: space-between; 
-  align-items: flex-start; 
-  border-bottom: 1px solid #eee; 
-  padding-bottom: 1rem; 
-  margin-bottom: 1rem;
-}
-
 /* =========================================
-   CATÁLOGO DE PRODUCTOS
+   CATÁLOGO DE PRODUCTOS (GRID)
    ========================================= */
+.action-bar {
+  margin-bottom: 2rem;
+}
+
+.action-btn {
+  font-size: 1rem; 
+  padding: 12px 24px;
+}
+
+.form-dropdown-container {
+  margin-bottom: 3rem; 
+  animation: fadeIn 0.3s ease;
+}
+
 .product-grid {
   display: grid; 
   gap: 1.5rem; 
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
   margin-top: 1rem;
+  animation: fadeIn 0.4s ease;
 }
 
 .product-card {
@@ -113,6 +149,9 @@ body {
   padding: 1rem; 
   border-radius: 12px; 
   transition: transform 0.2s, box-shadow 0.2s; 
+}
+
+.clickable-card {
   cursor: pointer;
 }
 
@@ -140,8 +179,18 @@ body {
   object-fit: cover;
 }
 
+.product-info {
+  padding: 0.5rem 0;
+}
+
+.product-title {
+  font-size: 1.2rem; 
+  margin-bottom: 0.3rem;
+  color: #333;
+}
+
 .product-price {
-  color: #28a745; 
+  color: #007bff; 
   font-weight: bold; 
   font-size: 1.3rem; 
   margin: 0.5rem 0;
@@ -152,51 +201,311 @@ body {
   font-size: 0.9rem; 
   height: 40px; 
   overflow: hidden;
+  margin-bottom: 0.8rem;
+}
+
+.product-size-badge {
+  font-size: 0.8rem; 
+  background: #f0f0f0; 
+  padding: 4px 8px; 
+  border-radius: 4px;
+  color: #555;
+  font-weight: 500;
 }
 
 .status-badge {
   font-size: 0.85rem; 
   color: #888; 
   background-color: #eee; 
-  padding: 0.3rem 0.6rem; 
+  padding: 0.4rem 0.8rem; 
   border-radius: 20px;
+  font-weight: 500;
+}
+
+.empty-state {
+  text-align: center; 
+  padding: 4rem 0;
+}
+
+.empty-state-text {
+  color: #666; 
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state-link {
+  color: #007bff; 
+  font-weight: bold;
+  font-size: 1.1rem;
+  text-decoration: none;
+}
+
+.empty-state-link:hover {
+  text-decoration: underline;
 }
 
 /* =========================================
-   FORMULARIOS Y BOTONES
+   VISTA DE DETALLE DE PRODUCTO
    ========================================= */
-.form-container {
-  background-color: #f4f7f6; 
-  padding: 1.5rem; 
-  border-radius: 8px; 
-  margin-top: 2rem;
+.product-detail-section {
+  animation: fadeIn 0.3s ease;
 }
 
-.form-grid {
+.back-btn {
+  margin-bottom: 2rem;
+  background-color: #6c757d; /* Un gris neutro para el botón de volver */
+}
+
+.back-btn:hover {
+  background-color: #5a6268;
+}
+
+.detail-container {
+  display: flex; 
+  gap: 2.5rem; 
+  flex-wrap: wrap;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid #eee;
+}
+
+.detail-image-wrapper {
+  flex: 1; 
+  min-width: 300px;
+}
+
+.detail-image {
+  width: 100%; 
+  border-radius: 8px; 
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.detail-placeholder {
+  width: 100%; 
+  height: 300px; 
+  background-color: #f8f9fa; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  border-radius: 8px;
+  color: #aaa;
+  font-size: 1.2rem;
+}
+
+.detail-info-wrapper {
+  flex: 2; 
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-title {
+  font-size: 2.5rem; 
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.detail-price {
+  font-size: 2.2rem; 
+  color: #007bff; 
+  font-weight: bold; 
+  margin-bottom: 1.5rem;
+}
+
+.detail-desc-box {
+  background: #f8f9fa; 
+  padding: 1.5rem; 
+  border-radius: 8px; 
+  margin-bottom: 1.5rem;
+  border: 1px solid #eee;
+}
+
+.detail-desc-title {
+  margin-bottom: 0.8rem;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.detail-desc-text {
+  font-size: 1.1rem; 
+  line-height: 1.6; 
+  color: #555;
+}
+
+.detail-tags {
+  display: flex; 
+  gap: 1rem; 
+  margin-bottom: 2rem;
+}
+
+.detail-tag {
+  background: #e9ecef; 
+  padding: 8px 16px; 
+  border-radius: 20px; 
+  font-weight: 500;
+  color: #333;
+}
+
+.full-width-btn {
+  width: 100%; 
+  padding: 15px; 
+  font-size: 1.2rem;
+  margin-top: auto; /* Lo empuja hacia abajo si hay espacio extra */
+}
+
+.loading-text {
+  font-size: 1.2rem;
+  color: #666;
+  text-align: center;
+  padding: 3rem;
+}
+
+/* Estilos para la tarjeta del vendedor */
+.seller-badge {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background-color: #f4f7f6;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e9ecef;
+}
+
+.seller-avatar {
+  font-size: 1.8rem;
+  background-color: #dee2e6;
+  color: white;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seller-label {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-bottom: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.seller-name {
+  font-weight: bold;
+  color: #007bff;
+  font-size: 1.1rem;
+}
+
+/* =========================================
+   PANTALLA DE PERFIL
+   ========================================= */
+.profile-section {
+  background-color: #fff; 
+  padding: 2.5rem; 
+  border-radius: 12px; 
+  border: 1px solid #eee;
+  animation: fadeIn 0.3s ease;
+}
+
+.profile-header {
+  display: flex; 
+  justify-content: space-between; 
+  align-items: flex-start; 
+  border-bottom: 1px solid #eee; 
+  padding-bottom: 1.5rem; 
+  margin-bottom: 1.5rem;
+}
+
+.profile-title {
+  font-size: 1.8rem;
+  color: #333;
+}
+
+.profile-greeting {
+  margin-top: 0.5rem; 
+  color: #333; 
+  font-size: 1.2rem;
+}
+
+.profile-email {
+  margin-top: 0.2rem; 
+  color: #666; 
+  font-size: 1rem;
+}
+
+.profile-content {
+  margin-top: 2rem; 
   display: grid; 
-  grid-template-columns: 1fr 1fr; 
+  gap: 1.5rem;
+}
+
+.profile-desc {
+  color: #444;
+  font-size: 1.1rem;
+}
+
+.profile-tip {
+  padding: 1.2rem; 
+  border: 1px dashed #ccc; 
+  border-radius: 8px; 
+  color: #666;
+  background-color: #fafbfc;
+  line-height: 1.5;
+}
+
+/* Nuevas clases para el Dashboard del Perfil */
+.profile-dashboard {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.dashboard-section {
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
 }
 
-.form-input {
-  padding: 10px; 
-  border-radius: 5px; 
-  border: 1px solid #ccc;
-  background-color: white;
-  width: 100%;
-  font-family: inherit;
+.dashboard-title {
+  font-size: 1.5rem;
+  color: #333;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #007bff;
+  display: inline-block;
+  align-self: flex-start; /* Hace que la línea azul inferior ocupe solo el tamaño del texto */
 }
 
-.span-2 {
-  grid-column: span 2;
+.dashboard-divider {
+  border: none;
+  border-top: 1px dashed #ccc;
+  margin: 1rem 0;
 }
 
-textarea.form-input {
-  resize: vertical;
+.empty-dashboard-box {
+  background-color: #f8f9fa;
+  border: 1px dashed #ced4da;
+  border-radius: 8px;
+  padding: 3rem 2rem;
+  text-align: center;
+  color: #6c757d;
+  font-size: 1.1rem;
 }
 
+/* Utilidad rápida de margen top */
+.mt-3 {
+  margin-top: 1rem;
+}
+
+/* =========================================
+   BOTONES GENÉRICOS
+   ========================================= */
 .btn-primary {
-  background-color: #28a745; 
+  background-color: #007bff; /* Lo he cambiado a azul para que encaje mejor con el logo */
   color: white; 
   padding: 12px; 
   border: none; 
@@ -207,27 +516,21 @@ textarea.form-input {
   transition: background-color 0.2s;
 }
 
-.btn-primary:hover { background-color: #218838; }
+.btn-primary:hover { 
+  background-color: #0056b3; 
+}
 
 .btn-danger {
   background-color: #dc3545; 
   color: white; 
-  padding: 8px 16px; 
+  padding: 10px 16px; 
   border: none; 
-  border-radius: 8px; 
+  border-radius: 5px; 
   cursor: pointer; 
   font-weight: bold;
   transition: background-color 0.2s;
 }
 
-.btn-danger:hover { background-color: #c82333; }
-
-.logo-title {
-  color: #007bff;
-  transition: opacity 0.2s;
-  user-select: none; /* Evita que se seleccione el texto al hacer click rápido */
-}
-
-.logo-title:hover {
-  opacity: 0.8; /* Se aclara un poco al pasar el ratón */
+.btn-danger:hover { 
+  background-color: #c82333; 
 }

@@ -1,0 +1,87 @@
+/* =========================================
+   FORMULARIO DE CREAR PRODUCTO
+   ========================================= */
+.form-container {
+  background-color: #f8f9fa; 
+  padding: 2rem; 
+  border-radius: 12px; 
+  margin-top: 1rem;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.form-title {
+  margin-top: 0; 
+  color: #333; 
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.form-grid {
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 1.2rem;
+}
+
+.form-input {
+  padding: 12px; 
+  border-radius: 8px; 
+  border: 1px solid #ced4da;
+  background-color: white;
+  width: 100%;
+  font-family: inherit;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.span-2 {
+  grid-column: span 2;
+}
+
+textarea.form-input {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.submit-product-btn {
+  margin-top: 1rem;
+  padding: 14px;
+  font-size: 1.2rem;
+}
+
+.form-message {
+  margin-top: 1.5rem; 
+  text-align: center; 
+  font-weight: bold;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.form-message.success {
+  color: #155724;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+}
+
+.form-message.error {
+  color: #721c24;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+}
+
+/* Modo Responsive para móviles */
+@media (max-width: 600px) {
+  .form-grid {
+    grid-template-columns: 1fr; /* Todo en 1 columna en móviles */
+  }
+  .span-2 {
+    grid-column: span 1;
+  }
+}

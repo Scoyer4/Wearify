@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { createProduct } from '../services/api';
-// Si el App.css está en la carpeta raíz de src, importarlo no hace falta aquí porque ya se importa en App.tsx, 
-// pero es buena práctica saber que las clases ya están disponibles.
+// Importamos su propio archivo CSS
+import './CreateProductForm.css';
 
 export const CreateProductForm = ({ onProductCreated }: { onProductCreated: () => void }) => {
   const [title, setTitle] = useState('');
@@ -43,7 +43,7 @@ export const CreateProductForm = ({ onProductCreated }: { onProductCreated: () =
 
   return (
     <div className="form-container">
-      <h3 style={{ marginTop: 0, color: '#333', marginBottom: '1rem' }}>Subir nueva prenda</h3>
+      <h3 className="form-title">Subir nueva prenda</h3>
       
       <form onSubmit={handleSubmit} className="form-grid">
         <input 
@@ -102,13 +102,13 @@ export const CreateProductForm = ({ onProductCreated }: { onProductCreated: () =
           className="form-input span-2"
         />
 
-        <button type="submit" className="btn-primary span-2">
+        <button type="submit" className="btn-primary span-2 submit-product-btn">
           Publicar Prenda
         </button>
       </form>
 
       {estadoMensaje && (
-        <p style={{ marginTop: '1rem', textAlign: 'center', fontWeight: 'bold', color: estadoMensaje.includes('éxito') ? '#28a745' : '#dc3545' }}>
+        <p className={`form-message ${estadoMensaje.includes('éxito') ? 'success' : 'error'}`}>
           {estadoMensaje}
         </p>
       )}

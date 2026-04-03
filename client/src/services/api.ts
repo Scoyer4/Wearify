@@ -1,5 +1,7 @@
 // client/src/services/api.ts
 
+import { NuevoProducto } from "../types";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 // ==========================================
@@ -29,7 +31,7 @@ export const getProducts = async () => {
 // ==========================================
 // 2. CREAR PRODUCTO (POST)
 // ==========================================
-export const createProduct = async (productData: any, token: string) => {
+export const createProduct = async (productData: NuevoProducto, token: string) => {
   try {
     const response = await fetch(`${API_URL}/products`, {
       method: 'POST',
@@ -49,6 +51,73 @@ export const createProduct = async (productData: any, token: string) => {
     return data;
   } catch (error) {
     console.error("Error al crear el producto:", error);
+    return null;
+  }
+};
+
+// ==========================================
+// 3. OBTENER PRODUCTO POR ID (GET)
+// ==========================================
+export const getProductById = async (id: string) => {
+  try {
+    // Fíjate que aquí añadimos el /${id} a la URL para buscar uno en concreto
+    const response = await fetch(`${API_URL}/products/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(`Error al conectar con la API para el producto ${id}:`, error);
+    return null;
+  }
+}
+// ==========================================
+// 4. OBTENER USUARIO POR ID (GET)
+// ==========================================
+export const getUserById = async (id: string) => {
+  try {
+    const response = await fetch(`${API_URL}/users/${id}`);
+    
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error al obtener el usuario:", error);
+    return null;
+  }
+}
+// ==========================================
+// 5. CREAR PERFIL DE USUARIO EN LA BD (POST)
+// ==========================================
+export const createUserProfile = async (userData: { id: string, username: string, email: string }) => {
+  try {
+    const response = await fetch(`${API_URL}/users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error al guardar el usuario en la base de datos:", error);
     return null;
   }
 };

@@ -40,6 +40,7 @@ export const userController = {
     }
   },
 
+  // 3. Actualizar mi perfil
   updateMe: async (req: Request, res: Response) => {
     try {
       const supabaseId = (req as any).user.id;
@@ -58,6 +59,24 @@ export const userController = {
     } catch (error: any) {
       console.error("Error updating user:", error);
       return res.status(500).json({ error: error.message || "Error updating user data." });
+    }
+  },
+
+  // 4. NUEVO: Obtener el nombre de un usuario por su ID (Ruta Pública)
+  getById: async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const user = await userRepository.findById(id);
+
+      if (!user) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
+
+      // Por seguridad, solo devolvemos el username al frontend, no el email u otros datos privados
+      return res.json({ username: user.username });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Error obteniendo datos del usuario." });
     }
   }
 };

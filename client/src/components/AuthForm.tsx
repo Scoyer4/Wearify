@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import React, { useState } from "react";
+import { useAuth } from "../hooks/useAuth";
+// Importamos el archivo de estilos (aseguraos de crearlo en la misma carpeta)
+import "./AuthForm.css";
+import { createUserProfile } from "../services/api";
 
-// Definimos una interfaz para el error que devuelve Supabase
 interface SupabaseAuthError {
   message: string;
   status?: number;
@@ -9,118 +11,170 @@ interface SupabaseAuthError {
 
 export const AuthForm: React.FC = () => {
   const [isRegister, setIsRegister] = useState<boolean>(false);
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [status, setStatus] = useState<{msg: string, type: 'error' | 'success'} | null>(null);
-  
+
+  const [identificador, setIdentificador] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+
+  const [status, setStatus] = useState<{
+    msg: string;
+    type: "error" | "success";
+  } | null>(null);
+
   const { signIn, signUp, loading } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setStatus(null);
-    
+
     try {
       if (isRegister) {
-        await signUp(email, password);
-        setStatus({ msg: "Registro enviado. Revisa tu email o el Table Editor.", type: 'success' });
+        if (!identificador.includes("@")) {
+          throw new Error(
+            "Por favor, introduce un correo electrónico válido para registrarte.",
+          );
+        }
+        if (!username.trim()) {
+          throw new Error("Por favor, elige un nombre de usuario.");
+        }
+
+        // 1. Registramos al usuario en Supabase Auth
+        const authRes = await signUp(identificador, password, username);
+
+        // 2. Si ha ido bien, guardamos sus datos en nuestra propia base de datos (Node.js -> Supabase DB)
+        if (authRes.data?.user) {
+          await createUserProfile({
+            id: authRes.data.user.id,
+            username: username,
+            email: identificador,
+          });
+        }
+
+        setStatus({
+          msg: "Registro completado con éxito. ¡Ya puedes iniciar sesión!",
+          type: "success",
+        });
+
+        // Opcional: Limpiamos los campos y le pasamos a la vista de login automáticamente
+        setIsRegister(false);
+        setPassword("");
       } else {
-        await signIn(email, password);
-        setStatus({ msg: "Sesión iniciada correctamente.", type: 'success' });
+        let emailParaLogin = identificador;
+
+        if (!identificador.includes("@")) {
+          const apiUrl =
+            import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+          const response = await fetch(
+            `${apiUrl}/users/email/${identificador}`,
+          );
+
+          if (!response.ok) {
+            throw new Error(
+              "No se ha encontrado ninguna cuenta con ese nombre de usuario.",
+            );
+          }
+
+          const data = await response.json();
+          emailParaLogin = data.email;
+        }
+
+        await signIn(emailParaLogin, password);
+        setStatus({ msg: "Sesión iniciada correctamente.", type: "success" });
       }
     } catch (err: unknown) {
-      // Aquí eliminamos el 'any' definitivamente
       let errorMessage = "Ha ocurrido un error inesperado";
-      
+
       if (err instanceof Error) {
         errorMessage = err.message;
-      } else if (typeof err === 'object' && err !== null && 'message' in err) {
-        // Hacemos un cast seguro a nuestra interfaz
+      } else if (typeof err === "object" && err !== null && "message" in err) {
         errorMessage = (err as SupabaseAuthError).message;
       }
 
-      setStatus({ msg: errorMessage, type: 'error' });
+      setStatus({ msg: errorMessage, type: "error" });
     }
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px', fontFamily: 'Arial, sans-serif' }}>
-      <h2 style={{ textAlign: 'center' }}>{isRegister ? 'Crear cuenta en Wearify' : 'Iniciar Sesión'}</h2>
-      
+    <div className="auth-container">
+      <h2 className="auth-title">
+        {isRegister ? "Crear cuenta en Wearify" : "Iniciar Sesión"}
+      </h2>
+
       {status && (
-        <div style={{ 
-          padding: '10px', 
-          marginBottom: '15px', 
-          borderRadius: '4px', 
-          backgroundColor: status.type === 'success' ? '#d4edda' : '#f8d7da', 
-          color: status.type === 'success' ? '#155724' : '#721c24',
-          fontSize: '14px',
-          border: `1px solid ${status.type === 'success' ? '#c3e6cb' : '#f5c6cb'}`
-        }}>
-          {status.msg}
-        </div>
+        <div className={`auth-status ${status.type}`}>{status.msg}</div>
       )}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', height: '200px', width: '300px',padding: '10px',gap: '15px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          <label htmlFor="email">Email</label>
-          <input 
-            id="email"
-            type="email" 
-            value={email} 
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)} 
-            required 
-            style={{ backgroundColor: '#c6c6c9', color: 'black', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }} 
+      <form onSubmit={handleSubmit} className="auth-form">
+        <div className="input-group">
+          <label htmlFor="identificador">
+            {isRegister ? "Correo Electrónico" : "Correo electrónico o Usuario"}
+          </label>
+          <input
+            id="identificador"
+            className="auth-input"
+            type={isRegister ? "email" : "text"}
+            value={identificador}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setIdentificador(e.target.value)
+            }
+            required
           />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+        {isRegister && (
+          <div className="input-group">
+            <label htmlFor="username">Nombre de Usuario</label>
+            <input
+              id="username"
+              className="auth-input"
+              type="text"
+              value={username}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setUsername(e.target.value)
+              }
+              required={isRegister}
+            />
+          </div>
+        )}
+
+        <div className="input-group">
           <label htmlFor="password">Contraseña</label>
-          <input 
+          <input
             id="password"
-            type="password" 
-            value={password} 
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)} 
-            required 
-            style={{ backgroundColor: '#c6c6c9', color: 'black', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }} 
+            className="auth-input"
+            type="password"
+            value={password}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setPassword(e.target.value)
+            }
+            required
           />
         </div>
 
-        <button 
-          id='enviar'
-          type="submit" 
-          disabled={loading} 
-          style={{ 
-            padding: '12px', 
-            backgroundColor: loading ? '#aab' : '#007bff', 
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '4px',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            fontWeight: 'bold',
-            marginTop: '10px'
-          }}
+        <button
+          id="enviar"
+          className="submit-btn"
+          type="submit"
+          disabled={loading}
         >
-          {loading ? 'Procesando...' : isRegister ? 'Registrarse' : 'Entrar'}
+          {loading ? "Procesando..." : isRegister ? "Registrarse" : "Entrar"}
         </button>
       </form>
 
-      <button 
+      <button
+        className="toggle-btn"
+        type="button"
         onClick={() => {
           setIsRegister(!isRegister);
           setStatus(null);
-        }} 
-        style={{ 
-          marginTop: '20px', 
-          background: 'none',
-          fontWeight: 'bold',
-          border: 'none', 
-          color: '#1385ff',
-          cursor: 'pointer', 
-          width: '100%',
-          textAlign: 'center'
+          setIdentificador("");
+          setUsername("");
+          setPassword("");
         }}
       >
-        {isRegister ? '¿Ya tienes cuenta? Inicia sesión' : '¿Eres nuevo? Crea una cuenta'}
+        {isRegister
+          ? "¿Ya tienes cuenta? Inicia sesión"
+          : "¿Eres nuevo? Crea una cuenta"}
       </button>
     </div>
   );
