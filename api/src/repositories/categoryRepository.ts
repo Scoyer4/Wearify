@@ -1,5 +1,5 @@
 import supabase from "../config/db"; 
-import { Category, CategoryInsert } from "../models/category";
+import { Category, CategoryInsert } from "../models/categories";
 
 export const categoryRepository = {
   getAll: async (): Promise<Category[]> => {

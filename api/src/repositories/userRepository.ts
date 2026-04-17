@@ -1,5 +1,5 @@
 import supabase from "../config/db";
-import { User, UserInsert, UserUpdate } from "../models/user";
+import { User, UserInsert, UserUpdate } from "../models/users";
 
 export const userRepository = {
   create: async (user: UserInsert): Promise<User> => {

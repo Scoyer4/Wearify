@@ -1,5 +1,5 @@
 import supabase from '../config/db';
-import { Favorite } from '../models/favorite';
+import { Favorite } from '../models/favorites';
 
 export const favoriteRepository = {
   add: async (userId: string, productId: string): Promise<Favorite> => {
