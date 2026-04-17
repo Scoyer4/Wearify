@@ -15,7 +15,7 @@ import favoriteRoutes from "./routes/favoriteRoutes";
 
 const app = express();
 
-const allowedOrigins = ['https://.com', 'http://localhost:5173'];
+const allowedOrigins = ['https://wearify-pink.vercel.app', 'http://localhost:5173'];
 
 const corsOptions: CorsOptions = {
   origin(origin, callback) {
