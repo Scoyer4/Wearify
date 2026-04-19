@@ -9,7 +9,7 @@ export interface User {
 }
 
 export type UserInsert = {
-  id: string; // OBLIGATORIO: Es el UUID que viene de Supabase Auth
+  id: string;
   email: string;
   username: string;
   full_name?: string | null;
@@ -19,8 +19,6 @@ export type UserInsert = {
 };
 
 export type UserUpdate = {
-  // El ID no se actualiza nunca
-  // El email normalmente se gestiona desde Supabase Auth, mejor no tocarlo aquí
   username?: string;
   full_name?: string | null;
   avatar_url?: string | null;

@@ -41,13 +41,17 @@ export const AuthForm: React.FC = () => {
         // 1. Registramos al usuario en Supabase Auth
         const authRes = await signUp(identificador, password, username);
 
-        // 2. Si ha ido bien, guardamos sus datos en nuestra propia base de datos (Node.js -> Supabase DB)
+        // 2. Si ha ido bien, guardamos sus datos en nuestra propia base de datos
         if (authRes.data?.user) {
-          await createUserProfile({
+          const profileRes = await createUserProfile({
             id: authRes.data.user.id,
             username: username,
             email: identificador,
           });
+
+          if (!profileRes) {
+            throw new Error("La cuenta se creó, pero hubo un error al guardar tu nombre de usuario. Contacta con soporte.");
+          }
         }
 
         setStatus({
@@ -55,7 +59,6 @@ export const AuthForm: React.FC = () => {
           type: "success",
         });
 
-        // Opcional: Limpiamos los campos y le pasamos a la vista de login automáticamente
         setIsRegister(false);
         setPassword("");
       } else {

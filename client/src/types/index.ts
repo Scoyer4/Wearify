@@ -29,3 +29,15 @@ export interface Usuario {
   nombre_completo?: string;
   avatar_url?: string;
 }
+
+export interface PerfilPublico {
+  id: string;
+  username: string;
+  avatar_url?: string;
+  bio?: string;
+  created_at: string;
+  stats: {
+    followers: number;
+    following: number;
+  };
+}

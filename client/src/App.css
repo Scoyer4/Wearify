@@ -252,12 +252,14 @@ body {
 }
 
 .back-btn {
+  background-color: #d1d7de;
   margin-bottom: 2rem;
-  background-color: #6c757d; /* Un gris neutro para el botón de volver */
+  padding: 16px;
+  border: none;
 }
 
 .back-btn:hover {
-  background-color: #5a6268;
+  background-color: #91999f;
 }
 
 .detail-container {
@@ -457,7 +459,6 @@ body {
   line-height: 1.5;
 }
 
-/* Nuevas clases para el Dashboard del Perfil */
 .profile-dashboard {
   margin-top: 2rem;
   display: flex;
@@ -477,7 +478,7 @@ body {
   padding-bottom: 0.5rem;
   border-bottom: 2px solid #007bff;
   display: inline-block;
-  align-self: flex-start; /* Hace que la línea azul inferior ocupe solo el tamaño del texto */
+  align-self: flex-start;
 }
 
 .dashboard-divider {
@@ -496,7 +497,6 @@ body {
   font-size: 1.1rem;
 }
 
-/* Utilidad rápida de margen top */
 .mt-3 {
   margin-top: 1rem;
 }

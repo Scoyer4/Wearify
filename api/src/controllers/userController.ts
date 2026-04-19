@@ -62,21 +62,73 @@ export const userController = {
     }
   },
 
-  // 4. NUEVO: Obtener el nombre de un usuario por su ID (Ruta Pública)
   getById: async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const user = await userRepository.findById(id);
+      if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
+      return res.json(user);
+    } catch (error) {
+      return res.status(500).json({ error: "Error al obtener usuario." });
+    }
+  },
 
-      if (!user) {
-        return res.status(404).json({ error: "Usuario no encontrado" });
+  getPublicProfile: async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      
+      const profile = await userRepository.getPublicProfile(id);
+      const stats = await userRepository.getFollowStats(id);
+      
+      return res.status(200).json({ ...profile, stats });
+    } catch (error: any) {
+      console.error("Error fetching public profile:", error);
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+  },
+
+  // 5. Seguir a un usuario
+  followUser: async (req: Request, res: Response) => {
+    try {
+      const followerId = (req as any).user.id; 
+      const { followingId } = req.body; 
+
+      if (!followingId) {
+        return res.status(400).json({ error: 'Falta el ID del usuario a seguir' });
       }
 
-      // Por seguridad, solo devolvemos el username al frontend, no el email u otros datos privados
-      return res.json({ username: user.username });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: "Error obteniendo datos del usuario." });
+      if (followerId === followingId) {
+        return res.status(400).json({ error: 'No puedes seguirte a ti mismo' });
+      }
+
+      await userRepository.followUser(followerId, followingId);
+      return res.status(200).json({ message: 'Ahora sigues a este usuario' });
+    } catch (error: any) {
+      return res.status(400).json({ error: 'Error al intentar seguir al usuario (¿Quizás ya lo sigues?)' });
+    }
+  },
+
+  // 6. Dejar de seguir a un usuario
+  unfollowUser: async (req: Request, res: Response) => {
+    try {
+      const followerId = (req as any).user.id;
+      const { followingId } = req.body;
+      
+      await userRepository.unfollowUser(followerId, followingId);
+      return res.status(200).json({ message: 'Has dejado de seguir a este usuario' });
+    } catch (error: any) {
+      return res.status(400).json({ error: 'Error al dejar de seguir' });
+    }
+  },
+
+  checkIsFollowing: async (req: Request, res: Response) => {
+    try {
+      const { followerId, followingId } = req.params;
+      
+      const isFollowing = await userRepository.isFollowing(followerId, followingId);
+      return res.status(200).json({ isFollowing });
+    } catch (error: any) {
+      return res.status(400).json({ error: 'Error al comprobar estado de seguimiento' });
     }
   }
 };
