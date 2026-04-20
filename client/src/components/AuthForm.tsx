@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
-// Importamos el archivo de estilos (aseguraos de crearlo en la misma carpeta)
 import "./AuthForm.css";
 import { createUserProfile } from "../services/api";
 
@@ -100,7 +99,7 @@ export const AuthForm: React.FC = () => {
   return (
     <div className="auth-container">
       <h2 className="auth-title">
-        {isRegister ? "Crear cuenta en Wearify" : "Iniciar Sesión"}
+        {isRegister ? "Crear cuenta en Wearify" : "Iniciar sesión"}
       </h2>
 
       {status && (
@@ -109,12 +108,10 @@ export const AuthForm: React.FC = () => {
 
       <form onSubmit={handleSubmit} className="auth-form">
         <div className="input-group">
-          <label htmlFor="identificador">
-            {isRegister ? "Correo Electrónico" : "Correo electrónico o Usuario"}
-          </label>
           <input
             id="identificador"
             className="auth-input"
+            placeholder="Correo electrónico o usuario"
             type={isRegister ? "email" : "text"}
             value={identificador}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -126,10 +123,10 @@ export const AuthForm: React.FC = () => {
 
         {isRegister && (
           <div className="input-group">
-            <label htmlFor="username">Nombre de Usuario</label>
             <input
               id="username"
               className="auth-input"
+              placeholder="Nombre de usuario"
               type="text"
               value={username}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -141,10 +138,10 @@ export const AuthForm: React.FC = () => {
         )}
 
         <div className="input-group">
-          <label htmlFor="password">Contraseña</label>
           <input
             id="password"
             className="auth-input"
+            placeholder="Contraseña"
             type="password"
             value={password}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -179,6 +176,7 @@ export const AuthForm: React.FC = () => {
           ? "¿Ya tienes cuenta? Inicia sesión"
           : "¿Eres nuevo? Crea una cuenta"}
       </button>
+    
     </div>
   );
 };

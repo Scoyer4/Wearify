@@ -5,7 +5,7 @@ import { CreateProductForm } from '../components/CreateProductForm';
 import { Producto } from '../types';
 import { Session } from '@supabase/supabase-js';
 
-export default function Home({ session }: { session: Session }) {
+export default function Home({ session }: { session: Session | null }) {
   const [productos, setProductos] = useState<Producto[]>([]);
   const [estadoApi, setEstadoApi] = useState('Cargando...');
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -29,7 +29,7 @@ export default function Home({ session }: { session: Session }) {
   return (
     <section>
       <div className="section-header">
-        <h2 className="section-title">¡Hola, {session.user.user_metadata?.username || 'Coleccionista'}! 👕</h2>
+        <h2 className="section-title">¡Hola, {session?.user.user_metadata?.username || 'Coleccionista'}!</h2>
         <span className="status-badge">{estadoApi}</span>
       </div>
 
