@@ -10,41 +10,66 @@ export default function Navbar({ session }: { session: Session | null }) {
 
   return (
     <header className="main-header">
-      <Link to="/" className="logo-title" >
-        Wearify
-      </Link>
       
       <nav className="nav-menu">
-        {/* El catálogo lo ve todo el mundo siempre */}
-        <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
-          Productos
-        </Link>
-
-        {/* 3. LÓGICA CONDICIONAL: ¿Hay usuario o es invitado? */}
-        {session ? (
-          // SI HAY SESIÓN: Mostramos sus enlaces privados
-          <>
-            <Link to="/carrito" 
-              className={`nav-link ${location.pathname === '/carrito' ? 'active' : ''}`}
-              style={{ fontWeight: 'bold', color: carrito.length > 0 ? '#28a745' : 'inherit' }}
-            >
-              Carrito ({carrito.reduce((total, item) => total + item.cantidad, 0)})
-            </Link>
-            
-            <Link to="/perfil" className={`nav-link ${location.pathname === '/perfil' ? 'active' : ''}`}>
-              Mi Perfil
-            </Link>
-          </>
-        ) : (
-          // SI ES INVITADO (No hay sesión): Mostramos el botón de Entrar
-          <Link 
-            to="/login" 
-            className="btn-primary" 
-            style={{ padding: '8px 20px', textDecoration: 'none', marginLeft: '10px' }}
-          >
-            Iniciar Sesión
+        <div className="nav-section left">
+          <button className="menu-toggle" aria-label="Menú">
+            <svg viewBox="0 0 20 20" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
+              <line x1="1" y1="6" x2="21" y2="6"></line>
+              <line x1="1" y1="12" x2="21" y2="12"></line>
+              <line x1="1" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
+            Productos
           </Link>
-        )}
+        </div>
+
+        <div className="nav-section center">
+          <Link to="/" className="logo-title" >
+            <img src="src/assets/logoWearify2.png" alt="logoWearify" />
+          </Link>
+        </div>
+        
+        <div className="nav-section right">
+          <button className="icon-btn search-btn" aria-label="Buscar">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+
+          {session ? (
+            <>
+              <Link to="/perfil" className={`icon-btn ${location.pathname === '/perfil' ? 'active' : ''}`}>
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </Link>
+              
+              <Link to="/carrito" className="icon-btn cart-link">
+                <div className="cart-badge-wrapper">
+                  <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                  </svg>
+                  {carrito.length > 0 && (
+                    <span className="cart-count">
+                      {carrito.reduce((total, item) => total + item.cantidad, 0)}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            </>
+          ) : (
+            <Link to="/login" className="btn-primary" style={{ padding: '8px 20px', textDecoration: 'none', marginLeft: '10px' }}>
+              Iniciar Sesión
+            </Link>
+          )}
+        </div>
+        
       </nav>
     </header>
   );

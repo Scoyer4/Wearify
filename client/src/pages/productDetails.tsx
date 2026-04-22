@@ -134,7 +134,7 @@ export default function ProductDetail({ session }: { session: Session | null }) 
               style={{ backgroundColor: '#333', borderColor: '#333' }}
               onClick={() => handleAñadirAlCarrito(producto)}
             >
-              Añadir al carrito 🛒
+              Añadir al carrito
             </button>
             
             <button 
@@ -142,7 +142,7 @@ export default function ProductDetail({ session }: { session: Session | null }) 
               style={{ backgroundColor: '#28a745', borderColor: '#28a745' }}
               onClick={handleComprarYa}
             >
-              Comprar ya 💳
+              Comprar ya
             </button>
           </div>
         </div>

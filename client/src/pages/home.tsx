@@ -9,8 +9,22 @@ export default function Home({ session }: { session: Session | null }) {
   const [productos, setProductos] = useState<Producto[]>([]);
   const [estadoApi, setEstadoApi] = useState('Cargando...');
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [favoritos, setFavoritos] = useState<Set<string>>(new Set());
   const navigate = useNavigate();
 
+  const toggleFavorito = (e: React.MouseEvent, id: string) => {
+  e.stopPropagation(); // evita navegar al producto al pulsar el corazón
+  setFavoritos(prev => {
+    const nuevo = new Set(prev);
+    if (nuevo.has(id)) {
+      nuevo.delete(id);
+    } else {
+      nuevo.add(id);
+    }
+    return nuevo;
+  });
+};
+  
   const fetchDatos = async () => {
     setEstadoApi('Conectando...');
     const data = await getProducts();
@@ -53,8 +67,8 @@ export default function Home({ session }: { session: Session | null }) {
       
       <div className="product-grid">
         {productos.map((producto) => (
-          <div 
-            key={producto.id} 
+          <div
+            key={producto.id}
             className="product-card clickable-card"
             onClick={() => navigate(`/producto/${producto.id}`)}
           >
@@ -64,10 +78,38 @@ export default function Home({ session }: { session: Session | null }) {
               ) : (
                 <span className="no-image-text">Sin foto</span>
               )}
+
+              {/* 👇 NUEVO: botón favorito */}
+              <button
+                className={`favorite-btn ${favoritos.has(producto.id) ? 'liked' : ''}`}
+                onClick={(e) => toggleFavorito(e, producto.id)}
+              >
+                {favoritos.has(producto.id) ? '❤️' : '🤍'}
+              </button>
             </div>
+
             <div className="product-info">
               <h3 className="product-title">{producto.title || producto.name}</h3>
               <p className="product-price">{producto.price} €</p>
+
+              {/* 👇 NUEVO: chips informativos */}
+              <div className="chip-row">
+                {producto.brand && <span className="chip">{producto.brand}</span>}
+                {producto.size && <span className="chip">Talla {producto.size}</span>}
+                {producto.condition && (
+                  <span className={`chip ${
+                    producto.condition === 'Sin usar' ? 'chip-new' :
+                    producto.condition === 'Buen estado' ? 'chip-good' : 'chip-used'
+                  }`}>
+                    {producto.condition}
+                  </span>
+                )}
+              </div>
+
+              {/* 👇 NUEVO: @ del vendedor */}
+              {producto.nombreVendedor && (
+                <p className="seller-tag">@{producto.nombreVendedor}</p>
+              )}
             </div>
           </div>
         ))}

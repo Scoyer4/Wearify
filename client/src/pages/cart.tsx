@@ -5,7 +5,7 @@ export default function Cart() {
   const { carrito } = useCart();
   const navigate = useNavigate();
 
-  const total = carrito.reduce((total, item) => total + (item.price * item.cantidad), 0);
+  const total = carrito.reduce((sum, item) => sum + item.price * item.cantidad, 0);
 
   return (
     <section className="cart-section">
@@ -21,42 +21,61 @@ export default function Cart() {
           </button>
         </div>
       ) : (
-        <div className="cart-container-box"> 
-          {/* Usamos el estilo que teníais en el App.tsx original */}
-          {carrito.map((item) => (
-            <div key={item.id} className="cart-item-row">
-              {item.image_url ? (
-                <img src={item.image_url} alt={item.title} className="cart-item-img" />
-              ) : (
-                <div className="cart-item-placeholder">Sin foto</div>
-              )}
-              
-              <div style={{ flex: 1 }}>
-                <h3 style={{ margin: '0 0 0.5rem 0' }}>{item.title}</h3>
-                <p style={{ margin: 0, color: '#666' }}>Cantidad: <strong>{item.cantidad}</strong></p>
-                {item.size && <p style={{ margin: 0, color: '#666' }}>Talla: {item.size}</p>}
-              </div>
+        <div className="cart-layout">
 
-              <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>
-                {item.price * item.cantidad} €
-              </div>
-            </div>
-          ))}
+          {/* Lista de productos */}
+          <div className="cart-items-list">
+            {carrito.map((item) => (
+              <div key={item.id} className="cart-item-card">
+                {item.image_url ? (
+                  <img src={item.image_url} alt={item.title} className="cart-item-img" />
+                ) : (
+                  <div className="cart-item-placeholder">Sin foto</div>
+                )}
 
-          <div className="cart-total-section">
-            <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Total a pagar:</span>
-            <span style={{ fontSize: '2rem', fontWeight: 'bold', color: '#28a745' }}>
-              {total} €
-            </span>
+                <div className="cart-item-info">
+                  <h3 className="cart-item-name">{item.title}</h3>
+                  {item.size && (
+                    <p className="cart-item-meta">Talla {item.size}</p>
+                  )}
+                  <p className="cart-item-meta">Cantidad: <strong>{item.cantidad}</strong></p>
+                </div>
+
+                <div className="cart-item-right">
+                  <span className="cart-item-price">{item.price * item.cantidad} €</span>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <button 
-            className="btn-primary full-width-btn"
-            style={{ backgroundColor: '#28a745', borderColor: '#28a745', marginTop: '1.5rem', fontSize: '1.2rem', padding: '15px' }}
-            onClick={() => alert('¡Simulación de compra completada con éxito!')}
-          >
-            Proceder al Pago Seguro 🔒
-          </button>
+          {/* Resumen lateral */}
+          <div className="cart-summary-box">
+            <h3 className="cart-summary-title">Resumen del pedido</h3>
+
+            <div className="cart-summary-row">
+              <span>Subtotal ({carrito.length} artículos)</span>
+              <span>{total} €</span>
+            </div>
+            <div className="cart-summary-row">
+              <span>Envío</span>
+              <span className="cart-shipping-free">Gratis</span>
+            </div>
+
+            <div className="cart-summary-total">
+              <span>Total</span>
+              <span>{total} €</span>
+            </div>
+
+            <button
+              className="btn-pay"
+              onClick={() => alert('¡Simulación de compra completada!')}
+            >
+              Proceder al pago seguro
+            </button>
+
+            <p className="cart-safe-note">Pago 100% seguro y cifrado</p>
+          </div>
+
         </div>
       )}
     </section>
