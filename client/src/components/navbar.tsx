@@ -3,6 +3,10 @@ import { useCart } from '../context/cartContext';
 // 1. Importamos el tipo Session de Supabase
 import { Session } from '@supabase/supabase-js';
 
+import NavMenu from './NavMenu';
+
+import logoImage from '../assets/logoWearify2.png';
+
 // 2. Le decimos al Navbar que ahora recibe la sesión como parámetro
 export default function Navbar({ session }: { session: Session | null }) {
   const { carrito } = useCart();
@@ -13,13 +17,9 @@ export default function Navbar({ session }: { session: Session | null }) {
       
       <nav className="nav-menu">
         <div className="nav-section left">
-          <button className="menu-toggle" aria-label="Menú">
-            <svg viewBox="0 0 20 20" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
-              <line x1="1" y1="6" x2="21" y2="6"></line>
-              <line x1="1" y1="12" x2="21" y2="12"></line>
-              <line x1="1" y1="18" x2="21" y2="18"></line>
-            </svg>
-          </button>
+
+          <NavMenu />
+
           <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
             Productos
           </Link>
@@ -27,7 +27,7 @@ export default function Navbar({ session }: { session: Session | null }) {
 
         <div className="nav-section center">
           <Link to="/" className="logo-title" >
-            <img src="src/assets/logoWearify2.png" alt="logoWearify" />
+            <img src={logoImage} alt="logoWearify" />
           </Link>
         </div>
         

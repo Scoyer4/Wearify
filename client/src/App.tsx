@@ -33,31 +33,22 @@ function App() {
           <Routes>
             <Route path="/" element={<Home session={session} />} />
             
-            {/* Detalles del producto (tiene las funciones guardianas que pusimos antes) */}
             <Route path="/producto/:id" element={<ProductDetail session={session} />} />
             
-            {/* Escaparate de un vendedor */}
             <Route path="/usuario/:id" element={<UserProfile session={session} />} />
             
-            {/* Pantalla de Login (Si ya tienes sesión, te manda al inicio automáticamente) */}
             <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
 
-            {/* ==========================================
-                RUTAS PRIVADAS (Solo usuarios registrados)
-                ========================================== */}
-            {/* Si intentas ir a tu perfil privado sin sesión, te echa al Login */}
             <Route 
               path="/perfil" 
               element={session ? <Profile session={session} /> : <Navigate to="/login" />} 
             />
             
-            {/* Igual con el carrito */}
             <Route 
               path="/carrito" 
               element={session ? <Cart /> : <Navigate to="/login" />} 
             />
 
-            {/* Ruta por defecto por si alguien escribe mal una URL */}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </main>

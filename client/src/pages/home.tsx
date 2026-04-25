@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getProducts } from '../services/api';
 import { CreateProductForm } from '../components/CreateProductForm';
 import { Producto } from '../types';
+import { useSearchParams } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
 
 export default function Home({ session }: { session: Session | null }) {
@@ -10,10 +11,19 @@ export default function Home({ session }: { session: Session | null }) {
   const [estadoApi, setEstadoApi] = useState('Cargando...');
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [favoritos, setFavoritos] = useState<Set<string>>(new Set());
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const categoriaActiva = searchParams.get('categoria');
+
+  const productosFiltrados = categoriaActiva
+    ? productos.filter(p =>
+        p.brand === categoriaActiva ||
+        p.size === categoriaActiva || 
+        p.condition === categoriaActiva)
+    : productos;
 
   const toggleFavorito = (e: React.MouseEvent, id: string) => {
-  e.stopPropagation(); // evita navegar al producto al pulsar el corazón
+  e.stopPropagation();
   setFavoritos(prev => {
     const nuevo = new Set(prev);
     if (nuevo.has(id)) {
@@ -66,7 +76,7 @@ export default function Home({ session }: { session: Session | null }) {
       )}
       
       <div className="product-grid">
-        {productos.map((producto) => (
+        {productosFiltrados.map((producto) => (
           <div
             key={producto.id}
             className="product-card clickable-card"
@@ -79,7 +89,6 @@ export default function Home({ session }: { session: Session | null }) {
                 <span className="no-image-text">Sin foto</span>
               )}
 
-              {/* 👇 NUEVO: botón favorito */}
               <button
                 className={`favorite-btn ${favoritos.has(producto.id) ? 'liked' : ''}`}
                 onClick={(e) => toggleFavorito(e, producto.id)}
@@ -92,7 +101,6 @@ export default function Home({ session }: { session: Session | null }) {
               <h3 className="product-title">{producto.title || producto.name}</h3>
               <p className="product-price">{producto.price} €</p>
 
-              {/* 👇 NUEVO: chips informativos */}
               <div className="chip-row">
                 {producto.brand && <span className="chip">{producto.brand}</span>}
                 {producto.size && <span className="chip">Talla {producto.size}</span>}
@@ -106,7 +114,6 @@ export default function Home({ session }: { session: Session | null }) {
                 )}
               </div>
 
-              {/* 👇 NUEVO: @ del vendedor */}
               {producto.nombreVendedor && (
                 <p className="seller-tag">@{producto.nombreVendedor}</p>
               )}
