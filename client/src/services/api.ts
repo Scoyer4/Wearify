@@ -1,9 +1,9 @@
-import { NuevoProducto } from "../types";
+import { NuevoProducto, Producto, Usuario, PerfilPublico, Favorito, Categoria } from "../types";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 // 1. OBTENER PRODUCTOS (GET)
-export const getProducts = async () => {
+export const getProducts = async (): Promise<Producto[] | null> => {
   try {
     const response = await fetch(`${API_URL}/products`, {
       method: 'GET',
@@ -17,7 +17,7 @@ export const getProducts = async () => {
     }
 
     const data = await response.json();
-    return data;
+    return data as Producto[];
   } catch (error) {
     console.error("Error al conectar con la API:", error);
     return null;
@@ -25,7 +25,7 @@ export const getProducts = async () => {
 };
 
 // 2. CREAR PRODUCTO (POST)
-export const createProduct = async (productData: NuevoProducto, token: string) => {
+export const createProduct = async (productData: NuevoProducto, token: string): Promise<Producto | null> => {
   try {
     const response = await fetch(`${API_URL}/products`, {
       method: 'POST',
@@ -41,7 +41,7 @@ export const createProduct = async (productData: NuevoProducto, token: string) =
     }
 
     const data = await response.json();
-    return data;
+    return data as Producto;
   } catch (error) {
     console.error("Error al crear el producto:", error);
     return null;
@@ -49,7 +49,7 @@ export const createProduct = async (productData: NuevoProducto, token: string) =
 };
 
 // 3. OBTENER PRODUCTO POR ID (GET)
-export const getProductById = async (id: string) => {
+export const getProductById = async (id: string): Promise<Producto | null> => {
   try {
     const response = await fetch(`${API_URL}/products/${id}`, {
       method: 'GET',
@@ -63,14 +63,32 @@ export const getProductById = async (id: string) => {
     }
 
     const data = await response.json();
-    return data;
+    return data as Producto;
   } catch (error) {
     console.error(`Error al conectar con la API para el producto ${id}:`, error);
     return null;
   }
-}
-// 4. OBTENER USUARIO POR ID (GET)
-export const getUserById = async (id: string) => {
+};
+
+// 4. OBTENER PRODUCTOS POR VENDEDOR (GET)
+export const getProductsBySeller = async (sellerId: string): Promise<Producto[] | null> => {
+  try {
+    const response = await fetch(`${API_URL}/products/seller/${sellerId}`);
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data as Producto[];
+  } catch (error) {
+    console.error("Error al obtener productos del vendedor:", error);
+    return null;
+  }
+};
+
+// 5. OBTENER USUARIO POR ID (GET)
+export const getUserById = async (id: string): Promise<Usuario | null> => {
   try {
     const response = await fetch(`${API_URL}/users/${id}`);
     
@@ -79,14 +97,15 @@ export const getUserById = async (id: string) => {
     }
 
     const data = await response.json();
-    return data;
+    return data as Usuario;
   } catch (error) {
     console.error("Error al obtener el usuario:", error);
     return null;
   }
-}
-// 5. CREAR PERFIL DE USUARIO EN LA BD (POST)
-export const createUserProfile = async (userData: { id: string, username: string, email: string }) => {
+};
+
+// 6. CREAR PERFIL DE USUARIO EN LA BD (POST)
+export const createUserProfile = async (userData: { id: string, username: string, email: string }): Promise<Usuario | null> => {
   try {
     const response = await fetch(`${API_URL}/users`, {
       method: 'POST',
@@ -101,17 +120,16 @@ export const createUserProfile = async (userData: { id: string, username: string
     }
 
     const data = await response.json();
-    return data;
+    return data as Usuario;
   } catch (error) {
     console.error("Error al guardar el usuario en la base de datos:", error);
     return null;
   }
 };
 
-// 6. OBTENER PERFIL PÚBLICO Y ESTADÍSTICAS (GET)
-export const getPublicProfile = async (id: string) => {
+// 7. OBTENER PERFIL PÚBLICO Y ESTADÍSTICAS (GET)
+export const getPublicProfile = async (id: string): Promise<PerfilPublico | null> => {
   try {
-    // Usamos la nueva ruta pública que creamos en el backend
     const response = await fetch(`${API_URL}/users/public/${id}`);
     
     if (!response.ok) {
@@ -119,14 +137,14 @@ export const getPublicProfile = async (id: string) => {
     }
 
     const data = await response.json();
-    return data;
+    return data as PerfilPublico;
   } catch (error) {
     console.error("Error al obtener el perfil público:", error);
     return null;
   }
 };
 
-// 7. COMPROBAR SI SIGO A UN USUARIO (GET)
+// 8. COMPROBAR SI SIGO A UN USUARIO (GET)
 export const checkIsFollowing = async (followerId: string, followingId: string) => {
   try {
     const response = await fetch(`${API_URL}/users/is-following/${followerId}/${followingId}`);
@@ -136,14 +154,14 @@ export const checkIsFollowing = async (followerId: string, followingId: string) 
     }
 
     const data = await response.json();
-    return data.isFollowing; // Devuelve un booleano (true/false)
+    return data.isFollowing;
   } catch (error) {
     console.error("Error al comprobar seguimiento:", error);
     return false;
   }
 };
 
-// 8. SEGUIR A UN USUARIO (POST)
+// 9. SEGUIR A UN USUARIO (POST)
 export const followUser = async (followingId: string, token: string) => {
   try {
     const response = await fetch(`${API_URL}/users/follow`, {
@@ -167,7 +185,7 @@ export const followUser = async (followingId: string, token: string) => {
   }
 };
 
-// 9. DEJAR DE SEGUIR A UN USUARIO (POST)
+// 10. DEJAR DE SEGUIR A UN USUARIO (POST)
 export const unfollowUser = async (followingId: string, token: string) => {
   try {
     const response = await fetch(`${API_URL}/users/unfollow`, {
@@ -187,6 +205,92 @@ export const unfollowUser = async (followingId: string, token: string) => {
     return data;
   } catch (error) {
     console.error("Error al dejar de seguir al usuario:", error);
+    return null;
+  }
+};
+
+// 11. OBTENER CATEGORÍAS (GET)
+export const getCategories = async (): Promise<Categoria[] | null> => {
+  try {
+    const response = await fetch(`${API_URL}/categories`);
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data as Categoria[];
+  } catch (error) {
+    console.error("Error al obtener categorías:", error);
+    return null;
+  }
+};
+
+// 12. AÑADIR FAVORITO (POST)
+export const addFavorite = async (productId: string, token: string) => {
+  try {
+    const response = await fetch(`${API_URL}/favorites`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ product_id: productId }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error al añadir a favoritos:", error);
+    return null;
+  }
+};
+
+// 13. ELIMINAR FAVORITO (DELETE)
+export const removeFavorite = async (productId: string, token: string) => {
+  try {
+    const response = await fetch(`${API_URL}/favorites`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ product_id: productId }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error al eliminar de favoritos:", error);
+    return null;
+  }
+};
+
+// 14. OBTENER MIS FAVORITOS (GET)
+export const getMyFavorites = async (token: string): Promise<Favorito[] | null> => {
+  try {
+    const response = await fetch(`${API_URL}/favorites/me`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data as Favorito[];
+  } catch (error) {
+    console.error("Error al obtener favoritos:", error);
     return null;
   }
 };

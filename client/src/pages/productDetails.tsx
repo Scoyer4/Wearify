@@ -46,13 +46,13 @@ export default function ProductDetail({ session }: { session: Session | null }) 
   }, [id]);
 
   // ==========================================
-  // 3. NUEVAS FUNCIONES GUARDIANAS
+  // 3. FUNCIONES GUARDIANAS
   // ==========================================
   const handleAñadirAlCarrito = (prod: Producto) => {
     // Si no hay sesión, cortamos la acción y mandamos a registro
     if (!session) {
       alert("¡Hola! Para añadir prendas al carrito necesitas iniciar sesión o crear una cuenta.");
-      navigate('/login'); // Cambia '/login' por la ruta real de tu formulario (ej. '/auth' o '/')
+      navigate('/login');
       return; 
     }
     
@@ -64,7 +64,7 @@ export default function ProductDetail({ session }: { session: Session | null }) 
   const handleComprarYa = () => {
     if (!session) {
       alert("Para realizar compras, necesitas iniciar sesión primero.");
-      navigate('/login'); // Cambia esta ruta a tu pantalla de auth
+      navigate('/login');
       return;
     }
     alert('Simulando redirección a la pasarela de pago...');
@@ -76,14 +76,14 @@ export default function ProductDetail({ session }: { session: Session | null }) 
   }
 
   if (error || !producto) {
-    return (/* ... tu código de error se mantiene igual ... */
+    return (
       <section className="product-detail-section">
         <button onClick={() => navigate(-1)} className="btn-primary back-btn">← Volver</button>
         <div className="empty-state">
-          <p className="empty-state-text" style={{ color: '#dc3545', fontWeight: 'bold' }}>
+          <p className="empty-state-text" style={{ color: 'var(--danger)', fontWeight: 'bold' }}>
             ⚠️ Error: No se pudo cargar la información del producto.
           </p>
-          <p style={{ color: '#666' }}>Asegúrate de que el servidor de Node.js esté encendido.</p>
+          <p style={{ color: 'var(--text-muted)' }}>Asegúrate de que el servidor de Node.js esté encendido.</p>
         </div>
       </section>
     );
@@ -103,14 +103,14 @@ export default function ProductDetail({ session }: { session: Session | null }) 
         </div>
 
         <div className="detail-info-wrapper">
-          <h2 className="detail-title">{producto.title || producto.name}</h2>
+          <h2 className="detail-title">{producto.title}</h2>
           <p className="detail-price">{producto.price ? `${producto.price} €` : 'Consultar precio'}</p>
           
-          <div className="seller-badge" style={{ padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '15px', marginTop: '1rem' }}>
-            <div className="seller-avatar" style={{ fontSize: '2rem' }}>👤</div>
+          <div className="seller-badge">
+            <div className="seller-avatar">👤</div>
             <div>
-              <p className="seller-label" style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>Subido por</p>
-              <Link to={`/usuario/${producto.seller_id}`} style={{ margin: 0, fontWeight: 'bold', fontSize: '1.2rem', color: '#007bff', textDecoration: 'none' }}>
+              <p className="seller-label">Subido por</p>
+              <Link to={`/usuario/${producto.seller_id}`} style={{ fontWeight: 'bold', fontSize: '1.1rem', color: 'var(--accent)', textDecoration: 'none' }}>
                 @{producto.nombreVendedor}
               </Link>
             </div>
@@ -127,19 +127,16 @@ export default function ProductDetail({ session }: { session: Session | null }) 
             {producto.condition && <span className="detail-tag">Estado: {producto.condition}</span>}
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', marginTop: '1rem' }}>
-            {/* 4. CAMBIAMOS LOS ONCLICK PARA USAR LOS GUARDIANES */}
+          <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem' }}>
             <button 
               className="btn-primary full-width-btn" 
-              style={{ backgroundColor: '#333', borderColor: '#333' }}
               onClick={() => handleAñadirAlCarrito(producto)}
             >
               Añadir al carrito
             </button>
             
             <button 
-              className="btn-primary full-width-btn"
-              style={{ backgroundColor: '#28a745', borderColor: '#28a745' }}
+              className="btn-pay full-width-btn"
               onClick={handleComprarYa}
             >
               Comprar ya

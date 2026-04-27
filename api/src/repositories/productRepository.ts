@@ -1,6 +1,15 @@
 import supabase from "../config/db";
 import { Product, ProductInsert, ProductUpdate } from "../models/product";
 
+type ProductRow = Omit<Product, 'image_url'> & {
+  productImages?: { image_url: string }[];
+};
+
+function flattenProduct(row: ProductRow): Product {
+  const { productImages, ...rest } = row;
+  return { ...rest, image_url: productImages?.[0]?.image_url ?? null };
+}
+
 export const productRepository = {
   
   // 1. ACTUALIZADO: Traer los productos junto con su primera imagen
@@ -16,19 +25,7 @@ export const productRepository = {
 
     if (error) throw new Error(error.message);
 
-    // Formateamos los datos para que el Frontend los entienda como antes
-    const productosAplanados = (data || []).map((prod: any) => {
-      // Sacamos la primera imagen si es que tiene alguna
-      const primeraImagen = prod.productImages && prod.productImages.length > 0 
-        ? prod.productImages[0].image_url 
-        : null;
-        
-      // Quitamos el array de productImages y devolvemos image_url directo
-      const { productImages, ...restoDelProducto } = prod;
-      return { ...restoDelProducto, image_url: primeraImagen };
-    });
-
-    return productosAplanados as Product[];
+    return (data as ProductRow[] || []).map(flattenProduct);
   },
 
   // 2. ACTUALIZADO: Traer un producto por ID con su imagen
@@ -42,17 +39,11 @@ export const productRepository = {
     if (error) throw new Error(error.message);
     if (!data) return null;
 
-    const prod: any = data;
-    const primeraImagen = prod.productImages && prod.productImages.length > 0 
-        ? prod.productImages[0].image_url 
-        : null;
-        
-    const { productImages, ...restoDelProducto } = prod;
-    return { ...restoDelProducto, image_url: primeraImagen } as Product;
+    return flattenProduct(data as ProductRow);
   },
 
   // 3. ACTUALIZADO: Guardar el producto y la imagen por separado
-  create: async (product: ProductInsert | any): Promise<Product> => {  
+  create: async (product: ProductInsert & { image_url?: string | null }): Promise<Product> => {
     // Separamos la URL de la imagen del resto de los datos del producto
     const { image_url, ...productData } = product;
 
@@ -68,7 +59,7 @@ export const productRepository = {
       throw new Error(error.message);
     }
 
-    const nuevoProducto = data as any;
+    const nuevoProducto = data as Omit<Product, 'image_url'>;
 
     // B) Si el usuario envió una imagen, la guardamos en la tabla "productImages"
     if (image_url) {
@@ -89,15 +80,23 @@ export const productRepository = {
   },
 
   update: async (id: string, updates: ProductUpdate): Promise<Product> => { 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("products")
       .update(updates)
-      .eq("id", id)
-      .select()
-      .single();
+      .eq("id", id);
 
     if (error) throw new Error(error.message);
-    return data as Product;
+
+    // Re-fetch con la imagen para devolver el producto completo
+    const { data: updated, error: fetchError } = await supabase
+      .from("products")
+      .select(`*, productImages ( image_url )`)
+      .eq("id", id)
+      .single();
+
+    if (fetchError) throw new Error(fetchError.message);
+
+    return flattenProduct(updated as ProductRow);
   },
 
   delete: async (id: string): Promise<boolean> => {
@@ -120,12 +119,6 @@ export const productRepository = {
 
     if (error) throw new Error(error.message);
 
-    return (data || []).map((prod: any) => {
-      const primeraImagen = prod.productImages && prod.productImages.length > 0 
-        ? prod.productImages[0].image_url 
-        : null;
-      const { productImages, ...resto } = prod;
-      return { ...resto, image_url: primeraImagen } as Product;
-    });
+    return (data as ProductRow[] || []).map(flattenProduct);
   }
 };

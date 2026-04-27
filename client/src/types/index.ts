@@ -1,33 +1,40 @@
 export interface Producto {
   id: string;
-  title?: string;      // En App.tsx usas title o name
-  name?: string;
-  description: string; // En lugar de descripcion
+  title: string;
+  description: string | null;
   price: number;
-  category?: 'camisetas' | 'pantalones' | 'zapatos' | 'accesorios';
-  image_url: string;
+  image_url: string | null;
   size?: string;
   seller_id?: string;
+  category_id?: number;
   created_at?: string;
-  
-  // NUEVOS CAMPOS DEL FORMULARIO:
   brand?: string;
   condition?: string;
   status?: string;
 
-  // NUEVOS CAMPOS EXTRA PARA LA VISTA EN REACT (App.tsx):
+  // Campos extra para la vista en React (no vienen de la API directamente):
   nombreVendedor?: string;
-  error?: boolean;
 }
 
-
-export type NuevoProducto = Omit<Producto, 'id' | 'created_at' | 'seller_id' | 'nombreVendedor' | 'error'>;
+export type NuevoProducto = {
+  title: string;
+  description?: string | null;
+  price: number;
+  image_url?: string;
+  size: string;
+  category_id: number;
+  brand: string;
+  condition: string;
+  status?: string;
+};
 
 export interface Usuario {
   id: string;
   email: string;
-  nombre_completo?: string;
-  avatar_url?: string;
+  username?: string | null;
+  full_name?: string | null;
+  avatar_url?: string | null;
+  bio?: string | null;
 }
 
 export interface PerfilPublico {
@@ -40,4 +47,17 @@ export interface PerfilPublico {
     followers: number;
     following: number;
   };
+}
+
+export interface Favorito {
+  user_id: string;
+  product_id: string;
+  created_at?: string;
+  products?: Producto;
+}
+
+export interface Categoria {
+  id: number;
+  name: string;
+  slug: string | null;
 }

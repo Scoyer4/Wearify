@@ -24,6 +24,17 @@ export const userRepository = {
     return data as User | null;
   },
 
+  findByUsername: async (username: string): Promise<User | null> => {
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("username", username)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    return data as User | null;
+  },
+
   update: async (id: string, updates: UserUpdate): Promise<User> => {
     const { data, error } = await supabase
       .from("users")

@@ -5,6 +5,7 @@ import { verifyAuth } from "../middlewares/auth";
 const router = Router();
 
 router.get("/", productController.getAll);
+router.get("/seller/:sellerId", productController.getBySeller);
 router.get("/:id", productController.getById);
 
 router.post("/", verifyAuth, productController.create);

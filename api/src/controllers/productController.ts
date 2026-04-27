@@ -28,9 +28,20 @@ export const productController = {
     }
   },
 
+  getBySeller: async (req: Request, res: Response) => {
+    try {
+      const { sellerId } = req.params;
+      const products = await productRepository.getBySellerId(sellerId);
+      return res.json(products);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Error fetching seller products" });
+    }
+  },
+
   create: async (req: Request, res: Response) => {
     try {
-      const userId = (req as any).user.id; 
+      const userId = req.user!.id; 
 
       if (!userId) {
         return res.status(401).json({ error: "Unauthorized" });
@@ -54,7 +65,7 @@ export const productController = {
   update: async (req: Request, res: Response) => {
     try {
       const id = req.params.id;
-      const userId = (req as any).user.id;
+      const userId = req.user!.id;
 
       if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
@@ -76,7 +87,7 @@ export const productController = {
   delete: async (req: Request, res: Response) => {
     try {
       const id = req.params.id;
-      const userId = (req as any).user.id;
+      const userId = req.user!.id;
 
       if (!userId) return res.status(401).json({ error: "Unauthorized" });
 

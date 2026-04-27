@@ -2,10 +2,10 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/cartContext';
 
 export default function Cart() {
-  const { carrito } = useCart();
+  const { carrito, eliminarDelCarrito } = useCart();
   const navigate = useNavigate();
 
-  const total = carrito.reduce((sum, item) => sum + item.price * item.cantidad, 0);
+  const total = carrito.reduce((sum, item) => sum + item.price, 0);
 
   return (
     <section className="cart-section">
@@ -38,11 +38,20 @@ export default function Cart() {
                   {item.size && (
                     <p className="cart-item-meta">Talla {item.size}</p>
                   )}
-                  <p className="cart-item-meta">Cantidad: <strong>{item.cantidad}</strong></p>
+                  {item.brand && (
+                    <p className="cart-item-meta">{item.brand}</p>
+                  )}
                 </div>
 
                 <div className="cart-item-right">
-                  <span className="cart-item-price">{item.price * item.cantidad} €</span>
+                  <span className="cart-item-price">{item.price} €</span>
+                  <button 
+                    className="btn-danger" 
+                    style={{ marginTop: '0.5rem', padding: '4px 12px', fontSize: '0.85rem' }}
+                    onClick={() => eliminarDelCarrito(item.id)}
+                  >
+                    Eliminar
+                  </button>
                 </div>
               </div>
             ))}

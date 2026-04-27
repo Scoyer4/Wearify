@@ -2,24 +2,30 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Session } from '@supabase/supabase-js';
-import { getProducts } from '../services/api';
-import { Producto } from '../types';
+import { getProductsBySeller, getMyFavorites } from '../services/api';
+import { Producto, Favorito } from '../types';
 
 export default function Profile({ session }: { session: Session }) {
-  const [productos, setProductos] = useState<Producto[]>([]);
+  const [misProductos, setMisProductos] = useState<Producto[]>([]);
+  const [misFavoritos, setMisFavoritos] = useState<Favorito[]>([]);
   const navigate = useNavigate();
 
-  // Cargamos productos para filtrar los que pertenecen al usuario logueado
   useEffect(() => {
-    const fetchProductos = async () => {
-      const data = await getProducts();
-      if (data) setProductos(data);
-    };
-    fetchProductos();
-  }, []);
+    const fetchDatos = async () => {
+      // Cargar los productos del usuario
+      if (session?.user?.id) {
+        const data = await getProductsBySeller(session.user.id);
+        if (data) setMisProductos(data);
+      }
 
-  // Lógica de "Mis Productos": filtramos por el ID del usuario actual
-  const misProductos = productos.filter((p) => p.seller_id === session?.user?.id);
+      // Cargar los favoritos del usuario
+      if (session?.access_token) {
+        const favData = await getMyFavorites(session.access_token);
+        if (favData) setMisFavoritos(favData);
+      }
+    };
+    fetchDatos();
+  }, [session]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -79,9 +85,37 @@ export default function Profile({ session }: { session: Session }) {
           <hr className="dashboard-divider" />
           <div className="dashboard-section">
             <h3 className="dashboard-title">❤️ Mis Favoritos</h3>
-            <div className="empty-dashboard-box">
-              <p>Próximamente verás aquí tus productos favoritos.</p>
-            </div>
+            {misFavoritos.length > 0 ? (
+              <div className="product-grid">
+                {misFavoritos.map((fav) => {
+                  const producto = fav.products;
+                  if (!producto) return null;
+                  return (
+                    <div 
+                      key={producto.id} 
+                      className="product-card clickable-card"
+                      onClick={() => navigate(`/producto/${producto.id}`)}
+                    >
+                      <div className="product-image-wrapper">
+                        {producto.image_url ? (
+                          <img src={producto.image_url} alt={producto.title} className="product-image" />
+                        ) : (
+                          <span className="no-image-text">Sin foto</span>
+                        )}
+                      </div>
+                      <div className="product-info">
+                        <h3 className="product-title">{producto.title}</h3>
+                        <p className="product-price">{producto.price} €</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="empty-dashboard-box">
+                <p>Aún no has añadido ningún producto a favoritos.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

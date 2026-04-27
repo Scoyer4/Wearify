@@ -6,6 +6,7 @@ export interface User {
   avatar_url: string | null;
   bio: string | null;
   created_at?: string | null;
+  updated_at?: string | null;
 }
 
 export type UserInsert = {

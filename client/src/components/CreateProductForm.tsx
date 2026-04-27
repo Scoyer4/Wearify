@@ -1,8 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { createProduct } from '../services/api';
+import { createProduct, getCategories } from '../services/api';
 // Importamos su propio archivo CSS
 import './CreateProductForm.css';
+
+interface Category {
+  id: number;
+  name: string;
+  slug: string | null;
+}
 
 export const CreateProductForm = ({ onProductCreated }: { onProductCreated: () => void }) => {
   const [title, setTitle] = useState('');
@@ -13,8 +19,18 @@ export const CreateProductForm = ({ onProductCreated }: { onProductCreated: () =
   const [condition, setCondition] = useState('');
   const [status, setStatus] = useState('Disponible');
   const [imageUrl, setImageUrl] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [categories, setCategories] = useState<Category[]>([]);
   
   const [estadoMensaje, setEstadoMensaje] = useState('');
+
+  useEffect(() => {
+    const cargarCategorias = async () => {
+      const data = await getCategories();
+      if (data) setCategories(data);
+    };
+    cargarCategorias();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +42,9 @@ export const CreateProductForm = ({ onProductCreated }: { onProductCreated: () =
     if (!token) return setEstadoMensaje('Error: No estás autenticado.');
 
     const nuevoProducto = {
-      title, description, price: parseFloat(price), brand, size, condition, status, image_url: imageUrl
+      title, description, price: parseFloat(price), brand, size, condition, status,
+      image_url: imageUrl,
+      category_id: parseInt(categoryId)
     };
 
     const resultado = await createProduct(nuevoProducto, token);
@@ -35,6 +53,7 @@ export const CreateProductForm = ({ onProductCreated }: { onProductCreated: () =
       setEstadoMensaje('¡Producto subido con éxito!');
       setTitle(''); setDescription(''); setPrice(''); setBrand(''); 
       setSize(''); setCondition(''); setStatus('Disponible'); setImageUrl('');
+      setCategoryId('');
       onProductCreated(); 
     } else {
       setEstadoMensaje('Hubo un error al subir el producto.');
@@ -63,6 +82,13 @@ export const CreateProductForm = ({ onProductCreated }: { onProductCreated: () =
           value={price} onChange={(e) => setPrice(e.target.value)}
           className="form-input"
         />
+
+        <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required className="form-input">
+          <option value="" disabled>Selecciona una categoría...</option>
+          {categories.map(cat => (
+            <option key={cat.id} value={cat.id}>{cat.name}</option>
+          ))}
+        </select>
         
         <select value={size} onChange={(e) => setSize(e.target.value)} required className="form-input">
           <option value="" disabled>Selecciona una talla...</option>

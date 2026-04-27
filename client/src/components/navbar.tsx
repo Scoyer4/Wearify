@@ -57,7 +57,7 @@ export default function Navbar({ session }: { session: Session | null }) {
                   </svg>
                   {carrito.length > 0 && (
                     <span className="cart-count">
-                      {carrito.reduce((total, item) => total + item.cantidad, 0)}
+                      {carrito.length}
                     </span>
                   )}
                 </div>

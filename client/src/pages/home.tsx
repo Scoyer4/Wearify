@@ -1,126 +1,374 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getProducts } from '../services/api';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { getProducts, addFavorite, removeFavorite, getMyFavorites, getCategories } from '../services/api';
 import { CreateProductForm } from '../components/CreateProductForm';
-import { Producto } from '../types';
-import { useSearchParams } from 'react-router-dom';
+import Marquee from '../components/Marquee';
+import { Producto, Favorito, Categoria } from '../types';
 import { Session } from '@supabase/supabase-js';
+
+function ProductImage({ src, alt }: { src: string | null | undefined; alt: string }) {
+  const [error, setError] = useState(false);
+
+  if (!src || error) {
+    return (
+      <div className="img-placeholder">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+          <circle cx="12" cy="13" r="4" />
+        </svg>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className="product-image"
+      onError={() => setError(true)}
+    />
+  );
+}
+
+function getCondicionChip(condition?: string) {
+  if (!condition) return '';
+  if (condition === 'Sin usar' || condition === 'Como nuevo') return 'chip-new';
+  if (condition === 'Excelente' || condition === 'Buen estado') return 'chip-good';
+  return 'chip-used';
+}
 
 export default function Home({ session }: { session: Session | null }) {
   const [productos, setProductos] = useState<Producto[]>([]);
-  const [estadoApi, setEstadoApi] = useState('Cargando...');
+  const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [favoritos, setFavoritos] = useState<Set<string>>(new Set());
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [categoriaSel, setCategoriaSel] = useState<number | null>(null);
+  const [filtroBusqueda, setFiltroBusqueda] = useState('');
+  const [filtroTalla, setFiltroTalla] = useState('');
+  const [filtroCondicion, setFiltroCondicion] = useState('');
+  const [filtroOrden, setFiltroOrden] = useState('');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const categoriaActiva = searchParams.get('categoria');
 
-  const productosFiltrados = categoriaActiva
-    ? productos.filter(p =>
-        p.brand === categoriaActiva ||
-        p.size === categoriaActiva || 
-        p.condition === categoriaActiva)
-    : productos;
+  const marcasUnicas = new Set(productos.map(p => p.brand).filter(Boolean));
+  const productosDisponibles = productos.filter(p => !p.status || p.status === 'Disponible');
+  const productosRecientes = productos.slice(0, 6);
 
-  const toggleFavorito = (e: React.MouseEvent, id: string) => {
-  e.stopPropagation();
-  setFavoritos(prev => {
-    const nuevo = new Set(prev);
-    if (nuevo.has(id)) {
-      nuevo.delete(id);
-    } else {
-      nuevo.add(id);
+  const hayFiltrosActivos = !!(categoriaActiva || categoriaSel !== null || filtroBusqueda || filtroTalla || filtroCondicion || filtroOrden);
+
+  const productosFiltrados = productos
+    .filter(p => {
+      if (categoriaActiva) {
+        const q = categoriaActiva.toLowerCase();
+        if (
+          p.brand?.toLowerCase() !== q &&
+          p.size?.toLowerCase() !== q &&
+          p.condition?.toLowerCase() !== q
+        ) return false;
+      }
+      if (categoriaSel !== null && p.category_id !== categoriaSel) return false;
+      if (filtroBusqueda) {
+        const q = filtroBusqueda.toLowerCase();
+        if (!p.title.toLowerCase().includes(q) && !p.brand?.toLowerCase().includes(q)) return false;
+      }
+      if (filtroTalla && p.size !== filtroTalla) return false;
+      if (filtroCondicion && p.condition !== filtroCondicion) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (filtroOrden === 'precio-asc') return a.price - b.price;
+      if (filtroOrden === 'precio-desc') return b.price - a.price;
+      return 0;
+    });
+
+  const limpiarFiltros = () => {
+    setCategoriaSel(null);
+    setFiltroBusqueda('');
+    setFiltroTalla('');
+    setFiltroCondicion('');
+    setFiltroOrden('');
+    if (categoriaActiva) navigate('/');
+  };
+
+  const toggleFavorito = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (!session) {
+      alert('Inicia sesión para guardar favoritos.');
+      navigate('/login');
+      return;
     }
-    return nuevo;
-  });
-};
-  
-  const fetchDatos = async () => {
-    setEstadoApi('Conectando...');
-    const data = await getProducts();
-    if (data) {
-      setProductos(data);
-      setEstadoApi('Catálogo actualizado');
+    const token = session.access_token;
+    const nuevoSet = new Set(favoritos);
+    if (nuevoSet.has(id)) {
+      nuevoSet.delete(id);
+      setFavoritos(nuevoSet);
+      await removeFavorite(id, token);
     } else {
-      setEstadoApi('Error al cargar catálogo');
+      nuevoSet.add(id);
+      setFavoritos(nuevoSet);
+      await addFavorite(id, token);
     }
   };
 
+  const fetchDatos = async () => {
+    setCargando(true);
+    const data = await getProducts();
+    if (data) setProductos(data);
+    setCargando(false);
+  };
+
+  useEffect(() => {
+    const cargarFavoritos = async () => {
+      if (session?.access_token) {
+        const data = await getMyFavorites(session.access_token);
+        if (data) setFavoritos(new Set(data.map((fav: Favorito) => fav.product_id)));
+      }
+    };
+    cargarFavoritos();
+  }, [session]);
+
   useEffect(() => {
     fetchDatos();
+    getCategories().then(data => { if (data) setCategorias(data); });
   }, []);
+
+  const renderCard = (producto: Producto) => (
+    <div
+      key={producto.id}
+      className="product-card clickable-card"
+      onClick={() => navigate(`/producto/${producto.id}`)}
+    >
+      <div className="product-image-wrapper">
+        <ProductImage src={producto.image_url} alt={producto.title} />
+        <button
+          className={`favorite-btn ${favoritos.has(producto.id) ? 'liked' : ''}`}
+          onClick={(e) => toggleFavorito(e, producto.id)}
+        >
+          {favoritos.has(producto.id) ? '❤️' : '🤍'}
+        </button>
+        {producto.condition === 'Sin usar' && (
+          <span className="card-badge badge-new">Nuevo</span>
+        )}
+        {producto.status === 'Vendido' && (
+          <span className="card-badge badge-sold">Vendido</span>
+        )}
+      </div>
+      <div className="product-info">
+        <h3 className="product-title">{producto.title}</h3>
+        <p className="product-price">{producto.price} €</p>
+        <div className="chip-row">
+          {producto.brand && <span className="chip">{producto.brand}</span>}
+          {producto.size && <span className="chip">Talla {producto.size}</span>}
+          {producto.condition && (
+            <span className={`chip ${getCondicionChip(producto.condition)}`}>
+              {producto.condition}
+            </span>
+          )}
+        </div>
+        {producto.nombreVendedor && (
+          <p className="seller-tag">@{producto.nombreVendedor}</p>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <section>
-      <div className="section-header">
-        <h2 className="section-title">¡Hola, {session?.user.user_metadata?.username || 'Coleccionista'}!</h2>
-        <span className="status-badge">{estadoApi}</span>
-      </div>
 
-      <div className="action-bar">
-        <button 
-          onClick={() => setMostrarFormulario(!mostrarFormulario)} 
-          className={`action-btn ${mostrarFormulario ? "btn-danger" : "btn-primary"}`}
-        >
-          {mostrarFormulario ? '✕ Cancelar subida' : '+ Subir producto'}
-        </button>
-      </div>
+      {/* ── HERO ── */}
+      <div className="hero-section">
+        <div className="hero-glow" />
+        <div className="hero-grid-pattern" />
 
-      {mostrarFormulario && (
-        <div className="form-dropdown-container">
-          <CreateProductForm onProductCreated={() => {
-            fetchDatos();
-            setMostrarFormulario(false);
-          }} />
-        </div>
-      )}
-      
-      <div className="product-grid">
-        {productosFiltrados.map((producto) => (
-          <div
-            key={producto.id}
-            className="product-card clickable-card"
-            onClick={() => navigate(`/producto/${producto.id}`)}
+        <span className="hero-live-badge">● Catálogo en vivo · Drop diario</span>
+
+        <h1 className="hero-title">
+          {session
+            ? <>¡Hola, <span className="hero-title-accent">{session.user.user_metadata?.username || 'Coleccionista'}</span>!</>
+            : <>TU DRIP, <span className="hero-title-accent">TU JUEGO.</span></>}
+        </h1>
+        <p className="hero-subtitle">
+          Marketplace curado por coleccionistas. Lo que llevas dice quién eres.
+        </p>
+
+        <div className="hero-search-wrapper">
+          <span className="hero-search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Busca por título, marca, estilo..."
+            value={filtroBusqueda}
+            onChange={e => setFiltroBusqueda(e.target.value)}
+            className="hero-search-input"
+          />
+          <button
+            className="hero-search-submit"
+            onClick={() => filtroBusqueda ? setFiltroBusqueda('') : undefined}
           >
-            <div className="product-image-wrapper">
-              {producto.image_url ? (
-                <img src={producto.image_url} alt={producto.title} className="product-image" />
-              ) : (
-                <span className="no-image-text">Sin foto</span>
-              )}
+            {filtroBusqueda ? '✕' : 'Buscar'}
+          </button>
+        </div>
 
-              <button
-                className={`favorite-btn ${favoritos.has(producto.id) ? 'liked' : ''}`}
-                onClick={(e) => toggleFavorito(e, producto.id)}
-              >
-                {favoritos.has(producto.id) ? '❤️' : '🤍'}
-              </button>
+        {!cargando && (
+          <div className="hero-stats">
+            <div className="hero-stat">
+              <span className="hero-stat-num">{productosDisponibles.length}</span>
+              <span className="hero-stat-label">prendas</span>
             </div>
-
-            <div className="product-info">
-              <h3 className="product-title">{producto.title || producto.name}</h3>
-              <p className="product-price">{producto.price} €</p>
-
-              <div className="chip-row">
-                {producto.brand && <span className="chip">{producto.brand}</span>}
-                {producto.size && <span className="chip">Talla {producto.size}</span>}
-                {producto.condition && (
-                  <span className={`chip ${
-                    producto.condition === 'Sin usar' ? 'chip-new' :
-                    producto.condition === 'Buen estado' ? 'chip-good' : 'chip-used'
-                  }`}>
-                    {producto.condition}
-                  </span>
-                )}
-              </div>
-
-              {producto.nombreVendedor && (
-                <p className="seller-tag">@{producto.nombreVendedor}</p>
-              )}
+            <div className="hero-stat-divider" />
+            <div className="hero-stat">
+              <span className="hero-stat-num">{marcasUnicas.size}</span>
+              <span className="hero-stat-label">marcas</span>
+            </div>
+            <div className="hero-stat-divider" />
+            <div className="hero-stat">
+              <span className="hero-stat-num">24-48h</span>
+              <span className="hero-stat-label">envío</span>
             </div>
           </div>
-        ))}
+        )}
       </div>
+
+      <Marquee />
+
+      {/* ── CATEGORY PILLS ── */}
+      {categorias.length > 0 && (
+        <div className="category-pills-row">
+          <button
+            className={`category-pill ${categoriaSel === null && !categoriaActiva ? 'active' : ''}`}
+            onClick={() => { setCategoriaSel(null); if (categoriaActiva) navigate('/'); }}
+          >
+            Todo
+          </button>
+          {categorias.map(cat => (
+            <button
+              key={cat.id}
+              className={`category-pill ${categoriaSel === cat.id ? 'active' : ''}`}
+              onClick={() => setCategoriaSel(categoriaSel === cat.id ? null : cat.id)}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* ── FAB + OVERLAY SUBIR PRODUCTO ── */}
+      {session && (
+        <button
+          className={`fab-upload ${mostrarFormulario ? 'active' : ''}`}
+          onClick={() => setMostrarFormulario(!mostrarFormulario)}
+          aria-label="Subir producto"
+          title="Subir producto"
+        >
+          {mostrarFormulario ? '✕' : '+'}
+        </button>
+      )}
+      {mostrarFormulario && (
+        <div
+          className="fab-overlay"
+          onClick={(e) => { if (e.target === e.currentTarget) setMostrarFormulario(false); }}
+        >
+          <div className="fab-panel">
+            <button className="fab-panel-close" onClick={() => setMostrarFormulario(false)}>✕</button>
+            <CreateProductForm onProductCreated={() => {
+              fetchDatos();
+              setMostrarFormulario(false);
+            }} />
+          </div>
+        </div>
+      )}
+
+      {/* ── RECIÉN AÑADIDO (solo cuando no hay filtros activos) ── */}
+      {!cargando && !hayFiltrosActivos && productosRecientes.length > 0 && (
+        <div className="section-block">
+          <h3 className="section-block-title">⚡ Recién añadido</h3>
+          <div className="products-scroll">
+            {productosRecientes.map(renderCard)}
+          </div>
+        </div>
+      )}
+
+      {/* ── CATÁLOGO ── */}
+      <div className="catalog-header">
+        <div>
+          <span className="catalog-title">
+            {hayFiltrosActivos ? 'Resultados' : 'Todo el catálogo'}
+          </span>
+          {!cargando && (
+            <span className="catalog-count">{productosFiltrados.length} prendas</span>
+          )}
+        </div>
+        <div className="filter-bar">
+          <select
+            value={filtroTalla}
+            onChange={e => setFiltroTalla(e.target.value)}
+            className="filter-select"
+          >
+            <option value="">Talla</option>
+            <option value="XS">XS</option>
+            <option value="S">S</option>
+            <option value="M">M</option>
+            <option value="L">L</option>
+            <option value="XL">XL</option>
+            <option value="XXL">XXL</option>
+            <option value="Única">Única</option>
+          </select>
+          <select
+            value={filtroCondicion}
+            onChange={e => setFiltroCondicion(e.target.value)}
+            className="filter-select"
+          >
+            <option value="">Estado</option>
+            <option value="Sin usar">Sin usar</option>
+            <option value="Como nuevo">Como nuevo</option>
+            <option value="Excelente">Excelente</option>
+            <option value="Buen estado">Buen estado</option>
+            <option value="Usado">Usado</option>
+          </select>
+          <select
+            value={filtroOrden}
+            onChange={e => setFiltroOrden(e.target.value)}
+            className="filter-select"
+          >
+            <option value="">Más recientes</option>
+            <option value="precio-asc">Precio ↑</option>
+            <option value="precio-desc">Precio ↓</option>
+          </select>
+          {hayFiltrosActivos && (
+            <button className="filter-clear-btn" onClick={limpiarFiltros}>
+              Limpiar ✕
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ── GRID ── */}
+      {cargando ? (
+        <div className="product-grid">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="product-card">
+              <div className="skeleton skeleton-image" />
+              <div className="product-info">
+                <div className="skeleton skeleton-title" />
+                <div className="skeleton skeleton-price" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : productosFiltrados.length > 0 ? (
+        <div className="product-grid">
+          {productosFiltrados.map(renderCard)}
+        </div>
+      ) : (
+        <div className="empty-state">
+          <p className="empty-state-text">No se encontraron prendas con estos filtros.</p>
+          <button className="btn-primary mt-3" onClick={limpiarFiltros}>
+            Limpiar filtros
+          </button>
+        </div>
+      )}
+
     </section>
   );
 }

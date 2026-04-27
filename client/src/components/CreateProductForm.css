@@ -1,44 +1,58 @@
-/* =========================================
-   FORMULARIO DE CREAR PRODUCTO
-   ========================================= */
+/* ── Create Product Form ── */
 .form-container {
-  background-color: #f8f9fa; 
-  padding: 2rem; 
-  border-radius: 12px; 
-  margin-top: 1rem;
-  border: 1px solid #e9ecef;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  padding: 2rem;
+  border-radius: var(--radius-md);
+  margin-top: 0.5rem;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-md);
 }
 
 .form-title {
-  margin-top: 0; 
-  color: #333; 
+  margin-top: 0;
+  color: var(--text-primary);
   margin-bottom: 1.5rem;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
   text-align: center;
+  letter-spacing: -0.2px;
 }
 
 .form-grid {
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  gap: 1.2rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
 }
 
 .form-input {
-  padding: 12px; 
-  border-radius: 8px; 
-  border: 1px solid #ced4da;
-  background-color: white;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
   width: 100%;
-  font-family: inherit;
-  font-size: 1rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
   outline: none;
 }
 
+.form-input::placeholder {
+  color: var(--text-muted);
+}
+
 .form-input:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* Style select dropdowns */
+.form-input option {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .span-2 {
@@ -51,35 +65,34 @@ textarea.form-input {
 }
 
 .submit-product-btn {
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   padding: 14px;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 }
 
 .form-message {
-  margin-top: 1.5rem; 
-  text-align: center; 
-  font-weight: bold;
+  margin-top: 1.5rem;
+  text-align: center;
+  font-weight: 600;
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
 }
-
 .form-message.success {
-  color: #155724;
-  background-color: #d4edda;
-  border: 1px solid #c3e6cb;
+  color: var(--success);
+  background: rgba(0, 212, 170, 0.1);
+  border: 1px solid rgba(0, 212, 170, 0.2);
 }
-
 .form-message.error {
-  color: #721c24;
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
+  color: var(--danger);
+  background: rgba(255, 77, 106, 0.1);
+  border: 1px solid rgba(255, 77, 106, 0.2);
 }
 
-/* Modo Responsive para móviles */
+/* Responsive */
 @media (max-width: 600px) {
   .form-grid {
-    grid-template-columns: 1fr; /* Todo en 1 columna en móviles */
+    grid-template-columns: 1fr;
   }
   .span-2 {
     grid-column: span 1;

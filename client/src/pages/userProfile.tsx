@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getPublicProfile, checkIsFollowing, followUser, unfollowUser, getProducts } from '../services/api';
+import { getPublicProfile, checkIsFollowing, followUser, unfollowUser, getProductsBySeller } from '../services/api';
 import { Session } from '@supabase/supabase-js';
 import { Producto, PerfilPublico } from '../types';
 
@@ -23,9 +23,9 @@ export default function UserProfile({ session }: { session: Session | null }) {
         const dataPerfil = await getPublicProfile(id);
         if (dataPerfil) setPerfil(dataPerfil);
 
-        const dataProductos = await getProducts();
+        const dataProductos = await getProductsBySeller(id);
         if (dataProductos) {
-          setProductos(dataProductos.filter((p: Producto) => p.seller_id === id));
+          setProductos(dataProductos);
         }
 
         if (session?.user?.id && session.user.id !== id) {
@@ -118,7 +118,7 @@ export default function UserProfile({ session }: { session: Session | null }) {
           <h2 className="profile-title">{perfil.username || 'Usuario'}</h2>
           <p className="profile-desc">{perfil.bio || 'Este usuario aún no ha escrito una biografía.'}</p>
           
-          <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.5rem', fontWeight: 'bold', color: '#555' }}>
+          <div style={{ display: 'flex', gap: '1.5rem', marginTop: '0.5rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
             <span>👥 {perfil.stats.followers || 0} Seguidores</span>
             <span>👣 {perfil.stats.following || 0} Siguiendo</span>
           </div>

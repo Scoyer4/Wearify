@@ -26,7 +26,7 @@ export const userController = {
   // 2. Obtener mi perfil
   getMe: async (req: Request, res: Response) => {
     try {
-      const supabaseId = (req as any).user.id;
+      const supabaseId = req.user!.id;
       const user = await userRepository.findById(supabaseId);
 
       if (!user) {
@@ -43,7 +43,7 @@ export const userController = {
   // 3. Actualizar mi perfil
   updateMe: async (req: Request, res: Response) => {
     try {
-      const supabaseId = (req as any).user.id;
+      const supabaseId = req.user!.id;
       
       const existingUser = await userRepository.findById(supabaseId);
       if (!existingUser) {
@@ -73,6 +73,23 @@ export const userController = {
     }
   },
 
+  // Buscar email por username (para login con username)
+  getEmailByUsername: async (req: Request, res: Response) => {
+    try {
+      const { username } = req.params;
+      const user = await userRepository.findByUsername(username);
+
+      if (!user) {
+        return res.status(404).json({ error: "No se ha encontrado ninguna cuenta con ese nombre de usuario." });
+      }
+
+      return res.json({ email: user.email });
+    } catch (error) {
+      console.error("Error buscando usuario por username:", error);
+      return res.status(500).json({ error: "Error al buscar usuario." });
+    }
+  },
+
   getPublicProfile: async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
@@ -90,7 +107,7 @@ export const userController = {
   // 5. Seguir a un usuario
   followUser: async (req: Request, res: Response) => {
     try {
-      const followerId = (req as any).user.id; 
+      const followerId = req.user!.id; 
       const { followingId } = req.body; 
 
       if (!followingId) {
@@ -111,7 +128,7 @@ export const userController = {
   // 6. Dejar de seguir a un usuario
   unfollowUser: async (req: Request, res: Response) => {
     try {
-      const followerId = (req as any).user.id;
+      const followerId = req.user!.id;
       const { followingId } = req.body;
       
       await userRepository.unfollowUser(followerId, followingId);

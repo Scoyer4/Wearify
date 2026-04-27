@@ -1,4 +1,83 @@
-/* client/src/index.css */
+/* ── Global Reset & Variables ── */
+:root {
+  /* Palette streetwear */
+  --ink-900: #0A0A14;
+  --ink-800: #11112A;
+  --ink-700: #1B1B3A;
+  --brand: #7C5FFF;
+  --brand-glow: rgba(124, 95, 255, 0.25);
+  --shock: #D4FF3D;
+  --bone: #F5F5F0;
+
+  /* Backgrounds */
+  --bg-primary: var(--ink-900);
+  --bg-secondary: var(--ink-800);
+  --bg-card: rgba(255, 255, 255, 0.04);
+  --bg-card-hover: rgba(255, 255, 255, 0.07);
+  --bg-elevated: rgba(255, 255, 255, 0.06);
+
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-glow: rgba(124, 95, 255, 0.35);
+
+  /* Accent (apunta a brand) */
+  --accent: var(--brand);
+  --accent-hover: #6A4FEF;
+  --accent-glow: var(--brand-glow);
+  --accent-2: #00D4AA;
+  --accent-2-glow: rgba(0, 212, 170, 0.2);
+
+  /* Text */
+  --text-primary: var(--bone);
+  --text-secondary: #a0a0b8;
+  --text-muted: #6a6a80;
+  --text-on-accent: #ffffff;
+
+  /* Semantic */
+  --danger: #FF4D6A;
+  --danger-hover: #E63E58;
+  --success: #00D4AA;
+  --warning: #FFB84D;
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 100px;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+
+  /* Glass */
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: blur(16px);
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.25s ease;
+  --transition-smooth: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Layout */
+  --nav-height: 100px;
+
+  /* Typography */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Aliases retrocompatibles */
+  --font-heading: var(--font-display);
+  --font-body: var(--font-sans);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+}
+
 html, body, #root {
   width: 100%;
   min-height: 100vh;

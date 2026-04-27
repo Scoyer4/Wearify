@@ -1,5 +1,8 @@
 import supabase from '../config/db';
 import { Favorite } from '../models/favorites';
+import { Product } from '../models/product';
+
+type FavoriteWithProduct = Favorite & { products: Product | null };
 
 export const favoriteRepository = {
   add: async (userId: string, productId: string): Promise<Favorite> => {
@@ -24,13 +27,13 @@ export const favoriteRepository = {
     return true;
   },
 
-  getByUser: async (userId: string): Promise<any[]> => {
+  getByUser: async (userId: string): Promise<FavoriteWithProduct[]> => {
     const { data, error } = await supabase
       .from('favorites')
       .select('*, products(*)') 
       .eq('user_id', userId);
 
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return (data ?? []) as FavoriteWithProduct[];
   }
 };

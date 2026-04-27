@@ -4,7 +4,7 @@ import { favoriteRepository } from "../repositories/favoriteRepository";
 export const favoriteController = {
   add: async (req: Request, res: Response) => {
     try {
-      const userId = (req as any).user.id;
+      const userId = req.user!.id;
       const { product_id } = req.body;
 
       if (!product_id) {
@@ -24,7 +24,7 @@ export const favoriteController = {
 
   remove: async (req: Request, res: Response) => {
     try {
-      const userId = (req as any).user.id;
+      const userId = req.user!.id;
       const { product_id } = req.body;
 
       if (!product_id) {
@@ -41,7 +41,7 @@ export const favoriteController = {
 
   getMyFavorites: async (req: Request, res: Response) => {
     try {
-      const userId = (req as any).user.id;
+      const userId = req.user!.id;
       const favorites = await favoriteRepository.getByUser(userId);
       return res.json(favorites);
     } catch (error: any) {

@@ -1,6 +1,7 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import './types';
 
 import type { CorsOptions } from 'cors';
 
@@ -28,20 +29,21 @@ const corsOptions: CorsOptions = {
 }; 
 
 app.use(cors(corsOptions));
-
-app.use((err: any, req: any, res: any, next: any) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Algo salió mal en el servidor' });
-});
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Rutas
 app.use("/api/products", productRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/favorites", favoriteRoutes);
 
+// Error handler DESPUÉS de las rutas
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Algo salió mal en el servidor' });
+});
+
 app.listen(config.PORT, () => {
   console.log(`Server is running on port http://localhost:${config.PORT}`);
-})
+});
