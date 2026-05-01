@@ -322,6 +322,61 @@ button.my-profile-stat:hover .my-profile-stat-num {
   box-shadow: 0 0 12px rgba(255, 77, 106, 0.15);
 }
 
+/* ── PRODUCT CARD ACTIONS (edit / delete) ─────────── */
+
+.product-card-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+  z-index: 10;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.product-card:hover .product-card-actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.product-card-action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.product-card-action-btn:hover {
+  transform: scale(1.1);
+}
+
+.product-card-action-btn--edit {
+  background: rgba(124, 95, 255, 0.85);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(124, 95, 255, 0.4);
+}
+.product-card-action-btn--edit:hover {
+  box-shadow: 0 4px 14px rgba(124, 95, 255, 0.6);
+}
+
+.product-card-action-btn--delete {
+  background: rgba(255, 77, 106, 0.85);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(255, 77, 106, 0.4);
+}
+.product-card-action-btn--delete:hover {
+  box-shadow: 0 4px 14px rgba(255, 77, 106, 0.6);
+}
+
 /* ── RESPONSIVE ───────────────────────────────────── */
 
 @media (max-width: 480px) {

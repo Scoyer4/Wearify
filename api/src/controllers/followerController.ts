@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { followerRepository } from '../repositories/followerRepository';
+import { notificationRepository } from '../repositories/notificationRepository';
 
 export const followerController = {
   follow: async (req: Request, res: Response) => {
@@ -21,6 +22,10 @@ export const followerController = {
 
       const status = target.is_private ? 'pending' : 'accepted';
       await followerRepository.insert(me, userId, status);
+
+      const notifType = status === 'accepted' ? 'follow' : 'follow_request';
+      notificationRepository.insert(userId, notifType, me).catch(console.error);
+
       return res.status(201).json({ status });
     } catch (error: any) {
       console.error('Error en follow:', error);
@@ -46,6 +51,9 @@ export const followerController = {
       const { userId } = req.params;
       const affected = await followerRepository.acceptPending(userId, me);
       if (affected === 0) return res.status(404).json({ error: 'Solicitud no encontrada' });
+
+      notificationRepository.insert(userId, 'follow_accepted', me).catch(console.error);
+
       return res.json({ ok: true });
     } catch (error: any) {
       console.error('Error en acceptRequest:', error);

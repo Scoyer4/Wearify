@@ -1,0 +1,120 @@
+.edit-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.edit-modal {
+  background: var(--ink-800);
+  border: 1px solid rgba(124, 95, 255, 0.2);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7), 0 0 40px rgba(124, 95, 255, 0.08);
+  animation: slideUp 0.2s ease;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(124, 95, 255, 0.2) transparent;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(16px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.edit-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1.5rem 0;
+}
+
+.edit-modal__title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.edit-modal__close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+.edit-modal__close:hover {
+  color: var(--text-primary);
+  background: var(--bg-card-hover);
+}
+
+.edit-modal__form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.span-2 { grid-column: span 2; }
+
+.edit-modal__error {
+  color: var(--danger);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.edit-modal__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.edit-modal__btn-cancel {
+  padding: 10px 22px;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  border: 1.5px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+.edit-modal__btn-cancel:hover {
+  border-color: var(--text-muted);
+  color: var(--text-primary);
+}
+
+.edit-modal__btn-save {
+  padding: 10px 26px;
+}
+.edit-modal__btn-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .edit-modal__form {
+    grid-template-columns: 1fr;
+  }
+  .span-2 { grid-column: span 1; }
+}

@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Session } from '@supabase/supabase-js';
-import { getProductsBySeller, getMyFavorites, getUserById } from '../services/api';
+import { getProductsBySeller, getMyFavorites, getUserById, deleteProduct } from '../services/api';
 import { getFollowCounts } from '../services/followerService';
 import { Producto, Favorito, FollowCountsResponse } from '../types';
 import PrivacyToggle from '../components/PrivacyToggle/PrivacyToggle';
+import EditProductModal from '../components/EditProductModal';
 import '../styles/profiles.css';
 
 type Tab = 'prendas' | 'favoritos' | 'ajustes';
@@ -17,6 +18,7 @@ export default function Profile({ session }: { session: Session }) {
   const [counts, setCounts] = useState<FollowCountsResponse>({ followers: 0, following: 0 });
   const [activeTab, setActiveTab] = useState<Tab>('prendas');
   const [loading, setLoading] = useState(true);
+  const [editingProduct, setEditingProduct] = useState<Producto | null>(null);
   const navigate = useNavigate();
 
   const username = session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'Usuario';
@@ -49,7 +51,15 @@ export default function Profile({ session }: { session: Session }) {
     navigate('/');
   };
 
-  const renderProductCard = (producto: Producto) => (
+  const handleDeleteProduct = async (producto: Producto, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm(`¿Eliminar "${producto.title}"? Esta acción no se puede deshacer.`)) return;
+    const ok = await deleteProduct(producto.id, session.access_token);
+    if (ok) setMisProductos(prev => prev.filter(p => p.id !== producto.id));
+    else alert('No se pudo eliminar el producto.');
+  };
+
+  const renderProductCard = (producto: Producto, isOwn = false) => (
     <div
       key={producto.id}
       className="product-card clickable-card"
@@ -60,6 +70,24 @@ export default function Profile({ session }: { session: Session }) {
           ? <img src={producto.image_url} alt={producto.title} className="product-image" />
           : <span className="no-image-text">Sin foto</span>
         }
+        {isOwn && (
+          <div className="product-card-actions" onClick={e => e.stopPropagation()}>
+            <button
+              className="product-card-action-btn product-card-action-btn--edit"
+              title="Editar"
+              onClick={e => { e.stopPropagation(); setEditingProduct(producto); }}
+            >
+              ✏️
+            </button>
+            <button
+              className="product-card-action-btn product-card-action-btn--delete"
+              title="Eliminar"
+              onClick={e => handleDeleteProduct(producto, e)}
+            >
+              🗑
+            </button>
+          </div>
+        )}
       </div>
       <div className="product-info">
         <h3 className="product-title">{producto.title}</h3>
@@ -133,7 +161,7 @@ export default function Profile({ session }: { session: Session }) {
         {activeTab === 'prendas' && (
           misProductos.length > 0 ? (
             <div className="product-grid">
-              {misProductos.map(renderProductCard)}
+              {misProductos.map(p => renderProductCard(p, true))}
             </div>
           ) : (
             <div className="empty-dashboard-box">
@@ -188,6 +216,18 @@ export default function Profile({ session }: { session: Session }) {
         )}
 
       </div>
+
+      {editingProduct && (
+        <EditProductModal
+          producto={editingProduct}
+          token={session.access_token}
+          onClose={() => setEditingProduct(null)}
+          onSaved={(updated) => {
+            setMisProductos(prev => prev.map(p => p.id === updated.id ? { ...p, ...updated } : p));
+            setEditingProduct(null);
+          }}
+        />
+      )}
     </section>
   );
 }

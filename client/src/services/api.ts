@@ -274,7 +274,41 @@ export const removeFavorite = async (productId: string, token: string) => {
   }
 };
 
-// 14. OBTENER MIS FAVORITOS (GET)
+// 14. ACTUALIZAR PRODUCTO (PATCH)
+export const updateProduct = async (id: string, updates: Partial<NuevoProducto>, token: string): Promise<Producto | null> => {
+  try {
+    const response = await fetch(`${API_URL}/products/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(updates),
+    });
+    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+    return await response.json() as Producto;
+  } catch (error) {
+    console.error('Error al actualizar el producto:', error);
+    return null;
+  }
+};
+
+// 15. ELIMINAR PRODUCTO (DELETE)
+export const deleteProduct = async (id: string, token: string): Promise<boolean> => {
+  try {
+    const response = await fetch(`${API_URL}/products/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+    return true;
+  } catch (error) {
+    console.error('Error al eliminar el producto:', error);
+    return false;
+  }
+};
+
+// 16. OBTENER MIS FAVORITOS (GET)
 export const getMyFavorites = async (token: string): Promise<Favorito[] | null> => {
   try {
     const response = await fetch(`${API_URL}/favorites/me`, {

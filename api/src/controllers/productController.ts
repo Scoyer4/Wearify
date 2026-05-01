@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { productRepository } from "../repositories/productRepository";
+import { notificationRepository } from "../repositories/notificationRepository";
 
 export const productController = {
   getAll: async (_req: Request, res: Response) => {
@@ -51,6 +52,8 @@ export const productController = {
         ...req.body,
         seller_id: userId
       });
+
+      notificationRepository.insertForAllFollowers(userId, newProduct.id).catch(console.error);
 
       return res.status(201).json({
         message: "Product created successfully",

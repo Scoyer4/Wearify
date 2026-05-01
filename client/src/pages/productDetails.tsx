@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-// 1. Añadimos la importación de Session
-import { Session } from '@supabase/supabase-js'; 
-import { getProductById, getUserById } from '../services/api';
+import { Session } from '@supabase/supabase-js';
+import { getProductById, getUserById, deleteProduct } from '../services/api';
 import { Producto } from '../types';
 import { useCart } from '../context/cartContext';
 import ContactSellerButton from '../components/ContactSellerButton/ContactSellerButton';
+import EditProductModal from '../components/EditProductModal';
 
 // 2. Le decimos al componente que ahora recibe la sesión
 export default function ProductDetail({ session }: { session: Session | null }) { 
@@ -16,6 +16,10 @@ export default function ProductDetail({ session }: { session: Session | null }) 
   const [producto, setProducto] = useState<Producto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const isOwner = !!(session && producto && session.user.id === producto.seller_id);
 
   useEffect(() => {
     const cargarDetalle = async () => {
@@ -60,6 +64,15 @@ export default function ProductDetail({ session }: { session: Session | null }) 
     // Si hay sesión, dejamos que funcione normal
     añadirAlCarrito(prod);
     alert("¡Añadido al carrito!");
+  };
+
+  const handleDelete = async () => {
+    if (!session || !producto) return;
+    if (!window.confirm(`¿Eliminar "${producto.title}"? Esta acción no se puede deshacer.`)) return;
+    setDeleting(true);
+    const ok = await deleteProduct(producto.id, session.access_token);
+    if (ok) navigate('/perfil');
+    else { setDeleting(false); alert('No se pudo eliminar el producto.'); }
   };
 
   const handleComprarYa = () => {
@@ -138,23 +151,53 @@ export default function ProductDetail({ session }: { session: Session | null }) 
             {producto.condition && <span className="detail-tag">Estado: {producto.condition}</span>}
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem' }}>
-            <button 
-              className="btn-primary full-width-btn" 
-              onClick={() => handleAñadirAlCarrito(producto)}
-            >
-              Añadir al carrito
-            </button>
-            
-            <button 
-              className="btn-pay full-width-btn"
-              onClick={handleComprarYa}
-            >
-              Comprar ya
-            </button>
-          </div>
+          {isOwner ? (
+            <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem' }}>
+              <button
+                className="btn-primary full-width-btn"
+                onClick={() => setShowEditModal(true)}
+              >
+                ✏️ Editar prenda
+              </button>
+              <button
+                className="btn-pay full-width-btn"
+                onClick={handleDelete}
+                disabled={deleting}
+                style={{ background: 'var(--danger)', borderColor: 'var(--danger)' }}
+              >
+                {deleting ? 'Eliminando...' : '🗑 Eliminar'}
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem' }}>
+              <button
+                className="btn-primary full-width-btn"
+                onClick={() => handleAñadirAlCarrito(producto)}
+              >
+                Añadir al carrito
+              </button>
+              <button
+                className="btn-pay full-width-btn"
+                onClick={handleComprarYa}
+              >
+                Comprar ya
+              </button>
+            </div>
+          )}
         </div>
       </div>
+
+      {showEditModal && session && (
+        <EditProductModal
+          producto={producto}
+          token={session.access_token}
+          onClose={() => setShowEditModal(false)}
+          onSaved={(updated) => {
+            setProducto(prev => prev ? { ...prev, ...updated } : prev);
+            setShowEditModal(false);
+          }}
+        />
+      )}
     </section>
   );
 }
