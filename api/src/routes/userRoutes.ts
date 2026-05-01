@@ -9,6 +9,7 @@ router.post("/", userController.create);
 
 router.get("/me", verifyAuth, userController.getMe);
 router.put("/me", verifyAuth, userController.updateMe);
+router.patch("/me/privacy", verifyAuth, userController.updatePrivacy);
 
 router.get("/public/:id", userController.getPublicProfile);
 router.get("/email/:username", userController.getEmailByUsername);
@@ -16,6 +17,11 @@ router.get("/is-following/:followerId/:followingId", userController.checkIsFollo
 
 router.post("/follow", verifyAuth, userController.followUser);
 router.post("/unfollow", verifyAuth, userController.unfollowUser);
+
+// Rutas de followers/following (requieren auth por la privacy gate)
+router.get("/:userId/followers", verifyAuth, userController.getFollowers);
+router.get("/:userId/following", verifyAuth, userController.getFollowing);
+router.get("/:userId/follow-counts", userController.getFollowCounts);
 
 // Ruta dinámica AL FINAL (captura cualquier /:id)
 router.get("/:id", userController.getById);

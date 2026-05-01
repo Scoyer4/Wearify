@@ -50,7 +50,7 @@ export const userRepository = {
   getPublicProfile: async (userId: string) => {
     const { data, error } = await supabase
       .from('users')
-      .select('id, username, avatar_url, bio, created_at')
+      .select('id, username, full_name, avatar_url, bio, is_private, created_at')
       .eq('id', userId)
       .single();
 

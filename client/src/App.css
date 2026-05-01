@@ -52,8 +52,6 @@ body {
 }
 
 .main-content {
-  padding: 0 2.5rem 2rem;
-  max-width: 1280px;
   margin: 0 auto;
   width: 100%;
 }
@@ -235,7 +233,8 @@ body {
   display: grid;
   gap: 1.2rem;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  margin-top: 0.5rem;
+  margin: 0.5rem 2rem 0;
+  padding-bottom: 2rem;
   animation: fadeInUp 0.4s ease;
 }
 
@@ -367,13 +366,14 @@ body {
    ========================================= */
 .product-detail-section {
   animation: fadeInUp 0.35s ease;
+  margin: 1rem 2.5rem 0;
 }
 
 .back-btn {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
-  margin-bottom: 1.5rem;
+  margin: 1rem 0;
   padding: 10px 16px;
   cursor: pointer;
   border-radius: var(--radius-md) !important;
@@ -520,7 +520,7 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 4rem 0;
+  padding-top: 4rem;
 }
 .empty-state-text {
   color: var(--text-secondary);
@@ -565,9 +565,20 @@ body {
    CARRITO
    ========================================= */
 .cart-section {
+  display: grid;
+  place-content: center;
   animation: fadeInUp 0.35s ease;
-  margin-top: 40px;
+  height: 500px;
+  margin: 40px 50px 0;
 }
+
+.cart-section .section-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 3rem;
+}
+
 .cart-layout {
   display: grid;
   grid-template-columns: 1fr 340px;
@@ -814,6 +825,48 @@ body {
   box-shadow: 0 6px 20px var(--accent-glow);
 }
 
+.btn-secondary {
+  background: transparent;
+  color: var(--text-primary);
+  padding: 10px 20px;
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 600;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+.btn-secondary:hover {
+  border-color: rgba(255,255,255,0.25);
+  background: var(--bg-card-hover);
+}
+
+.follow-count-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  gap: 2px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.follow-count-btn strong {
+  font-size: 1rem;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+.follow-count-btn:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+}
+
 .btn-danger {
   background: linear-gradient(135deg, var(--danger) 0%, #E63E58 100%);
   color: white;
@@ -1019,7 +1072,7 @@ body {
   gap: 8px;
   flex-wrap: nowrap;
   overflow-x: auto;
-  margin: 1.5rem 0 0;
+  margin: 1.5rem 2rem 0;
   padding-bottom: 4px;
   scrollbar-width: none;
 }
@@ -1054,7 +1107,7 @@ body {
    SECTION BLOCK (recién añadido, etc.)
    ========================================= */
 .section-block {
-  margin: 2rem 0;
+  margin: 2rem 2.5rem;
 }
 .section-block-title {
   font-family: var(--font-heading);
@@ -1092,7 +1145,7 @@ body {
   align-items: center;
   flex-wrap: wrap;
   gap: 1rem;
-  margin: 2rem 0 1rem;
+  margin: 2rem 2.5rem 1rem;
 }
 .catalog-title {
   font-family: var(--font-heading);

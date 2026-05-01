@@ -5,6 +5,7 @@ export interface User {
   full_name: string | null;
   avatar_url: string | null;
   bio: string | null;
+  is_private: boolean;
   created_at?: string | null;
   updated_at?: string | null;
 }
@@ -24,4 +25,5 @@ export type UserUpdate = {
   full_name?: string | null;
   avatar_url?: string | null;
   bio?: string | null;
+  is_private?: boolean;
 };

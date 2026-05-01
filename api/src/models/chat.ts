@@ -1,0 +1,74 @@
+export interface ConversationRow {
+  id: string;
+  product_id: string;
+  buyer_id: string;
+  seller_id: string;
+  created_at: string;
+  last_message_at: string;
+}
+
+export interface MessageRow {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  content: string;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface ConversationProduct {
+  title: string;
+  price: number;
+  image_url: string | null;
+}
+
+export interface ConversationParticipant {
+  id: string;
+  username: string | null;
+  avatar_url: string | null;
+}
+
+export interface ConversationLastMessage {
+  content: string;
+  created_at: string;
+}
+
+export interface ConversationWithDetails extends ConversationRow {
+  product: ConversationProduct;
+  otherUser: ConversationParticipant;
+  lastMessage: ConversationLastMessage | null;
+  unreadCount: number;
+}
+
+export interface MessageSender {
+  id: string;
+  username: string | null;
+  avatar_url: string | null;
+}
+
+export interface MessageWithSender extends MessageRow {
+  sender: MessageSender;
+}
+
+export interface StartConversationResponse {
+  conversationId: string;
+  isNew: boolean;
+}
+
+export interface PaginatedConversations {
+  items: ConversationWithDetails[];
+  page: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface PaginatedMessages {
+  items: MessageWithSender[];
+  page: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface UnreadCountResponse {
+  unreadCount: number;
+}

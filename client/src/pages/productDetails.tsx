@@ -5,6 +5,7 @@ import { Session } from '@supabase/supabase-js';
 import { getProductById, getUserById } from '../services/api';
 import { Producto } from '../types';
 import { useCart } from '../context/cartContext';
+import ContactSellerButton from '../components/ContactSellerButton/ContactSellerButton';
 
 // 2. Le decimos al componente que ahora recibe la sesión
 export default function ProductDetail({ session }: { session: Session | null }) { 
@@ -116,6 +117,16 @@ export default function ProductDetail({ session }: { session: Session | null }) 
             </div>
           </div>
           
+          {producto.seller_id && (
+            <ContactSellerButton
+              productId={producto.id}
+              sellerId={producto.seller_id}
+              productTitle={producto.title}
+              productImage={producto.image_url ?? null}
+              session={session}
+            />
+          )}
+
           <div className="detail-desc-box">
             <h3 className="detail-desc-title">Descripción</h3>
             <p className="detail-desc-text">{producto.description || 'El vendedor no ha añadido una descripción.'}</p>

@@ -10,6 +10,10 @@ import ProductDetail from './pages/productDetails';
 import Profile from './pages/profiles';
 import Cart from './pages/cart';
 import Login from './pages/login';
+import RequestsPage from './pages/RequestsPage';
+import FollowListPage from './pages/FollowListPage';
+import ChatsPage from './pages/ChatsPage';
+import ChatWindowPage from './pages/ChatWindowPage';
 
 // Componentes globales
 import Navbar from './components/navbar';
@@ -36,6 +40,11 @@ function App() {
             <Route path="/producto/:id" element={<ProductDetail session={session} />} />
             
             <Route path="/usuario/:id" element={<UserProfile session={session} />} />
+            <Route path="/usuario/:id/seguidores" element={<FollowListPage session={session} mode="followers" />} />
+            <Route path="/usuario/:id/siguiendo" element={<FollowListPage session={session} mode="following" />} />
+            <Route path="/solicitudes" element={<RequestsPage session={session} />} />
+            <Route path="/chats" element={<ChatsPage session={session} />} />
+            <Route path="/chats/:conversationId" element={<ChatWindowPage session={session} />} />
             
             <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
 

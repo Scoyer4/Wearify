@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { userRepository } from '../repositories/userRepository';
+import { followerRepository } from '../repositories/followerRepository';
 
 export const userController = {
   // 1. Registro de perfil 
@@ -141,11 +142,97 @@ export const userController = {
   checkIsFollowing: async (req: Request, res: Response) => {
     try {
       const { followerId, followingId } = req.params;
-      
+
       const isFollowing = await userRepository.isFollowing(followerId, followingId);
       return res.status(200).json({ isFollowing });
     } catch (error: any) {
       return res.status(400).json({ error: 'Error al comprobar estado de seguimiento' });
     }
-  }
+  },
+
+  getFollowers: async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const me = req.user!.id;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+
+      const target = await followerRepository.findTarget(userId);
+      if (!target) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+      if (target.is_private && me !== userId) {
+        const relation = await followerRepository.findRelation(me, userId);
+        if (!relation || relation.status !== 'accepted') {
+          return res.status(403).json({ error: 'Perfil privado' });
+        }
+      }
+
+      const { items, total } = await followerRepository.getFollowers(userId, page, limit);
+      const totalPages = Math.ceil(total / limit);
+      return res.json({ items, page, total, totalPages });
+    } catch (error: any) {
+      console.error('Error en getFollowers:', error);
+      return res.status(500).json({ error: 'Error al obtener seguidores' });
+    }
+  },
+
+  getFollowing: async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const me = req.user!.id;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+
+      const target = await followerRepository.findTarget(userId);
+      if (!target) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+      if (target.is_private && me !== userId) {
+        const relation = await followerRepository.findRelation(me, userId);
+        if (!relation || relation.status !== 'accepted') {
+          return res.status(403).json({ error: 'Perfil privado' });
+        }
+      }
+
+      const { items, total } = await followerRepository.getFollowing(userId, page, limit);
+      const totalPages = Math.ceil(total / limit);
+      return res.json({ items, page, total, totalPages });
+    } catch (error: any) {
+      console.error('Error en getFollowing:', error);
+      return res.status(500).json({ error: 'Error al obtener seguidos' });
+    }
+  },
+
+  getFollowCounts: async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const counts = await followerRepository.getFollowCounts(userId);
+      return res.json(counts);
+    } catch (error: any) {
+      console.error('Error en getFollowCounts:', error);
+      return res.status(500).json({ error: 'Error al obtener contadores' });
+    }
+  },
+
+  updatePrivacy: async (req: Request, res: Response) => {
+    try {
+      const me = req.user!.id;
+      const { isPrivate } = req.body;
+
+      if (typeof isPrivate !== 'boolean') {
+        return res.status(400).json({ error: 'isPrivate debe ser un booleano' });
+      }
+
+      await userRepository.update(me, { is_private: isPrivate });
+
+      let promotedCount = 0;
+      if (!isPrivate) {
+        promotedCount = await followerRepository.promoteAllPending(me);
+      }
+
+      return res.json({ isPrivate, promotedCount });
+    } catch (error: any) {
+      console.error('Error en updatePrivacy:', error);
+      return res.status(500).json({ error: 'Error al actualizar privacidad' });
+    }
+  },
 };

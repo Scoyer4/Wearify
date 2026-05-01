@@ -1,0 +1,91 @@
+.privacy-toggle {
+  padding: 1.25rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.privacy-toggle-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.privacy-toggle-text {
+  flex: 1;
+}
+
+.privacy-toggle-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.privacy-toggle-hint {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Switch */
+.privacy-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+  cursor: pointer;
+  margin-top: 2px;
+}
+.privacy-switch--loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.privacy-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.privacy-switch-track {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-pill);
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--border-subtle);
+  transition: background var(--transition-base), border-color var(--transition-base);
+}
+.privacy-switch-track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: transform var(--transition-base), background var(--transition-base);
+}
+
+.privacy-switch input:checked + .privacy-switch-track {
+  background: var(--brand);
+  border-color: var(--brand);
+}
+.privacy-switch input:checked + .privacy-switch-track::after {
+  transform: translateX(20px);
+  background: #fff;
+}
+
+.privacy-toggle-message {
+  margin-top: 10px;
+  font-size: 0.82rem;
+  color: var(--success);
+  padding: 8px 12px;
+  background: rgba(0, 212, 170, 0.08);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(0, 212, 170, 0.2);
+}

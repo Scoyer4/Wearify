@@ -13,6 +13,8 @@ import productRoutes from "./routes/productRoutes";
 import userRoutes from "./routes/userRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
 import favoriteRoutes from "./routes/favoriteRoutes";
+import followerRoutes from "./routes/followerRoutes";
+import chatRoutes from "./routes/chatRoutes";
 
 const app = express();
 
@@ -37,6 +39,8 @@ app.use("/api/products", productRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/favorites", favoriteRoutes);
+app.use("/api/followers", followerRoutes);
+app.use("/api/chats",     chatRoutes);
 
 // Error handler DESPUÉS de las rutas
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {

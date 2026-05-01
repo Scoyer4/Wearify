@@ -1,0 +1,217 @@
+.chat-inbox {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ── Item ────────────────────────────────────────── */
+
+.chat-inbox-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  border: 1px solid transparent;
+}
+
+.chat-inbox-item:hover {
+  background: var(--bg-card-hover);
+}
+
+.chat-inbox-item--unread {
+  background: var(--bg-card);
+  border-color: var(--border-subtle);
+}
+
+.chat-inbox-item--unread:hover {
+  border-color: rgba(124, 95, 255, 0.2);
+}
+
+/* ── Skeleton ────────────────────────────────────── */
+
+.chat-inbox-item--skeleton {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* ── Avatar ──────────────────────────────────────── */
+
+.chat-inbox-avatar {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--border-subtle);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+}
+
+.chat-inbox-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chat-inbox-avatar.skeleton {
+  background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-elevated) 50%, var(--bg-card) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border: none;
+}
+
+/* ── Badge no leídos ─────────────────────────────── */
+
+.chat-inbox-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  min-width: 18px;
+  height: 18px;
+  border-radius: var(--radius-pill);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  box-shadow: 0 0 8px var(--brand-glow);
+}
+
+/* ── Cuerpo central ──────────────────────────────── */
+
+.chat-inbox-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.chat-inbox-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-display);
+}
+
+.chat-inbox-product {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-inbox-product-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--border-subtle);
+}
+
+.chat-inbox-preview {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-inbox-item--unread .chat-inbox-preview {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* ── Meta (timestamp) ────────────────────────────── */
+
+.chat-inbox-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.chat-inbox-time {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.chat-inbox-item--unread .chat-inbox-time {
+  color: var(--brand);
+}
+
+/* ── Empty state ─────────────────────────────────── */
+
+.chat-inbox-empty {
+  text-align: center;
+  padding: 4rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.chat-inbox-empty p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.chat-inbox-empty span {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* ── Cargar más ──────────────────────────────────── */
+
+.chat-inbox-more {
+  margin-top: 6px;
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.chat-inbox-more:hover:not(:disabled) {
+  background: var(--bg-card-hover);
+  border-color: rgba(124, 95, 255, 0.2);
+}
+
+.chat-inbox-more:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
