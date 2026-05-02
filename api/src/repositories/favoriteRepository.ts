@@ -2,7 +2,13 @@ import supabase from '../config/db';
 import { Favorite } from '../models/favorites';
 import { Product } from '../models/product';
 
+type ProductRow = Omit<Product, 'image_url'> & { productImages?: { image_url: string }[] };
 type FavoriteWithProduct = Favorite & { products: Product | null };
+
+function flattenProduct(row: ProductRow): Product {
+  const { productImages, ...rest } = row;
+  return { ...rest, image_url: productImages?.[0]?.image_url ?? null };
+}
 
 export const favoriteRepository = {
   add: async (userId: string, productId: string): Promise<Favorite> => {
@@ -30,10 +36,14 @@ export const favoriteRepository = {
   getByUser: async (userId: string): Promise<FavoriteWithProduct[]> => {
     const { data, error } = await supabase
       .from('favorites')
-      .select('*, products(*)') 
+      .select('*, products(*, productImages(image_url))')
       .eq('user_id', userId);
 
     if (error) throw new Error(error.message);
-    return (data ?? []) as FavoriteWithProduct[];
+
+    return (data ?? []).map((fav: any) => ({
+      ...fav,
+      products: fav.products ? flattenProduct(fav.products as ProductRow) : null,
+    })) as FavoriteWithProduct[];
   }
 };

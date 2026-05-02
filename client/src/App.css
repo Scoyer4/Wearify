@@ -54,6 +54,7 @@ body {
 .main-content {
   margin: 0 auto;
   width: 100%;
+  padding-bottom: 5rem;
 }
 
 /* =========================================
@@ -287,9 +288,9 @@ body {
   position: absolute;
   top: 10px;
   right: 10px;
-  width: 36px;
   height: 36px;
-  border-radius: 50%;
+  min-width: 36px;
+  border-radius: 18px;
   border: none;
   background: rgba(10, 10, 26, 0.6);
   backdrop-filter: blur(8px);
@@ -298,16 +299,86 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 5px;
+  padding: 0 10px;
   z-index: 2;
-  transition: transform var(--transition-fast), background var(--transition-fast);
+  transition: min-width 0.2s ease, padding 0.2s ease, transform var(--transition-fast), background var(--transition-fast);
+  white-space: nowrap;
+  overflow: hidden;
 }
 .favorite-btn:hover {
-  transform: scale(1.15);
-  background: rgba(10, 10, 26, 0.8);
+  transform: scale(1.08);
+  background: rgba(10, 10, 26, 0.85);
 }
 .favorite-btn.liked {
   background: rgba(255, 77, 106, 0.2);
   backdrop-filter: blur(8px);
+}
+.favorite-btn--own {
+  cursor: default;
+  pointer-events: none;
+}
+.fav-heart {
+  line-height: 1;
+  flex-shrink: 0;
+}
+/* ── Own Product Toast ── */
+.own-product-toast {
+  position: fixed;
+  top: 120px;
+  right: 15px;
+  z-index: 9999;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  width: 300px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  animation: toastSlideIn 0.25s ease;
+}
+
+@keyframes toastSlideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.own-product-toast__body {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+}
+
+.own-product-toast__icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.own-product-toast__text {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.own-product-toast__bar {
+  height: 3px;
+  background: var(--brand);
+  animation: toastBar 5s linear forwards;
+  transform-origin: left;
+}
+
+@keyframes toastBar {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
+.fav-count {
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: #fff;
+  line-height: 1;
 }
 
 /* ── Product Info ── */
@@ -407,6 +478,41 @@ body {
   object-fit: cover;
   box-shadow: var(--shadow-md);
 }
+.detail-thumbnails {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.detail-thumb {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 2px solid transparent;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color var(--transition-fast);
+  background: none;
+}
+
+.detail-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.detail-thumb:hover {
+  border-color: rgba(124, 95, 255, 0.5);
+}
+
+.detail-thumb--active {
+  border-color: var(--brand);
+}
+
 .detail-placeholder {
   width: 100%;
   height: 350px;
@@ -727,8 +833,9 @@ body {
    ========================================= */
 .profile-section {
   background: var(--bg-card);
-  margin-top: 30px;
-  padding: 2.5rem;
+  max-width: 1060px;
+  margin: 2.5rem auto 6rem;
+  padding: 2.5rem 3.5rem 6rem;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-subtle);
   animation: fadeInUp 0.35s ease;
@@ -1162,7 +1269,7 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
   .detail-container { padding: 1.2rem; gap: 1.5rem; }
   .detail-title { font-size: 1.6rem; }
   .detail-price { font-size: 1.5rem; }
-  .profile-section { padding: 1.5rem; }
+  .profile-section { padding: 1.5rem; margin: 1rem; border-radius: var(--radius-md); }
   .product-card { margin: 20px;}
   .product-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.1rem; }
   .product-image-wrapper { height: 180px; }

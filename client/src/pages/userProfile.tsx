@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
 import { getPublicProfile, getProductsBySeller } from '../services/api';
+import { getUserReviews, ReviewWithReviewer } from '../services/reviewService';
 import { useFollow } from '../hooks/useFollow';
 import { Producto, PerfilPublico } from '../types';
 
@@ -11,6 +12,7 @@ export default function UserProfile({ session }: { session: Session | null }) {
 
   const [perfil, setPerfil] = useState<PerfilPublico | null>(null);
   const [productos, setProductos] = useState<Producto[]>([]);
+  const [reviews, setReviews] = useState<ReviewWithReviewer[]>([]);
   const [loading, setLoading] = useState(true);
   const [hovered, setHovered] = useState(false);
 
@@ -28,6 +30,9 @@ export default function UserProfile({ session }: { session: Session | null }) {
 
         const dataProductos = await getProductsBySeller(id);
         if (dataProductos) setProductos(dataProductos);
+
+        const dataReviews = await getUserReviews(id);
+        setReviews(dataReviews);
       } catch (error) {
         console.error('Error cargando perfil:', error);
       } finally {
@@ -166,6 +171,49 @@ export default function UserProfile({ session }: { session: Session | null }) {
                 <p>Este usuario no tiene prendas a la venta actualmente.</p>
               </div>
             )}
+
+            {/* ── Reseñas ── */}
+            <div className="reviews-section">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
+                <h3 className="dashboard-title" style={{ margin: 0 }}>Reseñas</h3>
+                {reviews.length > 0 && (
+                  <span className="reviews-avg">
+                    ★ {(reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)}
+                    <span className="reviews-count">({reviews.length})</span>
+                  </span>
+                )}
+              </div>
+              {reviews.length === 0 ? (
+                <p className="reviews-empty">Este usuario aún no tiene reseñas.</p>
+              ) : (
+                <div className="reviews-list">
+                  {reviews.map(r => (
+                    <div key={r.id} className="review-card">
+                      <div className="review-card-header">
+                        <div className="review-card-avatar">
+                          {r.reviewer.avatar_url
+                            ? <img src={r.reviewer.avatar_url} alt={r.reviewer.username ?? ''} />
+                            : <span>{(r.reviewer.username ?? '?')[0].toUpperCase()}</span>
+                          }
+                        </div>
+                        <div className="review-card-meta">
+                          <span className="review-card-user">@{r.reviewer.username ?? 'Usuario'}</span>
+                          <span className="review-card-date">
+                            {new Date(r.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </span>
+                        </div>
+                        <div className="review-card-stars">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <span key={i} className={i < r.rating ? 'rev-star rev-star--filled' : 'rev-star'}>★</span>
+                          ))}
+                        </div>
+                      </div>
+                      {r.comment && <p className="review-card-comment">{r.comment}</p>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </>
         )}
       </div>

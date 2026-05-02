@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getProducts, addFavorite, removeFavorite, getMyFavorites, getCategories } from '../services/api';
 import { CreateProductForm } from '../components/CreateProductForm';
@@ -48,6 +48,8 @@ export default function Home({ session }: { session: Session | null }) {
   const [filtroTalla, setFiltroTalla] = useState('');
   const [filtroCondicion, setFiltroCondicion] = useState('');
   const [filtroOrden, setFiltroOrden] = useState('');
+  const [ownToast, setOwnToast] = useState(false);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const categoriaActiva = searchParams.get('categoria');
@@ -92,6 +94,16 @@ export default function Home({ session }: { session: Session | null }) {
     if (categoriaActiva) navigate('/');
   };
 
+  const showOwnProductToast = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setOwnToast(false);
+    requestAnimationFrame(() => {
+      setOwnToast(true);
+      toastTimerRef.current = setTimeout(() => setOwnToast(false), 5000);
+    });
+  };
+
   const toggleFavorito = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (!session) {
@@ -101,14 +113,22 @@ export default function Home({ session }: { session: Session | null }) {
     }
     const token = session.access_token;
     const nuevoSet = new Set(favoritos);
-    if (nuevoSet.has(id)) {
-      nuevoSet.delete(id);
-      setFavoritos(nuevoSet);
-      await removeFavorite(id, token);
-    } else {
+    const adding = !nuevoSet.has(id);
+    if (adding) {
       nuevoSet.add(id);
-      setFavoritos(nuevoSet);
+    } else {
+      nuevoSet.delete(id);
+    }
+    setFavoritos(nuevoSet);
+    setProductos(prev => prev.map(p =>
+      p.id === id
+        ? { ...p, favorites_count: Math.max(0, (p.favorites_count ?? 0) + (adding ? 1 : -1)) }
+        : p
+    ));
+    if (adding) {
       await addFavorite(id, token);
+    } else {
+      await removeFavorite(id, token);
     }
   };
 
@@ -136,6 +156,9 @@ export default function Home({ session }: { session: Session | null }) {
 
   const renderCard = (producto: Producto) => {
     const vendido = producto.is_sold || producto.status === 'Vendido';
+    const isOwn = !!session && producto.seller_id === session.user.id;
+    const liked = favoritos.has(producto.id);
+    const count = producto.favorites_count ?? 0;
     return (
     <div
       key={producto.id}
@@ -144,12 +167,24 @@ export default function Home({ session }: { session: Session | null }) {
     >
       <div className="product-image-wrapper">
         <ProductImage src={producto.image_url} alt={producto.title} />
-        <button
-          className={`favorite-btn ${favoritos.has(producto.id) ? 'liked' : ''}`}
-          onClick={(e) => toggleFavorito(e, producto.id)}
-        >
-          {favoritos.has(producto.id) ? '❤️' : '🤍'}
-        </button>
+        {isOwn ? (
+          <button
+            className={`favorite-btn favorite-btn--own${count > 0 ? ' favorite-btn--has-count' : ''}`}
+            onClick={showOwnProductToast}
+            style={{ cursor: 'pointer', pointerEvents: 'all' }}
+          >
+            <span className="fav-heart">🤍</span>
+            {count > 0 && <span className="fav-count">{count}</span>}
+          </button>
+        ) : (
+          <button
+            className={`favorite-btn${liked ? ' liked' : ''}${count > 0 ? ' favorite-btn--has-count' : ''}`}
+            onClick={(e) => toggleFavorito(e, producto.id)}
+          >
+            <span className="fav-heart">{liked ? '❤️' : '🤍'}</span>
+            {count > 0 && <span className="fav-count">{count}</span>}
+          </button>
+        )}
         {!vendido && producto.condition === 'Sin usar' && (
           <span className="card-badge badge-new">Nuevo</span>
         )}
@@ -369,6 +404,16 @@ export default function Home({ session }: { session: Session | null }) {
           <button className="btn-primary mt-3" onClick={limpiarFiltros}>
             Limpiar filtros
           </button>
+        </div>
+      )}
+
+      {ownToast && (
+        <div className="own-product-toast" key={String(ownToast)}>
+          <div className="own-product-toast__body">
+            <span className="own-product-toast__icon">🤍</span>
+            <p className="own-product-toast__text">No puedes añadir tu propio producto a favoritos</p>
+          </div>
+          <div className="own-product-toast__bar" />
         </div>
       )}
 

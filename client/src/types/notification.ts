@@ -1,4 +1,4 @@
-export type NotificationType = 'follow' | 'follow_request' | 'follow_accepted' | 'new_product';
+export type NotificationType = 'follow' | 'follow_request' | 'follow_accepted' | 'new_product' | 'price_drop';
 
 export interface Notification {
   id: string;

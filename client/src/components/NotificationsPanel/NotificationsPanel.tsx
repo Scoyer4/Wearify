@@ -20,11 +20,12 @@ function notifText(n: Notification): string {
     case 'follow_request':  return `${who} quiere seguirte`;
     case 'follow_accepted': return `${who} aceptó tu solicitud`;
     case 'new_product':     return `${who} publicó: ${n.product?.title ?? 'un nuevo producto'}`;
+    case 'price_drop':      return `Bajada de precio en "${n.product?.title ?? 'un producto'}" que tienes en favoritos`;
   }
 }
 
 function notifLink(n: Notification): string {
-  if (n.type === 'new_product' && n.product_id) return `/producto/${n.product_id}`;
+  if ((n.type === 'new_product' || n.type === 'price_drop') && n.product_id) return `/producto/${n.product_id}`;
   if (n.from_user_id) return `/usuario/${n.from_user_id}`;
   return '/';
 }

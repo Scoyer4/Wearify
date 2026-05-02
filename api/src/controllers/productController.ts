@@ -79,7 +79,15 @@ export const productController = {
         return res.status(403).json({ error: "Unauthorized to update this product" }); 
       }
 
+      const newPrice = req.body.price;
+      const isPriceDrop = typeof newPrice === 'number' && newPrice < product.price;
+
       const updated = await productRepository.update(id, req.body);
+
+      if (isPriceDrop) {
+        notificationRepository.insertForProductFavorites(userId, id).catch(console.error);
+      }
+
       return res.json(updated);
     } catch (error: any) {
       console.error(error);

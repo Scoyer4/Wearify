@@ -12,6 +12,8 @@ export interface Producto {
   condition?: string;
   status?: string;
   is_sold?: boolean;
+  favorites_count?: number;
+  images?: string[];
 
   // Campos extra para la vista en React (no vienen de la API directamente):
   nombreVendedor?: string;
@@ -22,6 +24,7 @@ export type NuevoProducto = {
   description?: string | null;
   price: number;
   image_url?: string;
+  image_urls?: string[];
   size: string;
   category_id: number;
   brand: string;

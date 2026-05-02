@@ -15,6 +15,8 @@ export interface Product {
   condition: ClothingCondition;
   status: ProductStatus;
   image_url?: string | null;
+  images?: string[];
+  favorites_count?: number;
   created_at?: string | null;
   updated_at?: string | null;
 }
@@ -43,4 +45,6 @@ export type ProductUpdate = {
   size?: string;
   condition?: ClothingCondition;
   status?: ProductStatus;
+  image_url?: string | null;
+  image_urls?: string[];
 };

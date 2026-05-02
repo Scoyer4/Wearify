@@ -13,16 +13,18 @@ export default function ProductDetail({ session }: { session: Session | null }) 
   const navigate = useNavigate();
   const { añadirAlCarrito } = useCart();
 
-  const [producto, setProducto]     = useState<Producto | null>(null);
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState(false);
+  const [producto, setProducto]               = useState<Producto | null>(null);
+  const [sellerAvatarUrl, setSellerAvatarUrl]   = useState<string | null>(null);
+  const [activeImage, setActiveImage]           = useState<string | null>(null);
+  const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [deleting, setDeleting]     = useState(false);
 
   // Compra directa
   const [buyLoading, setBuyLoading]   = useState(false);
   const [buyError, setBuyError]       = useState<string | null>(null);
-  const [buyConfirm, setBuyConfirm]   = useState<{ orderId: string } | null>(null);
+  const [buyConfirm, setBuyConfirm]   = useState<{ orderId: string; conversationId: string | null } | null>(null);
 
   // Oferta directa
   const [showOfferModal, setShowOfferModal] = useState(false);
@@ -48,8 +50,10 @@ export default function ProductDetail({ session }: { session: Session | null }) 
         if (data.seller_id) {
           const userData = await getUserById(data.seller_id);
           if (userData?.username) nombreVendedor = userData.username;
+          if (userData?.avatar_url) setSellerAvatarUrl(userData.avatar_url);
         }
         setProducto({ ...data, nombreVendedor });
+        setActiveImage(data.image_url ?? null);
       } else {
         setError(true);
       }
@@ -88,7 +92,7 @@ export default function ProductDetail({ session }: { session: Session | null }) 
     try {
       const result = await createOrder(producto.id, session.access_token);
       setProducto(prev => prev ? { ...prev, is_sold: true } : prev);
-      setBuyConfirm({ orderId: result.orderId });
+      setBuyConfirm({ orderId: result.orderId, conversationId: result.conversationId });
     } catch (e) {
       setBuyError(e instanceof Error ? e.message : 'No se pudo completar la compra. Inténtalo de nuevo.');
     } finally {
@@ -164,9 +168,9 @@ export default function ProductDetail({ session }: { session: Session | null }) 
 
       <div className="detail-container">
         <div className="detail-image-wrapper" style={{ position: 'relative' }}>
-          {producto.image_url ? (
+          {activeImage ? (
             <img
-              src={producto.image_url}
+              src={activeImage}
               alt={producto.title}
               className="detail-image"
               style={isSold ? { filter: 'grayscale(40%)', opacity: 0.8 } : undefined}
@@ -183,17 +187,23 @@ export default function ProductDetail({ session }: { session: Session | null }) 
             }}>
               <span style={{
                 background: 'rgba(255,77,106,0.92)',
-                color: '#fff',
-                fontFamily: 'var(--font-mono)',
-                fontWeight: 700,
-                fontSize: '1.15rem',
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
-                padding: '10px 28px',
-                borderRadius: 'var(--radius-pill)',
-              }}>
-                Vendido
-              </span>
+                color: '#fff', fontFamily: 'var(--font-mono)', fontWeight: 700,
+                fontSize: '1.15rem', letterSpacing: '0.14em', textTransform: 'uppercase',
+                padding: '10px 28px', borderRadius: 'var(--radius-pill)',
+              }}>Vendido</span>
+            </div>
+          )}
+          {(producto.images?.length ?? 0) > 1 && (
+            <div className="detail-thumbnails">
+              {producto.images!.map((url, i) => (
+                <button
+                  key={i}
+                  className={`detail-thumb${activeImage === url ? ' detail-thumb--active' : ''}`}
+                  onClick={() => setActiveImage(url)}
+                >
+                  <img src={url} alt={`Foto ${i + 1}`} />
+                </button>
+              ))}
             </div>
           )}
         </div>
@@ -203,7 +213,12 @@ export default function ProductDetail({ session }: { session: Session | null }) 
           <p className="detail-price">{producto.price ? `${producto.price} €` : 'Consultar precio'}</p>
 
           <div className="seller-badge">
-            <div className="seller-avatar">👤</div>
+            <div className="seller-avatar">
+              {sellerAvatarUrl
+                ? <img src={sellerAvatarUrl} alt={producto.nombreVendedor} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                : <span style={{ fontSize: '1.1rem' }}>👤</span>
+              }
+            </div>
             <div>
               <p className="seller-label">Subido por</p>
               <Link to={`/usuario/${producto.seller_id}`} style={{ fontWeight: 'bold', fontSize: '1.1rem', color: 'var(--accent)', textDecoration: 'none' }}>
@@ -287,6 +302,7 @@ export default function ProductDetail({ session }: { session: Session | null }) 
           onClose={() => setShowEditModal(false)}
           onSaved={(updated) => {
             setProducto(prev => prev ? { ...prev, ...updated } : prev);
+            setActiveImage(updated.image_url ?? null);
             setShowEditModal(false);
           }}
         />
@@ -320,9 +336,20 @@ export default function ProductDetail({ session }: { session: Session | null }) 
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontFamily: 'var(--font-mono)', margin: '0 0 1.5rem', wordBreak: 'break-all' }}>
               Nº pedido: {buyConfirm.orderId}
             </p>
-            <button className="btn-primary" style={{ width: '100%' }} onClick={() => setBuyConfirm(null)}>
-              Aceptar
-            </button>
+            <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
+              {buyConfirm.conversationId && (
+                <button
+                  className="btn-primary"
+                  style={{ width: '100%' }}
+                  onClick={() => { setBuyConfirm(null); navigate(`/chats/${buyConfirm.conversationId}`); }}
+                >
+                  💬 Ver chat con el vendedor
+                </button>
+              )}
+              <button className="btn-primary" style={{ width: '100%', background: 'transparent', border: '1.5px solid var(--border-subtle)', color: 'var(--text-secondary)' }} onClick={() => setBuyConfirm(null)}>
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}

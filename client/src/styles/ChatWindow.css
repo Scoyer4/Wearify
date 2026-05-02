@@ -604,6 +604,108 @@
   100% { background-position: -200% 0; }
 }
 
+/* ── Panel de reseña ─────────────────────────────── */
+
+.chat-review-panel {
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  padding: 14px 16px;
+  flex-shrink: 0;
+}
+
+.chat-review-done {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chat-review-done-stars .star { font-size: 1.1rem; color: var(--text-muted); }
+.chat-review-done-stars .star--filled { color: #f59e0b; }
+
+.chat-review-done-text {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.chat-review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chat-review-title {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+}
+
+.chat-review-stars {
+  display: flex;
+  gap: 4px;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 0 2px;
+  line-height: 1;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.star-btn:hover,
+.star-btn--active { color: #f59e0b; }
+
+.star-btn:hover { transform: scale(1.15); }
+
+.chat-review-textarea {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  font-size: 0.88rem;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  resize: none;
+  line-height: 1.45;
+  transition: border-color var(--transition-fast);
+}
+
+.chat-review-textarea::placeholder { color: var(--text-muted); }
+
+.chat-review-textarea:focus {
+  outline: none;
+  border-color: var(--brand);
+}
+
+.chat-review-error {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--danger, #ff5050);
+}
+
+.chat-review-submit {
+  align-self: flex-end;
+  padding: 8px 22px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: var(--brand);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  box-shadow: 0 2px 10px rgba(124, 95, 255, 0.3);
+}
+
+.chat-review-submit:hover:not(:disabled) { opacity: 0.88; transform: scale(1.03); }
+.chat-review-submit:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
 /* ── Responsive ──────────────────────────────────── */
 
 @media (max-width: 600px) {

@@ -1,13 +1,20 @@
 import supabase from "../config/db";
 import { Product, ProductInsert, ProductUpdate } from "../models/product";
 
-type ProductRow = Omit<Product, 'image_url'> & {
+type ProductRow = Omit<Product, 'image_url' | 'favorites_count'> & {
   productImages?: { image_url: string }[];
+  favorites?: { product_id: string }[];
 };
 
 function flattenProduct(row: ProductRow): Product {
-  const { productImages, ...rest } = row;
-  return { ...rest, image_url: productImages?.[0]?.image_url ?? null };
+  const { productImages, favorites, ...rest } = row;
+  const images = (productImages ?? []).map(img => img.image_url);
+  return {
+    ...rest,
+    image_url: images[0] ?? null,
+    images,
+    favorites_count: favorites?.length ?? 0,
+  };
 }
 
 export const productRepository = {
@@ -19,7 +26,8 @@ export const productRepository = {
       // Le pedimos a Supabase que traiga todo de products y también la columna image_url de productImages
       .select(`
         *,
-        productImages ( image_url )
+        productImages ( image_url ),
+        favorites ( product_id )
       `)
       .order("created_at", { ascending: false });
 
@@ -32,7 +40,7 @@ export const productRepository = {
   getById: async (id: string): Promise<Product | null> => { 
     const { data, error } = await supabase
       .from("products")
-      .select(`*, productImages ( image_url )`)
+      .select(`*, productImages ( image_url ), favorites ( product_id )`)
       .eq("id", id)
       .maybeSingle();
 
@@ -42,15 +50,12 @@ export const productRepository = {
     return flattenProduct(data as ProductRow);
   },
 
-  // 3. ACTUALIZADO: Guardar el producto y la imagen por separado
-  create: async (product: ProductInsert & { image_url?: string | null }): Promise<Product> => {
-    // Separamos la URL de la imagen del resto de los datos del producto
-    const { image_url, ...productData } = product;
+  create: async (product: ProductInsert & { image_url?: string | null; image_urls?: string[] }): Promise<Product> => {
+    const { image_url, image_urls, ...productData } = product;
 
-    // A) Insertamos el producto en la tabla "products"
     const { data, error } = await supabase
       .from("products")
-      .insert(productData) 
+      .insert(productData)
       .select()
       .single();
 
@@ -59,38 +64,43 @@ export const productRepository = {
       throw new Error(error.message);
     }
 
-    const nuevoProducto = data as Omit<Product, 'image_url'>;
+    const nuevoProducto = data as Omit<Product, 'image_url' | 'images'>;
+    const urls = image_urls?.length ? image_urls : (image_url ? [image_url] : []);
 
-    // B) Si el usuario envió una imagen, la guardamos en la tabla "productImages"
-    if (image_url) {
-      const { error: imageError } = await supabase
-        .from("productImages")
-        .insert({
-          product_id: nuevoProducto.id, // Relacionamos la imagen con el ID del producto que acabamos de crear
-          image_url: image_url
-        });
+    if (urls.length > 0) {
+      const rows = urls.map(url => ({ product_id: nuevoProducto.id, image_url: url }));
+      const { error: imageError } = await supabase.from("productImages").insert(rows);
+      if (imageError) console.error("Error al guardar imágenes:", imageError);
+    }
 
-      if (imageError) {
-        console.error("Error al guardar la imagen en productImages:", imageError);
+    return { ...nuevoProducto, image_url: urls[0] ?? null, images: urls } as Product;
+  },
+
+  update: async (id: string, updates: ProductUpdate): Promise<Product> => {
+    const { image_url, ...productUpdates } = updates;
+
+    if (Object.keys(productUpdates).length > 0) {
+      const { error } = await supabase
+        .from("products")
+        .update(productUpdates)
+        .eq("id", id);
+      if (error) throw new Error(error.message);
+    }
+
+    const { image_urls } = updates as ProductUpdate & { image_urls?: string[] };
+
+    if (image_url !== undefined || image_urls !== undefined) {
+      await supabase.from("productImages").delete().eq("product_id", id);
+      const urls = image_urls?.length ? image_urls : (image_url ? [image_url] : []);
+      if (urls.length > 0) {
+        const rows = urls.map(url => ({ product_id: id, image_url: url }));
+        await supabase.from("productImages").insert(rows);
       }
     }
 
-    // C) Devolvemos el producto completo al Frontend para que pinte la tarjeta de inmediato
-    return { ...nuevoProducto, image_url } as Product;
-  },
-
-  update: async (id: string, updates: ProductUpdate): Promise<Product> => { 
-    const { error } = await supabase
-      .from("products")
-      .update(updates)
-      .eq("id", id);
-
-    if (error) throw new Error(error.message);
-
-    // Re-fetch con la imagen para devolver el producto completo
     const { data: updated, error: fetchError } = await supabase
       .from("products")
-      .select(`*, productImages ( image_url )`)
+      .select(`*, productImages ( image_url ), favorites ( product_id )`)
       .eq("id", id)
       .single();
 
@@ -113,7 +123,7 @@ export const productRepository = {
   getBySellerId: async (sellerId: string): Promise<Product[]> => {
     const { data, error } = await supabase
       .from("products")
-      .select(`*, productImages ( image_url )`)
+      .select(`*, productImages ( image_url ), favorites ( product_id )`)
       .eq("seller_id", sellerId) 
       .order("created_at", { ascending: false });
 

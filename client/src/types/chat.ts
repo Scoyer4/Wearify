@@ -99,4 +99,5 @@ export interface OrderRow {
 
 export interface CreateOrderResponse {
   orderId: string;
+  conversationId: string | null;
 }

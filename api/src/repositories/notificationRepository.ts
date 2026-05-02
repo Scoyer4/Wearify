@@ -35,6 +35,27 @@ export const notificationRepository = {
     if (error) throw new Error(error.message);
   },
 
+  insertForProductFavorites: async (sellerId: string, productId: string): Promise<void> => {
+    const { data: favUsers, error } = await supabase
+      .from('favorites')
+      .select('user_id')
+      .eq('product_id', productId)
+      .neq('user_id', sellerId);
+
+    if (error) throw new Error(error.message);
+    if (!favUsers || favUsers.length === 0) return;
+
+    const rows = favUsers.map((f) => ({
+      user_id: f.user_id,
+      type: 'price_drop' as NotificationType,
+      from_user_id: sellerId,
+      product_id: productId,
+    }));
+
+    const { error: insertError } = await supabase.from('notifications').insert(rows);
+    if (insertError) throw new Error(insertError.message);
+  },
+
   getForUser: async (userId: string, page: number, limit: number) => {
     const from = (page - 1) * limit;
     const to = page * limit - 1;

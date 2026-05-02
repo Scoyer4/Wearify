@@ -17,6 +17,7 @@ import followerRoutes from "./routes/followerRoutes";
 import chatRoutes from "./routes/chatRoutes";
 import orderRoutes from "./routes/orderRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
+import reviewRoutes from "./routes/reviewRoutes";
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use("/api/followers", followerRoutes);
 app.use("/api/chats",         chatRoutes);
 app.use("/api/orders",        orderRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/reviews",       reviewRoutes);
 
 // Error handler DESPUÉS de las rutas
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {

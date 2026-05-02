@@ -19,9 +19,10 @@ export function useFollow(userId: string, session: Session | null) {
     setLoading(true);
     setError(null);
     try {
+      const isOwnProfile = myId === userId;
       const [countsData, statusData] = await Promise.all([
         followerService.getFollowCounts(userId),
-        token ? followerService.getStatus(userId, token) : null,
+        token && !isOwnProfile ? followerService.getStatus(userId, token) : null,
       ]);
       if (countsData) setCounts(countsData);
       if (statusData) {
@@ -33,15 +34,15 @@ export function useFollow(userId: string, session: Session | null) {
     } finally {
       setLoading(false);
     }
-  }, [userId, token]);
+  }, [userId, myId, token]);
 
   useEffect(() => {
-    if (userId && myId !== userId) {
+    if (userId) {
       refetch();
     } else {
       setLoading(false);
     }
-  }, [userId, myId, refetch]);
+  }, [userId, refetch]);
 
   const follow = useCallback(async () => {
     if (!token) return;

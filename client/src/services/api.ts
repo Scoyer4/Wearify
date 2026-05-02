@@ -127,6 +127,33 @@ export const createUserProfile = async (userData: { id: string, username: string
   }
 };
 
+// 6b. ACTUALIZAR PERFIL DE USUARIO (PUT)
+export const updateUserProfile = async (
+  updates: { username?: string; avatar_url?: string; bio?: string | null },
+  token: string
+): Promise<Usuario | null> => {
+  try {
+    const response = await fetch(`${API_URL}/users/me`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(updates),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.user as Usuario;
+  } catch (error) {
+    console.error("Error al actualizar el perfil:", error);
+    return null;
+  }
+};
+
 // 7. OBTENER PERFIL PÚBLICO Y ESTADÍSTICAS (GET)
 export const getPublicProfile = async (id: string): Promise<PerfilPublico | null> => {
   try {

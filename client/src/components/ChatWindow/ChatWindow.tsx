@@ -3,6 +3,7 @@ import { Session } from '@supabase/supabase-js';
 import { Link, useNavigate } from 'react-router-dom';
 import { useChat } from '../../hooks/useChat';
 import { MessageWithSender } from '../../types/chat';
+import { getReviewStatus, createReview, ReviewStatus } from '../../services/reviewService';
 import '../../styles/ChatWindow.css';
 
 interface Props {
@@ -79,6 +80,14 @@ export default function ChatWindow({ conversationId, session }: Props) {
   const [offerInput, setOfferInput]     = useState('');
   const [offerError, setOfferError]     = useState('');
 
+  // Reseña
+  const [reviewStatus, setReviewStatus] = useState<ReviewStatus | null>(null);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewHover, setReviewHover]   = useState(0);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewError, setReviewError]   = useState('');
+
   const bottomRef   = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const myId = session.user.id;
@@ -89,6 +98,28 @@ export default function ChatWindow({ conversationId, session }: Props) {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Cargar estado de reseña cuando el producto esté vendido y sea el comprador
+  useEffect(() => {
+    if (!isSold || !isBuyer || !session?.access_token) return;
+    getReviewStatus(conversationId, session.access_token)
+      .then(setReviewStatus)
+      .catch(() => {});
+  }, [isSold, isBuyer, conversationId, session?.access_token]);
+
+  const handleSubmitReview = async () => {
+    if (!reviewStatus?.orderId || reviewRating === 0) return;
+    setReviewSubmitting(true);
+    setReviewError('');
+    try {
+      await createReview(reviewStatus.orderId, reviewRating, reviewComment, session.access_token);
+      setReviewStatus(prev => prev ? { ...prev, canReview: false, hasReviewed: true, existing: { id: '', rating: reviewRating, comment: reviewComment } } : prev);
+    } catch (e) {
+      setReviewError(e instanceof Error ? e.message : 'No se pudo enviar la reseña');
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
 
   // ── Enviar mensaje ─────────────────────────────────────────────────────────
 
@@ -286,6 +317,58 @@ export default function ChatWindow({ conversationId, session }: Props) {
         {messages.map(renderMessage)}
         <div ref={bottomRef} />
       </div>
+
+      {/* ── Panel de reseña (comprador, producto vendido) ── */}
+      {isSold && isBuyer && reviewStatus && (
+        <div className="chat-review-panel">
+          {reviewStatus.hasReviewed ? (
+            <div className="chat-review-done">
+              <span className="chat-review-done-stars">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <span key={i} className={i < (reviewStatus.existing?.rating ?? 0) ? 'star star--filled' : 'star'}>★</span>
+                ))}
+              </span>
+              <span className="chat-review-done-text">✅ Ya dejaste tu reseña al vendedor</span>
+            </div>
+          ) : reviewStatus.canReview ? (
+            <div className="chat-review-form">
+              <p className="chat-review-title">¿Cómo fue tu experiencia?</p>
+              <div className="chat-review-stars">
+                {Array.from({ length: 5 }).map((_, i) => {
+                  const value = i + 1;
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      className={`star-btn${value <= (reviewHover || reviewRating) ? ' star-btn--active' : ''}`}
+                      onMouseEnter={() => setReviewHover(value)}
+                      onMouseLeave={() => setReviewHover(0)}
+                      onClick={() => setReviewRating(value)}
+                      aria-label={`${value} estrella${value > 1 ? 's' : ''}`}
+                    >★</button>
+                  );
+                })}
+              </div>
+              <textarea
+                className="chat-review-textarea"
+                placeholder="Escribe un comentario (opcional)…"
+                value={reviewComment}
+                onChange={e => setReviewComment(e.target.value)}
+                rows={2}
+                maxLength={500}
+              />
+              {reviewError && <p className="chat-review-error">{reviewError}</p>}
+              <button
+                className="chat-review-submit"
+                onClick={handleSubmitReview}
+                disabled={reviewRating === 0 || reviewSubmitting}
+              >
+                {reviewSubmitting ? 'Enviando…' : 'Enviar reseña'}
+              </button>
+            </div>
+          ) : null}
+        </div>
+      )}
 
       {/* ── Input ── */}
       <div className={`chat-window-input-area${isSold ? ' chat-window-input-area--disabled' : ''}`}>
