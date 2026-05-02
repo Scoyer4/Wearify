@@ -842,6 +842,272 @@ body {
   background: var(--bg-card-hover);
 }
 
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+
+/* =========================================
+   MODAL DE OFERTA DIRECTA
+   ========================================= */
+.offer-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 1rem;
+  animation: fadeIn 0.18s ease;
+}
+
+.offer-modal-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  max-width: 430px;
+  width: 100%;
+  box-shadow: 0 0 0 1px rgba(124,95,255,0.08), 0 24px 60px rgba(0,0,0,0.55);
+  animation: fadeInUp 0.2s ease;
+}
+
+.offer-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.offer-modal-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.offer-modal-close-btn {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color var(--transition-fast), background var(--transition-fast);
+  flex-shrink: 0;
+}
+.offer-modal-close-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-card-hover);
+}
+
+.offer-modal-product {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 1.25rem;
+}
+
+.offer-modal-product-img {
+  width: 58px;
+  height: 58px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  border: 1px solid var(--border-subtle);
+}
+
+.offer-modal-product-title {
+  margin: 0 0 4px;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.offer-modal-product-price {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.offer-modal-product-price strong {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.offer-modal-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin-bottom: 1.25rem;
+}
+
+/* ── Presets ── */
+.offer-presets {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 1.25rem;
+}
+
+.offer-preset-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px 10px;
+  background: var(--bg-primary);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  text-align: left;
+}
+
+.offer-preset-btn:hover {
+  border-color: rgba(124,95,255,0.4);
+  background: rgba(124,95,255,0.04);
+}
+
+.offer-preset-btn--active {
+  border-color: var(--accent);
+  background: rgba(124,95,255,0.1);
+  box-shadow: 0 0 0 1px rgba(124,95,255,0.2);
+}
+
+.offer-preset-price {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.offer-preset-price--custom {
+  color: var(--text-primary);
+}
+
+.offer-preset-btn--active .offer-preset-price {
+  color: var(--accent);
+}
+
+.offer-preset-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  line-height: 1;
+}
+
+.offer-preset-btn--active .offer-preset-label {
+  color: var(--accent);
+  opacity: 0.8;
+}
+
+/* ── Input precio ── */
+.offer-input-wrap {
+  position: relative;
+  margin-bottom: 0.75rem;
+}
+
+.offer-input {
+  width: 100%;
+  padding: 13px 42px 13px 16px;
+  background: var(--bg-primary);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 1.05rem;
+  font-family: var(--font-body);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.offer-input::placeholder {
+  color: var(--text-muted);
+}
+
+.offer-input:focus,
+.offer-input--filled {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(124,95,255,0.12);
+}
+
+.offer-input--error {
+  border-color: var(--danger) !important;
+  box-shadow: 0 0 0 3px rgba(255,77,106,0.1) !important;
+}
+
+.offer-input-suffix {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  font-family: var(--font-body);
+  pointer-events: none;
+}
+
+.offer-modal-error {
+  font-size: 0.82rem;
+  color: var(--danger);
+  margin: 0 0 0.75rem;
+  font-family: var(--font-body);
+}
+
+.offer-submit-btn {
+  margin-bottom: 1rem;
+}
+
+.offer-modal-hint {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0;
+  font-family: var(--font-body);
+  line-height: 1.5;
+}
+
+.btn-offer {
+  background: transparent;
+  color: var(--accent);
+  padding: 12px 20px;
+  border: 1.5px solid var(--accent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 600;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  width: 100%;
+}
+.btn-offer:hover:not(:disabled) {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-offer:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+/* Variante sólida — para el botón "Ofrecer" dentro del modal */
+.btn-offer--solid {
+  background: linear-gradient(135deg, var(--accent) 0%, #5A52E0 100%);
+  color: #fff;
+  border-color: transparent;
+}
+.btn-offer--solid:hover:not(:disabled) {
+  background: var(--accent-hover);
+  color: #fff;
+}
+
 .follow-count-btn {
   display: flex;
   flex-direction: column;
@@ -1260,6 +1526,21 @@ body {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+/* Tarjeta de producto vendido */
+.product-card--sold .product-image {
+  filter: grayscale(45%);
+  opacity: 0.78;
+  transition: filter 0.2s, opacity 0.2s;
+}
+.product-card--sold:hover .product-image {
+  filter: grayscale(25%);
+  opacity: 0.88;
+}
+.product-card--sold .product-price {
+  text-decoration: line-through;
+  color: var(--text-muted);
 }
 
 /* =========================================

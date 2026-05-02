@@ -5,68 +5,72 @@ import {
   PaginatedMessages,
   MessageWithSender,
   UnreadCountResponse,
+  CreateOrderResponse,
 } from '../types/chat';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// 1. INICIAR O REUTILIZAR CONVERSACIÓN (POST)
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+async function apiFetch<T>(url: string, options: RequestInit): Promise<T> {
+  const response = await fetch(url, options);
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(body.error ?? `Error HTTP ${response.status}`);
+  return body as T;
+}
+
+const authHeaders = (token: string) => ({
+  'Authorization': `Bearer ${token}`,
+  'Content-Type': 'application/json',
+});
+
+// ── Conversaciones ──────────────────────────────────────────────────────────────
+
 export const startConversation = async (
   productId: string,
   initialMessage: string,
   token: string,
 ): Promise<StartConversationResponse | null> => {
   try {
-    const response = await fetch(`${API_URL}/chats`, {
+    return await apiFetch<StartConversationResponse>(`${API_URL}/chats`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
+      headers: authHeaders(token),
       body: JSON.stringify({ productId, initialMessage }),
     });
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-    return await response.json() as StartConversationResponse;
   } catch (error) {
     console.error('Error al iniciar conversación:', error);
     return null;
   }
 };
 
-// 2. LISTA DE CONVERSACIONES DEL USUARIO (GET)
 export const getConversations = async (
   token: string,
   page = 1,
 ): Promise<PaginatedConversations | null> => {
   try {
-    const response = await fetch(`${API_URL}/chats?page=${page}`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+    return await apiFetch<PaginatedConversations>(`${API_URL}/chats?page=${page}`, {
+      headers: authHeaders(token),
     });
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-    return await response.json() as PaginatedConversations;
   } catch (error) {
     console.error('Error al obtener conversaciones:', error);
     return null;
   }
 };
 
-// 3. DETALLE DE UNA CONVERSACIÓN (GET)
 export const getConversation = async (
   conversationId: string,
   token: string,
 ): Promise<ConversationWithDetails | null> => {
   try {
-    const response = await fetch(`${API_URL}/chats/${conversationId}`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+    return await apiFetch<ConversationWithDetails>(`${API_URL}/chats/${conversationId}`, {
+      headers: authHeaders(token),
     });
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-    return await response.json() as ConversationWithDetails;
   } catch (error) {
     console.error('Error al obtener conversación:', error);
     return null;
   }
 };
 
-// 4. MENSAJES DE UNA CONVERSACIÓN (GET) — marca leídos automáticamente en el backend
 export const getMessages = async (
   conversationId: string,
   token: string,
@@ -74,51 +78,113 @@ export const getMessages = async (
   limit = 50,
 ): Promise<PaginatedMessages | null> => {
   try {
-    const response = await fetch(
+    return await apiFetch<PaginatedMessages>(
       `${API_URL}/chats/${conversationId}/messages?page=${page}&limit=${limit}`,
-      { headers: { 'Authorization': `Bearer ${token}` } },
+      { headers: authHeaders(token) },
     );
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-    return await response.json() as PaginatedMessages;
   } catch (error) {
     console.error('Error al obtener mensajes:', error);
     return null;
   }
 };
 
-// 5. ENVIAR MENSAJE (POST)
 export const sendMessage = async (
   conversationId: string,
   content: string,
   token: string,
 ): Promise<MessageWithSender | null> => {
   try {
-    const response = await fetch(`${API_URL}/chats/${conversationId}/messages`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({ content }),
-    });
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-    return await response.json() as MessageWithSender;
+    return await apiFetch<MessageWithSender>(
+      `${API_URL}/chats/${conversationId}/messages`,
+      { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ content }) },
+    );
   } catch (error) {
     console.error('Error al enviar mensaje:', error);
     return null;
   }
 };
 
-// 6. TOTAL DE MENSAJES NO LEÍDOS DEL USUARIO (GET)
 export const getUnreadCount = async (token: string): Promise<UnreadCountResponse | null> => {
   try {
-    const response = await fetch(`${API_URL}/chats/unread-count`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+    return await apiFetch<UnreadCountResponse>(`${API_URL}/chats/unread-count`, {
+      headers: authHeaders(token),
     });
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-    return await response.json() as UnreadCountResponse;
   } catch (error) {
     console.error('Error al obtener mensajes no leídos:', error);
     return null;
   }
+};
+
+// ── Oferta directa desde la página de producto ─────────────────────────────────
+
+export const makeDirectOffer = async (
+  productId: string,
+  offerPrice: number,
+  token: string,
+): Promise<StartConversationResponse> => {
+  return apiFetch<StartConversationResponse>(`${API_URL}/chats/direct-offer`, {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify({ productId, offerPrice }),
+  });
+};
+
+// ── Ofertas — lanzan Error con el mensaje del servidor para poder mostrarlo ────
+
+export const makeOffer = async (
+  conversationId: string,
+  offerPrice: number,
+  token: string,
+): Promise<MessageWithSender> => {
+  return apiFetch<MessageWithSender>(
+    `${API_URL}/chats/${conversationId}/offer`,
+    { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ offerPrice }) },
+  );
+};
+
+export const acceptOffer = async (
+  conversationId: string,
+  messageId: string,
+  token: string,
+): Promise<{ ok: boolean; orderId: string }> => {
+  return apiFetch<{ ok: boolean; orderId: string }>(
+    `${API_URL}/chats/${conversationId}/offer/${messageId}/accept`,
+    { method: 'PATCH', headers: authHeaders(token) },
+  );
+};
+
+export const rejectOffer = async (
+  conversationId: string,
+  messageId: string,
+  token: string,
+): Promise<{ ok: boolean }> => {
+  return apiFetch<{ ok: boolean }>(
+    `${API_URL}/chats/${conversationId}/offer/${messageId}/reject`,
+    { method: 'PATCH', headers: authHeaders(token) },
+  );
+};
+
+export const counterOffer = async (
+  conversationId: string,
+  messageId: string,
+  counterPrice: number,
+  token: string,
+): Promise<MessageWithSender> => {
+  return apiFetch<MessageWithSender>(
+    `${API_URL}/chats/${conversationId}/offer/${messageId}/counter`,
+    { method: 'PATCH', headers: authHeaders(token), body: JSON.stringify({ counterPrice }) },
+  );
+};
+
+// ── Compra directa ─────────────────────────────────────────────────────────────
+
+export const createOrder = async (
+  productId: string,
+  token: string,
+): Promise<CreateOrderResponse> => {
+  return apiFetch<CreateOrderResponse>(`${API_URL}/orders`, {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify({ productId }),
+  });
 };

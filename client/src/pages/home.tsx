@@ -134,10 +134,12 @@ export default function Home({ session }: { session: Session | null }) {
     getCategories().then(data => { if (data) setCategorias(data); });
   }, []);
 
-  const renderCard = (producto: Producto) => (
+  const renderCard = (producto: Producto) => {
+    const vendido = producto.is_sold || producto.status === 'Vendido';
+    return (
     <div
       key={producto.id}
-      className="product-card clickable-card"
+      className={`product-card clickable-card${vendido ? ' product-card--sold' : ''}`}
       onClick={() => navigate(`/producto/${producto.id}`)}
     >
       <div className="product-image-wrapper">
@@ -148,10 +150,10 @@ export default function Home({ session }: { session: Session | null }) {
         >
           {favoritos.has(producto.id) ? '❤️' : '🤍'}
         </button>
-        {producto.condition === 'Sin usar' && (
+        {!vendido && producto.condition === 'Sin usar' && (
           <span className="card-badge badge-new">Nuevo</span>
         )}
-        {producto.status === 'Vendido' && (
+        {vendido && (
           <span className="card-badge badge-sold">Vendido</span>
         )}
       </div>
@@ -173,6 +175,7 @@ export default function Home({ session }: { session: Session | null }) {
       </div>
     </div>
   );
+  };
 
   return (
     <section>

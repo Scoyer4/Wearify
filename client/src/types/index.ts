@@ -11,6 +11,7 @@ export interface Producto {
   brand?: string;
   condition?: string;
   status?: string;
+  is_sold?: boolean;
 
   // Campos extra para la vista en React (no vienen de la API directamente):
   nombreVendedor?: string;

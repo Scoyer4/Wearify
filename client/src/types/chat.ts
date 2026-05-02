@@ -1,3 +1,7 @@
+export type MessageType  = 'text' | 'offer';
+export type OfferStatus  = 'pending' | 'accepted' | 'rejected' | 'countered';
+export type OrderStatus  = 'completado' | 'pendiente' | 'cancelado';
+
 export interface ConversationRow {
   id: string;
   product_id: string;
@@ -14,12 +18,22 @@ export interface MessageRow {
   content: string;
   is_read: boolean;
   created_at: string;
+  message_type: MessageType;
+  offer_price: number | null;
+  offer_status: OfferStatus | null;
+}
+
+export interface OfferMessageRow extends MessageRow {
+  message_type: 'offer';
+  offer_price: number;
+  offer_status: OfferStatus;
 }
 
 export interface ConversationProduct {
   title: string;
   price: number;
   image_url: string | null;
+  is_sold: boolean;
 }
 
 export interface ConversationParticipant {
@@ -71,4 +85,18 @@ export interface PaginatedMessages {
 
 export interface UnreadCountResponse {
   unreadCount: number;
+}
+
+export interface OrderRow {
+  id: string;
+  buyer_id: string;
+  seller_id: string | null;
+  product_id: string;
+  status: OrderStatus;
+  price_at_purchase: number;
+  created_at: string;
+}
+
+export interface CreateOrderResponse {
+  orderId: string;
 }

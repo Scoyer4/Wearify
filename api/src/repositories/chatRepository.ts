@@ -1,5 +1,11 @@
 import supabase from '../config/db';
-import { ConversationRow, MessageRow, ConversationWithDetails, MessageWithSender } from '../models/chat';
+import {
+  ConversationRow,
+  MessageRow,
+  ConversationWithDetails,
+  MessageWithSender,
+  OfferStatus,
+} from '../models/chat';
 
 export const chatRepository = {
 
@@ -13,6 +19,17 @@ export const chatRepository = {
     return data as { seller_id: string } | null;
   },
 
+  findProductDetails: async (productId: string): Promise<{ seller_id: string; price: number; is_sold: boolean } | null> => {
+    const { data, error } = await supabase
+      .from('products')
+      .select('seller_id, price, is_sold')
+      .eq('id', productId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) return null;
+    return { seller_id: data.seller_id, price: data.price, is_sold: data.is_sold ?? false };
+  },
+
   findConversation: async (productId: string, buyerId: string, sellerId: string): Promise<ConversationRow | null> => {
     const { data, error } = await supabase
       .from('conversations')
@@ -20,6 +37,16 @@ export const chatRepository = {
       .eq('product_id', productId)
       .eq('buyer_id', buyerId)
       .eq('seller_id', sellerId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return data as ConversationRow | null;
+  },
+
+  getConversationRaw: async (conversationId: string): Promise<ConversationRow | null> => {
+    const { data, error } = await supabase
+      .from('conversations')
+      .select('*')
+      .eq('id', conversationId)
       .maybeSingle();
     if (error) throw new Error(error.message);
     return data as ConversationRow | null;
@@ -38,11 +65,59 @@ export const chatRepository = {
   createMessage: async (conversationId: string, senderId: string, content: string): Promise<MessageRow> => {
     const { data, error } = await supabase
       .from('messages')
-      .insert({ conversation_id: conversationId, sender_id: senderId, content })
+      .insert({ conversation_id: conversationId, sender_id: senderId, content, message_type: 'text' })
       .select()
       .single();
     if (error) throw new Error(error.message);
     return data as MessageRow;
+  },
+
+  createOfferMessage: async (conversationId: string, senderId: string, price: number): Promise<MessageRow> => {
+    const content = `Oferta: ${price.toFixed(2)} €`;
+    const { data, error } = await supabase
+      .from('messages')
+      .insert({
+        conversation_id: conversationId,
+        sender_id:       senderId,
+        content,
+        message_type:    'offer',
+        offer_price:     price,
+        offer_status:    'pending',
+      })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data as MessageRow;
+  },
+
+  findMessageById: async (messageId: string): Promise<MessageRow | null> => {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('id', messageId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return data as MessageRow | null;
+  },
+
+  findPendingOffer: async (conversationId: string): Promise<MessageRow | null> => {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('conversation_id', conversationId)
+      .eq('message_type', 'offer')
+      .eq('offer_status', 'pending')
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return data as MessageRow | null;
+  },
+
+  updateOfferStatus: async (messageId: string, status: OfferStatus): Promise<void> => {
+    const { error } = await supabase
+      .from('messages')
+      .update({ offer_status: status })
+      .eq('id', messageId);
+    if (error) throw new Error(error.message);
   },
 
   isParticipant: async (conversationId: string, userId: string): Promise<boolean> => {
@@ -64,7 +139,7 @@ export const chatRepository = {
       .from('conversations')
       .select(`
         *,
-        product:products(title, price, productImages(image_url)),
+        product:products(title, price, is_sold, productImages(image_url)),
         buyer:users!buyer_id(id, username, avatar_url),
         seller:users!seller_id(id, username, avatar_url)
       `, { count: 'exact' })
@@ -120,10 +195,15 @@ export const chatRepository = {
         seller_id:       c.seller_id,
         created_at:      c.created_at,
         last_message_at: c.last_message_at,
-        product:  { title: c.product?.title ?? '', price: c.product?.price ?? 0, image_url: imgUrl },
-        otherUser: { id: other?.id ?? '', username: other?.username ?? null, avatar_url: other?.avatar_url ?? null },
+        product:  {
+          title:    c.product?.title    ?? '',
+          price:    c.product?.price    ?? 0,
+          image_url: imgUrl,
+          is_sold:  c.product?.is_sold  ?? false,
+        },
+        otherUser:   { id: other?.id ?? '', username: other?.username ?? null, avatar_url: other?.avatar_url ?? null },
         lastMessage: lastMsgMap[c.id] ?? null,
-        unreadCount: unreadMap[c.id] ?? 0,
+        unreadCount: unreadMap[c.id]  ?? 0,
       };
     });
 
@@ -135,7 +215,7 @@ export const chatRepository = {
       .from('conversations')
       .select(`
         *,
-        product:products(title, price, productImages(image_url)),
+        product:products(title, price, is_sold, productImages(image_url)),
         buyer:users!buyer_id(id, username, avatar_url),
         seller:users!seller_id(id, username, avatar_url)
       `)
@@ -145,10 +225,10 @@ export const chatRepository = {
     if (error) throw new Error(error.message);
     if (!data) return null;
 
-    const c: any    = data;
-    const isBuyer   = c.buyer_id === userId;
-    const other     = isBuyer ? c.seller : c.buyer;
-    const imgUrl    = (c.product?.productImages ?? [])[0]?.image_url ?? null;
+    const c: any  = data;
+    const isBuyer = c.buyer_id === userId;
+    const other   = isBuyer ? c.seller : c.buyer;
+    const imgUrl  = (c.product?.productImages ?? [])[0]?.image_url ?? null;
 
     const { data: lastMsg } = await supabase
       .from('messages')
@@ -165,8 +245,13 @@ export const chatRepository = {
       seller_id:       c.seller_id,
       created_at:      c.created_at,
       last_message_at: c.last_message_at,
-      product:   { title: c.product?.title ?? '', price: c.product?.price ?? 0, image_url: imgUrl },
-      otherUser: { id: other?.id ?? '', username: other?.username ?? null, avatar_url: other?.avatar_url ?? null },
+      product:  {
+        title:    c.product?.title   ?? '',
+        price:    c.product?.price   ?? 0,
+        image_url: imgUrl,
+        is_sold:  c.product?.is_sold ?? false,
+      },
+      otherUser:   { id: other?.id ?? '', username: other?.username ?? null, avatar_url: other?.avatar_url ?? null },
       lastMessage: lastMsg ?? null,
       unreadCount: 0,
     };
@@ -192,9 +277,12 @@ export const chatRepository = {
       content:         m.content,
       is_read:         m.is_read,
       created_at:      m.created_at,
+      message_type:    m.message_type  ?? 'text',
+      offer_price:     m.offer_price   ?? null,
+      offer_status:    m.offer_status  ?? null,
       sender: {
-        id:         m.sender?.id       ?? '',
-        username:   m.sender?.username ?? null,
+        id:         m.sender?.id         ?? '',
+        username:   m.sender?.username   ?? null,
         avatar_url: m.sender?.avatar_url ?? null,
       },
     }));
