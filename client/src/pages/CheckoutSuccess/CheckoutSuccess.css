@@ -1,0 +1,161 @@
+/* ═══════════════════════════════════════════════════════════
+   CheckoutSuccess page
+   ═══════════════════════════════════════════════════════════ */
+
+.success-page {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+}
+
+.success-card {
+  background: var(--ink-800, #1c1c1c);
+  border: 1px solid var(--ink-700, #2e2e2e);
+  border-radius: 18px;
+  padding: 40px 36px;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+}
+
+/* ── Icono ────────────────────────────────────────────────── */
+.success-icon-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(76, 175, 129, 0.15);
+  border: 2px solid #4caf81;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  color: #4caf81;
+}
+
+.success-title {
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--bone, #F5F5F0);
+  margin: 0 0 6px;
+}
+
+.success-subtitle {
+  font-size: 0.85rem;
+  color: var(--ink-400, #aaa);
+  margin: 0 0 24px;
+}
+.success-order-id {
+  font-family: var(--font-display, 'Space Grotesk', monospace);
+  color: var(--bone, #F5F5F0);
+  font-weight: 600;
+}
+
+/* ── Producto ─────────────────────────────────────────────── */
+.success-product {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  margin-bottom: 20px;
+}
+.success-product-img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: var(--ink-700, #2e2e2e);
+}
+.success-product-img--placeholder {
+  background: var(--ink-700, #2e2e2e);
+}
+.success-product-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--bone, #F5F5F0);
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* ── Divider ──────────────────────────────────────────────── */
+.success-divider {
+  height: 1px;
+  background: var(--ink-700, #2e2e2e);
+  margin: 16px 0;
+}
+
+/* ── Desglose de precios ──────────────────────────────────── */
+.success-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+.success-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  color: var(--ink-400, #aaa);
+}
+.success-row span:last-child {
+  color: var(--bone, #F5F5F0);
+  font-weight: 500;
+}
+.success-row--total {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--bone, #F5F5F0) !important;
+  margin-top: 4px;
+}
+.success-row--total span {
+  color: var(--bone, #F5F5F0) !important;
+}
+.success-free {
+  color: #4caf81 !important;
+}
+
+/* ── Dirección ────────────────────────────────────────────── */
+.success-address {
+  text-align: left;
+  margin-bottom: 28px;
+}
+.success-address-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-400, #aaa);
+  margin: 0 0 8px;
+}
+.success-address-line {
+  font-size: 0.88rem;
+  color: var(--bone, #F5F5F0);
+  margin: 0 0 2px;
+  line-height: 1.5;
+}
+
+/* ── Acciones ─────────────────────────────────────────────── */
+.success-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.success-actions .btn-primary,
+.success-actions .btn-secondary {
+  width: 100%;
+  padding: 13px 0;
+  font-size: 0.9rem;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 520px) {
+  .success-card {
+    padding: 28px 20px;
+  }
+  .success-title {
+    font-size: 1.25rem;
+  }
+}

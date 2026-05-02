@@ -14,6 +14,8 @@ import RequestsPage from './pages/RequestsPage';
 import FollowListPage from './pages/FollowListPage';
 import ChatsPage from './pages/ChatsPage';
 import ChatWindowPage from './pages/ChatWindowPage';
+import Checkout from './pages/Checkout/Checkout';
+import CheckoutSuccess from './pages/CheckoutSuccess/CheckoutSuccess';
 
 // Componentes globales
 import Navbar from './components/navbar';
@@ -45,6 +47,9 @@ function App() {
             <Route path="/solicitudes" element={<RequestsPage session={session} />} />
             <Route path="/chats" element={<ChatsPage session={session} />} />
             <Route path="/chats/:conversationId" element={<ChatWindowPage session={session} />} />
+
+            <Route path="/checkout/success" element={<CheckoutSuccess />} />
+            <Route path="/checkout/:productId" element={<Checkout session={session} />} />
             
             <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
 

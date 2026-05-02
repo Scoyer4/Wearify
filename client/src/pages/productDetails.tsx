@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
 import { getProductById, getUserById, deleteProduct } from '../services/api';
-import { createOrder, makeDirectOffer } from '../services/chatService';
+import { makeDirectOffer } from '../services/chatService';
 import { Producto } from '../types';
 import { useCart } from '../context/cartContext';
 import ContactSellerButton from '../components/ContactSellerButton/ContactSellerButton';
@@ -20,11 +20,6 @@ export default function ProductDetail({ session }: { session: Session | null }) 
   const [error, setError]               = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [deleting, setDeleting]     = useState(false);
-
-  // Compra directa
-  const [buyLoading, setBuyLoading]   = useState(false);
-  const [buyError, setBuyError]       = useState<string | null>(null);
-  const [buyConfirm, setBuyConfirm]   = useState<{ orderId: string; conversationId: string | null } | null>(null);
 
   // Oferta directa
   const [showOfferModal, setShowOfferModal] = useState(false);
@@ -82,22 +77,10 @@ export default function ProductDetail({ session }: { session: Session | null }) 
     else { setDeleting(false); alert('No se pudo eliminar el producto.'); }
   };
 
-  const handleComprarYa = async () => {
+  const handleComprarYa = () => {
     if (!session) { navigate('/login'); return; }
     if (!producto) return;
-
-    setBuyLoading(true);
-    setBuyError(null);
-
-    try {
-      const result = await createOrder(producto.id, session.access_token);
-      setProducto(prev => prev ? { ...prev, is_sold: true } : prev);
-      setBuyConfirm({ orderId: result.orderId, conversationId: result.conversationId });
-    } catch (e) {
-      setBuyError(e instanceof Error ? e.message : 'No se pudo completar la compra. Inténtalo de nuevo.');
-    } finally {
-      setBuyLoading(false);
-    }
+    navigate(`/checkout/${producto.id}`);
   };
 
   const openOfferModal = () => {
@@ -262,16 +245,10 @@ export default function ProductDetail({ session }: { session: Session | null }) 
                 <button
                   className="btn-pay full-width-btn"
                   onClick={handleComprarYa}
-                  disabled={buyLoading}
                 >
-                  {buyLoading ? 'Procesando…' : 'Comprar ya'}
+                  Comprar ya
                 </button>
               </div>
-              {buyError && (
-                <p style={{ fontSize: '0.85rem', color: 'var(--danger)', margin: 0 }}>
-                  ⚠️ {buyError}
-                </p>
-              )}
               {/* Oferta directa */}
               <button className="btn-offer full-width-btn" onClick={openOfferModal}>
                 💰 Hacer una oferta
@@ -306,52 +283,6 @@ export default function ProductDetail({ session }: { session: Session | null }) 
             setShowEditModal(false);
           }}
         />
-      )}
-
-      {/* ── Modal de confirmación de compra ── */}
-      {buyConfirm && (
-        <div
-          style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 100, padding: '1rem', backdropFilter: 'blur(3px)',
-          }}
-          onClick={() => setBuyConfirm(null)}
-        >
-          <div
-            style={{
-              background: 'var(--bg-card)', border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-lg)', padding: '2rem', maxWidth: 400, width: '100%',
-              textAlign: 'center', boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
-            }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>✅</div>
-            <h3 style={{ margin: '0 0 0.5rem', color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
-              ¡Compra realizada!
-            </h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: '0 0 0.75rem' }}>
-              El vendedor se pondrá en contacto contigo pronto.
-            </p>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontFamily: 'var(--font-mono)', margin: '0 0 1.5rem', wordBreak: 'break-all' }}>
-              Nº pedido: {buyConfirm.orderId}
-            </p>
-            <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
-              {buyConfirm.conversationId && (
-                <button
-                  className="btn-primary"
-                  style={{ width: '100%' }}
-                  onClick={() => { setBuyConfirm(null); navigate(`/chats/${buyConfirm.conversationId}`); }}
-                >
-                  💬 Ver chat con el vendedor
-                </button>
-              )}
-              <button className="btn-primary" style={{ width: '100%', background: 'transparent', border: '1.5px solid var(--border-subtle)', color: 'var(--text-secondary)' }} onClick={() => setBuyConfirm(null)}>
-                Cerrar
-              </button>
-            </div>
-          </div>
-        </div>
       )}
 
       {/* ── Modal de oferta directa ── */}

@@ -1261,18 +1261,86 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 /* =========================================
    RESPONSIVE
    ========================================= */
+
+/* ── Tablet / phablet (≤ 768 px) ───────── */
 @media (max-width: 768px) {
+  /* Variables globales */
+  :root { --nav-height: 68px; }
+
+  /* Layout */
   .main-content { padding: 0; }
-  .main-header { padding: 0 16px; }
+  .main-header  { padding: 0 14px; }
+
+  /* Logo */
+  .logo-title img { height: 46px; }
+
+  /* Ocultar enlace de texto "Productos" — accesible desde el menú hamburguesa */
+  .nav-section.left .nav-link { display: none; }
+
+  /* Iconos de la derecha: reducir huecos y padding */
+  .nav-section.right { gap: 2px; }
+  .icon-btn          { padding: 6px; }
+
+  /* Tipografía general */
   .section-title { font-size: 1.4rem; }
-  .section-block, .category-pills-row { padding: 1rem; }
-  .detail-container { padding: 1.2rem; gap: 1.5rem; }
-  .detail-title { font-size: 1.6rem; }
-  .detail-price { font-size: 1.5rem; }
+
+  /* Márgenes de secciones */
+  .section-block         { margin: 1.25rem 0.75rem; }
+  .category-pills-row    { margin: 1rem 0.75rem 0; }
+  .catalog-header        { margin: 1rem 0.75rem; padding: 0; flex-direction: column; align-items: flex-start; }
+  .product-detail-section { margin: 0.5rem 0.75rem 0; }
+
+  /* Grid de productos */
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin: 0.5rem 0.75rem 0;
+  }
+  .product-card           { margin: 0; }   /* elimina el antiguo margin: 20px que desbordaba */
+  .product-image-wrapper  { height: 170px; }
+
+  /* Detalle de producto — columnas en vertical */
+  .detail-container    { padding: 1rem; gap: 1rem; flex-direction: column; }
+  .detail-image-wrapper { min-width: 0; width: 100%; }
+  .detail-info-wrapper  { min-width: 0; width: 100%; flex: none; }
+  .detail-title        { font-size: 1.5rem; }
+  .detail-price        { font-size: 1.35rem; }
+
+  /* Perfil (página antigua) */
   .profile-section { padding: 1.5rem; margin: 1rem; border-radius: var(--radius-md); }
-  .product-card { margin: 20px;}
-  .product-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.1rem; }
-  .product-image-wrapper { height: 180px; }
+
+  /* Filtros del catálogo */
+  .filter-bar     { width: 100%; }
+  .filter-select  { flex: 1; min-width: 0; }
+}
+
+/* ── Móvil pequeño (≤ 480 px) ──────────── */
+@media (max-width: 480px) {
+  :root { --nav-height: 60px; }
+
+  /* Ajuste extra del logo */
+  .logo-title img { height: 40px; }
+
+  /* Hero search — menos padding derecho para que el botón quepa */
+  .hero-search-input { padding: 12px 82px 12px 40px; }
+
+  /* Grid — gap más pequeño */
+  .product-grid       { gap: 6px; margin: 0.5rem 0.5rem 0; }
+  .product-image-wrapper { height: 148px; }
+
+  /* Info de tarjeta */
+  .product-info  { padding: 10px 11px 12px; }
+  .product-title { font-size: 0.88rem; }
+  .product-price { font-size: 0.95rem; }
+  .chip          { font-size: 10px; padding: 3px 8px; }
+
+  /* Detalle de producto */
+  .detail-title { font-size: 1.3rem; }
+  .detail-price { font-size: 1.2rem; }
+
+  /* Secciones */
+  .section-block      { margin: 1rem 0.5rem; }
+  .category-pills-row { margin: 0.75rem 0.5rem 0; }
 }
 
 /* =========================================
@@ -1682,17 +1750,26 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 
 /* =========================================
-   RESPONSIVE (nuevos componentes)
+   RESPONSIVE (hero + scroll + catálogo)
    ========================================= */
 @media (max-width: 768px) {
-  .hero-section { padding: 2rem 1.5rem 1.5rem; }
-  .hero-stat { padding: 0 1.2rem; }
-  .hero-stat-num { font-size: 1.4rem; }
-  .catalog-header { padding: 1rem; flex-direction: column; align-items: flex-start; }
-  .filter-bar { width: 100%; }
-  .filter-select { flex: 1; min-width: 0; }
-  .products-scroll .product-card { min-width: 160px; max-width: 160px; }
-  .products-scroll .product-image-wrapper { height: 160px; }
+  .hero-section   { padding: 2rem 1rem 1.5rem; }
+  .hero-stat      { padding: 0 0.9rem; }
+  .hero-stat-num  { font-size: 1.4rem; }
+  .hero-stat-label { font-size: 0.6rem; }
+
+  .products-scroll .product-card          { min-width: 150px; max-width: 150px; }
+  .products-scroll .product-image-wrapper { height: 150px; }
+}
+
+@media (max-width: 480px) {
+  .hero-section   { padding: 1.75rem 0.75rem 1.25rem; }
+  .hero-stat      { padding: 0 0.6rem; }
+  .hero-stat-num  { font-size: 1.15rem; }
+  .hero-stat-divider { height: 26px; }
+
+  .products-scroll .product-card          { min-width: 130px; max-width: 130px; }
+  .products-scroll .product-image-wrapper { height: 130px; }
 }
 
 /* =========================================

@@ -16,6 +16,7 @@ import favoriteRoutes from "./routes/favoriteRoutes";
 import followerRoutes from "./routes/followerRoutes";
 import chatRoutes from "./routes/chatRoutes";
 import orderRoutes from "./routes/orderRoutes";
+import checkoutRoutes from "./routes/checkoutRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
 import reviewRoutes from "./routes/reviewRoutes";
 
@@ -45,6 +46,7 @@ app.use("/api/favorites", favoriteRoutes);
 app.use("/api/followers", followerRoutes);
 app.use("/api/chats",         chatRoutes);
 app.use("/api/orders",        orderRoutes);
+app.use("/api/checkout",      checkoutRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/reviews",       reviewRoutes);
 

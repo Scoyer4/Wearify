@@ -112,3 +112,27 @@
   font-weight: 600;
   color: var(--accent);
 }
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .mega-menu {
+    width: calc(100vw - 28px);
+    padding: 18px 16px;
+  }
+  .mega-menu-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+}
+
+@media (max-width: 420px) {
+  .mega-menu {
+    width: calc(100vw - 28px);
+    padding: 14px 12px;
+  }
+  .mega-menu-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
