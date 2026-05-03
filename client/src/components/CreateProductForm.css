@@ -1,123 +1,179 @@
-/* ── Create Product Form ── */
-.form-container {
-  background: var(--bg-card);
-  backdrop-filter: blur(12px);
-  padding: 2rem;
-  border-radius: var(--radius-md);
-  margin-top: 0.5rem;
-  border: 1px solid var(--border-subtle);
-  box-shadow: var(--shadow-md);
+/* ═══════════════════════════════════════════════════
+   CreateProductForm
+   ═══════════════════════════════════════════════════ */
+
+.cpf-container {
+  padding: 0.25rem 0;
 }
 
-.form-title {
-  margin-top: 0;
+.cpf-title {
+  margin: 0 0 1.4rem;
   color: var(--text-primary);
-  margin-bottom: 1.5rem;
-  font-size: 1.4rem;
-  font-family: var(--font-heading);
-  font-weight: 600;
+  font-size: 1.3rem;
+  font-family: var(--font-display);
+  font-weight: 700;
   text-align: center;
   letter-spacing: -0.2px;
 }
 
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+/* ── Formulario ──────────────────────────────────── */
+
+.cpf-form {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
 }
 
-.form-input {
-  padding: 12px 14px;
+/* ── Fila de dos columnas ────────────────────────── */
+
+.cpf-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 11px;
+  align-items: start;
+}
+
+/* ── Inputs / selects / textarea ─────────────────── */
+
+.cpf-input {
+  width: 100%;
+  padding: 11px 14px;
   border-radius: var(--radius-sm);
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
   color: var(--text-primary);
-  width: 100%;
   font-family: var(--font-body);
-  font-size: 0.95rem;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+  font-size: 0.9rem;
   outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
 }
-
-.form-input::placeholder {
-  color: var(--text-muted);
-}
-
-.form-input:focus {
+.cpf-input::placeholder { color: var(--text-muted); }
+.cpf-input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-glow);
   background: rgba(255, 255, 255, 0.07);
 }
-
-/* Style select dropdowns */
-.form-input option {
+.cpf-input option {
   background: var(--bg-secondary);
   color: var(--text-primary);
 }
-
-.span-2 {
-  grid-column: span 2;
+.cpf-input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
-textarea.form-input {
+.cpf-textarea {
   resize: vertical;
   min-height: 100px;
 }
 
-.submit-product-btn {
-  margin-top: 0.5rem;
+/* ── Botón publicar ──────────────────────────────── */
+
+.cpf-submit {
+  width: 100%;
+  margin-top: 4px;
   padding: 14px;
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
-.form-message {
-  margin-top: 1.5rem;
-  text-align: center;
-  font-weight: 600;
-  padding: 1rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.9rem;
-}
-.form-message.success {
-  color: var(--success);
-  background: rgba(0, 212, 170, 0.1);
-  border: 1px solid rgba(0, 212, 170, 0.2);
-}
-.form-message.error {
-  color: var(--danger);
-  background: rgba(255, 77, 106, 0.1);
-  border: 1px solid rgba(255, 77, 106, 0.2);
-}
+/* ═══════════════════════════════════════════════════
+   ZONA DE FOTOS
+   ═══════════════════════════════════════════════════ */
 
-/* ── Multi Image Picker ── */
-.multi-image-picker {
-  grid-column: span 2;
+.cpf-photo-zone {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 8px;
 }
 
-.multi-image-thumb {
-  position: relative;
-  width: 90px;
-  height: 90px;
+/* Área con borde punteado que contiene los 4 slots */
+.cpf-photo-slots {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 14px;
+  min-height: 160px;
+  border: 2px dashed rgba(255, 255, 255, 0.13);
   border-radius: var(--radius-sm);
-  overflow: hidden;
-  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.18s;
+  box-sizing: border-box;
 }
 
-.multi-image-thumb img {
+/* Iluminar el área completa al arrastrar o hacer hover */
+.cpf-photo-zone:hover .cpf-photo-slots,
+.cpf-photo-slots:focus-within {
+  border-color: rgba(124, 95, 255, 0.3);
+}
+
+/* ── Slot base ───────────────────────────────────── */
+
+.cpf-slot {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+
+/* ── Slot vacío ──────────────────────────────────── */
+
+.cpf-slot--empty {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1.5px dashed rgba(255, 255, 255, 0.13);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.cpf-slot--empty:hover:not(:disabled) {
+  border-color: rgba(124, 95, 255, 0.45);
+  background: rgba(124, 95, 255, 0.06);
+  color: var(--text-secondary);
+}
+.cpf-slot--empty:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.cpf-slot-text {
+  font-size: 0.65rem;
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* Label "PRINCIPAL" en el slot vacío nº 0 */
+.cpf-slot-principal {
+  font-size: 0.56rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--brand);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  line-height: 1;
+}
+
+/* ── Slot relleno ────────────────────────────────── */
+
+.cpf-slot--filled img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
-.multi-image-badge {
+/* Badge "PRINCIPAL" sobre la foto */
+.cpf-slot-badge {
   position: absolute;
   bottom: 4px;
   left: 4px;
-  font-size: 0.6rem;
+  font-size: 0.54rem;
   font-weight: 700;
   font-family: var(--font-mono);
   background: var(--brand);
@@ -125,64 +181,77 @@ textarea.form-input {
   padding: 2px 5px;
   border-radius: 3px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   pointer-events: none;
 }
 
-.multi-image-remove {
+/* Botón ✕ para eliminar */
+.cpf-slot-remove {
   position: absolute;
   top: 4px;
   right: 4px;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   border: none;
-  background: rgba(0,0,0,0.65);
+  background: rgba(0, 0, 0, 0.65);
   color: #fff;
   font-size: 0.65rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;
-  transition: background var(--transition-fast);
+  transition: background 0.15s;
 }
+.cpf-slot-remove:hover { background: var(--danger); }
 
-.multi-image-remove:hover {
-  background: var(--danger);
-}
-
-.multi-image-add {
-  width: 90px;
-  height: 90px;
-  border-radius: var(--radius-sm);
-  border: 2px dashed rgba(255,255,255,0.15);
-  background: rgba(255,255,255,0.03);
+/* Texto auxiliar bajo el área */
+.cpf-photo-hint {
+  font-size: 0.74rem;
   color: var(--text-muted);
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  font-size: 0.7rem;
-  font-family: var(--font-body);
-  transition: border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
-  flex-shrink: 0;
+  text-align: center;
+  margin: 0;
 }
 
-.multi-image-add:hover {
-  border-color: var(--accent);
-  background: rgba(255,255,255,0.06);
-  color: var(--text-secondary);
+/* ═══════════════════════════════════════════════════
+   MENSAJES DE ESTADO
+   ═══════════════════════════════════════════════════ */
+
+.cpf-message {
+  margin-top: 1.25rem;
+  text-align: center;
+  font-weight: 600;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+}
+.cpf-message--ok {
+  color: var(--success);
+  background: rgba(0, 212, 170, 0.1);
+  border: 1px solid rgba(0, 212, 170, 0.2);
+}
+.cpf-message--err {
+  color: var(--danger);
+  background: rgba(255, 77, 106, 0.1);
+  border: 1px solid rgba(255, 77, 106, 0.2);
 }
 
-/* Responsive */
-@media (max-width: 600px) {
-  .form-grid {
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  /* Las dos columnas (marca/precio, categoría/talla) pasan a una */
+  .cpf-row {
     grid-template-columns: 1fr;
   }
-  .span-2 {
-    grid-column: span 1;
+  /* Slots: mantener 4 en fila pero más compactos */
+  .cpf-photo-slots {
+    gap: 6px;
+    padding: 10px;
+    min-height: 0;
+  }
+  .cpf-slot-text {
+    font-size: 0.58rem;
   }
 }
