@@ -111,6 +111,14 @@ export default function Navbar({ session }: { session: Session | null }) {
                 </div>
               </Link>
 
+              <Link to="/pedidos" className={`icon-btn ${location.pathname === '/pedidos' ? 'active' : ''}`} aria-label="Mis pedidos">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
+                  <polyline points="21 8 21 21 3 21 3 8" />
+                  <rect x="1" y="3" width="22" height="5" />
+                  <line x1="10" y1="12" x2="14" y2="12" />
+                </svg>
+              </Link>
+
               <Link to="/perfil" className={`icon-btn ${location.pathname === '/perfil' ? 'active' : ''}`}>
                 <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />

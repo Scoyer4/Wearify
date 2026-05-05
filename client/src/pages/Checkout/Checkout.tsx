@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
-import { CheckoutSummary, ShippingAddress, ShippingType, OrderConfirmation } from '../../types/checkout';
-import { getCheckoutSummary, confirmOrder } from '../../services/checkoutService';
+import { CheckoutSummary, ShippingAddress, ShippingType } from '../../types/checkout';
+import { getCheckoutSummary } from '../../services/checkoutService';
 import './Checkout.css';
 
 interface Props {
@@ -28,8 +28,6 @@ export default function Checkout({ session }: Props) {
   const [saveAddress, setSaveAddress] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
-  const [submitting, setSubmitting]   = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // ── Carga inicial ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -85,32 +83,21 @@ export default function Checkout({ session }: Props) {
   };
 
   // ── Confirmar compra ────────────────────────────────────────────────────────
-  const handleConfirm = async () => {
+  const handleConfirm = () => {
     if (!session || !summary || !productId) return;
     if (!validate()) return;
 
-    setSubmitting(true);
-    setSubmitError(null);
-
-    try {
-      const confirmation: OrderConfirmation = await confirmOrder(
-        { productId, shippingAddress: form, shippingType, saveAddress },
-        session.access_token,
-      );
-      navigate('/checkout/success', {
-        state: {
-          orderId:      confirmation.orderId,
-          finalPrice:   confirmation.finalPrice,
-          shippingCost: confirmation.shippingCost,
-          shippingType,
-          product:      summary.product,
-          address:      form,
-        },
-      });
-    } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : 'Error al procesar la compra');
-      setSubmitting(false);
-    }
+    navigate('/checkout/payment', {
+      state: {
+        productId,
+        shippingAddress: form,
+        shippingType,
+        saveAddress,
+        product:      summary.product,
+        finalPrice:   total,
+        shippingCost,
+      },
+    });
   };
 
   // ── Estados de carga / error de página ──────────────────────────────────────
@@ -332,16 +319,9 @@ export default function Checkout({ session }: Props) {
             <button
               className="btn-primary checkout-confirm-btn"
               onClick={handleConfirm}
-              disabled={submitting}
             >
-              {submitting
-                ? <><span className="checkout-spinner" /> Procesando…</>
-                : 'Confirmar compra'}
+              Confirmar compra
             </button>
-
-            {submitError && (
-              <p className="checkout-submit-error">⚠ {submitError}</p>
-            )}
 
             <p className="checkout-security-note">🔒 Pago 100% seguro y cifrado</p>
           </div>

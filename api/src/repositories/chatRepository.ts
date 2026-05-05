@@ -62,6 +62,19 @@ export const chatRepository = {
     return data as ConversationRow;
   },
 
+  findOrCreateConversation: async (productId: string, buyerId: string, sellerId: string): Promise<ConversationRow> => {
+    const existing = await chatRepository.findConversation(productId, buyerId, sellerId);
+    if (existing) return existing;
+    try {
+      return await chatRepository.createConversation(productId, buyerId, sellerId);
+    } catch {
+      // Race condition: another request created the row between our SELECT and INSERT
+      const found = await chatRepository.findConversation(productId, buyerId, sellerId);
+      if (found) return found;
+      throw new Error('No se pudo crear la conversación');
+    }
+  },
+
   createMessage: async (conversationId: string, senderId: string, content: string): Promise<MessageRow> => {
     const { data, error } = await supabase
       .from('messages')

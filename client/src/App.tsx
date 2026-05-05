@@ -16,6 +16,8 @@ import ChatsPage from './pages/ChatsPage';
 import ChatWindowPage from './pages/ChatWindowPage';
 import Checkout from './pages/Checkout/Checkout';
 import CheckoutSuccess from './pages/CheckoutSuccess/CheckoutSuccess';
+import PaymentProcessing from './pages/PaymentProcessing/PaymentProcessing';
+import Orders from './pages/Orders/Orders';
 
 // Componentes globales
 import Navbar from './components/navbar';
@@ -48,7 +50,8 @@ function App() {
             <Route path="/chats" element={<ChatsPage session={session} />} />
             <Route path="/chats/:conversationId" element={<ChatWindowPage session={session} />} />
 
-            <Route path="/checkout/success" element={<CheckoutSuccess />} />
+            <Route path="/checkout/success"   element={<CheckoutSuccess />} />
+            <Route path="/checkout/payment"   element={<PaymentProcessing />} />
             <Route path="/checkout/:productId" element={<Checkout session={session} />} />
             
             <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
@@ -58,9 +61,14 @@ function App() {
               element={session ? <Profile session={session} /> : <Navigate to="/login" />} 
             />
             
-            <Route 
-              path="/carrito" 
-              element={session ? <Cart /> : <Navigate to="/login" />} 
+            <Route
+              path="/pedidos"
+              element={session ? <Orders session={session} /> : <Navigate to="/login" />}
+            />
+
+            <Route
+              path="/carrito"
+              element={session ? <Cart /> : <Navigate to="/login" />}
             />
 
             <Route path="*" element={<Navigate to="/" />} />

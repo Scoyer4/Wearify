@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { checkoutRepository } from '../repositories/checkoutRepository';
 import { chatRepository } from '../repositories/chatRepository';
+import { notificationRepository } from '../repositories/notificationRepository';
 import { ShippingOption, CreateCheckoutOrderDTO, ShippingType } from '../models/checkout';
 
 const SHIPPING_OPTIONS: ShippingOption[] = [
@@ -106,15 +107,15 @@ export const checkoutController = {
         await checkoutRepository.saveUserAddress(me, addr);
       }
 
-      // ── Notificar en el chat (best-effort) ───────────────────────────────────
+      // ── Notificar en el chat + notificación al vendedor (best-effort) ──────────
       try {
-        const existing = await chatRepository.findConversation(body.productId, me, product.seller_id);
-        const conv = existing ?? await chatRepository.createConversation(body.productId, me, product.seller_id);
+        const conv = await chatRepository.findOrCreateConversation(body.productId, me, product.seller_id);
         await chatRepository.createMessage(
           conv.id,
           me,
           `✅ Compra completada · ${confirmation.finalPrice.toFixed(2)} € · Envío ${body.shippingType === 'express' ? 'express' : 'estándar'}.`,
         );
+        await notificationRepository.insert(product.seller_id, 'new_sale', me, body.productId);
       } catch (chatErr) {
         console.error('Error al registrar mensaje de compra en el chat:', chatErr);
       }

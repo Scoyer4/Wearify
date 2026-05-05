@@ -1,0 +1,135 @@
+/* ── Orders Page ─────────────────────────────────────────────────────────── */
+
+.orders-page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 28px 16px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.orders-header {
+  display: flex;
+  align-items: center;
+}
+
+.orders-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* ── Tabs ───────────────────────────────────────────────────────────────── */
+
+.orders-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  border: 1px solid var(--border-subtle);
+}
+
+.orders-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  border-radius: calc(var(--radius-md) - 4px);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 9px 16px;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.orders-tab:hover {
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+}
+
+.orders-tab--active {
+  background: var(--brand);
+  color: var(--text-on-accent);
+}
+
+.orders-tab--active:hover {
+  background: var(--accent-hover);
+  color: var(--text-on-accent);
+}
+
+.orders-tab-count {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  min-width: 18px;
+  padding: 3px 6px;
+}
+
+.orders-tab--active .orders-tab-count {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ── List ───────────────────────────────────────────────────────────────── */
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Skeleton ───────────────────────────────────────────────────────────── */
+
+.orders-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.orders-skeleton-card {
+  height: 200px;
+  border-radius: var(--radius-md);
+}
+
+/* ── Empty state ────────────────────────────────────────────────────────── */
+
+.orders-empty {
+  text-align: center;
+  padding: 60px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.orders-empty-icon {
+  font-size: 2.8rem;
+  margin: 0;
+}
+
+.orders-empty-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ── Error ──────────────────────────────────────────────────────────────── */
+
+.orders-error {
+  text-align: center;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+}

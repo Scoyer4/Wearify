@@ -1,0 +1,228 @@
+/* ── PaymentProcessing page ───────────────────────────────────────────────── */
+
+.pp-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - var(--nav-height));
+  background: var(--bg-primary);
+  padding: 2rem 1rem;
+}
+
+.pp-card {
+  max-width: 420px;
+  width: 100%;
+  padding: 2.5rem 2rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── Title ─────────────────────────────────────────────────────────────────── */
+
+.pp-title {
+  font-size: 1.2rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* ── Progress bar ───────────────────────────────────────────────────────────── */
+
+.pp-progress-track {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.pp-progress-fill {
+  height: 100%;
+  background: var(--brand);
+  border-radius: inherit;
+  transition: width 1s linear;
+}
+
+/* ── Steps list ─────────────────────────────────────────────────────────────── */
+
+.pp-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-align: left;
+}
+
+.pp-step-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+}
+
+.pp-step-item--done {
+  color: var(--success);
+  background: rgba(0, 212, 170, 0.08);
+}
+
+.pp-step-item--active {
+  color: var(--text-primary);
+  background: rgba(124, 95, 255, 0.1);
+  font-weight: 600;
+}
+
+.pp-step-item--pending {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.pp-step-icon {
+  font-size: 1rem;
+  width: 1.4rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* ── Security note ──────────────────────────────────────────────────────────── */
+
+.pp-security-note {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ── Success icon ───────────────────────────────────────────────────────────── */
+
+.pp-success-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(0, 212, 170, 0.15);
+  border: 2px solid var(--success);
+  color: var(--success);
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+/* ── Success title ──────────────────────────────────────────────────────────── */
+
+.pp-success-title {
+  font-size: 1.5rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* ── Transaction ID ─────────────────────────────────────────────────────────── */
+
+.pp-transaction-id {
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-sm);
+  margin: 0;
+}
+
+/* ── Product row ────────────────────────────────────────────────────────────── */
+
+.pp-product-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  text-align: left;
+}
+
+.pp-product-img {
+  width: 52px;
+  height: 52px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.pp-product-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pp-product-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pp-product-price {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--brand);
+  margin: 0.2rem 0 0;
+}
+
+/* ── Actions ────────────────────────────────────────────────────────────────── */
+
+.pp-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pp-actions .btn-primary,
+.pp-actions .btn-secondary {
+  width: 100%;
+  padding: 13px;
+}
+
+/* ── Error icon ─────────────────────────────────────────────────────────────── */
+
+.pp-error-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(255, 77, 106, 0.15);
+  border: 2px solid var(--danger);
+  color: var(--danger);
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+/* ── Error title ────────────────────────────────────────────────────────────── */
+
+.pp-error-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* ── Error message ──────────────────────────────────────────────────────────── */
+
+.pp-error-msg {
+  font-size: 0.88rem;
+  color: var(--danger);
+  margin: 0;
+}
