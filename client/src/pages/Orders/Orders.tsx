@@ -22,7 +22,7 @@ export default function Orders({ session }: Props) {
   const [loading,        setLoading]       = useState(true);
   const [error,          setError]         = useState<string | null>(null);
   const [shipTarget,     setShipTarget]    = useState<OrderWithDetails | null>(null);
-  const [actionLoading,  setActionLoading] = useState<string | null>(null);
+  const [, setActionLoading] = useState<string | null>(null);
 
   useEffect(() => {
     if (!session) { navigate('/login'); return; }

@@ -116,10 +116,9 @@ export default function PaymentProcessing() {
 
           <div className="pp-steps">
             {STEPS.map((s, i) => {
-              const isDone    = i < step;
-              const isActive  = i === step;
-              const isPending = i > step;
-              const modifier  = isDone ? 'done' : isActive ? 'active' : 'pending';
+              const isDone   = i < step;
+              const isActive = i === step;
+              const modifier = isDone ? 'done' : isActive ? 'active' : 'pending';
               return (
                 <div key={i} className={`pp-step-item pp-step-item--${modifier}`}>
                   <span className="pp-step-icon">{s.icon}</span>
