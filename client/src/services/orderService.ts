@@ -88,6 +88,40 @@ export const receiveOrder = async (
   }
 };
 
+export const cancelExpiredOrder = async (orderId: string, token: string): Promise<{ ok: boolean } | null> => {
+  try {
+    const res = await fetch(`${API_URL}/orders/${orderId}/cancel`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error ?? `Error HTTP: ${res.status}`);
+    }
+    return await res.json() as { ok: boolean };
+  } catch (e) {
+    console.error('Error al cancelar pedido expirado:', e);
+    throw e;
+  }
+};
+
+export const sellerCancelOrder = async (orderId: string, token: string): Promise<{ ok: boolean } | null> => {
+  try {
+    const res = await fetch(`${API_URL}/orders/${orderId}/seller-cancel`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error ?? `Error HTTP: ${res.status}`);
+    }
+    return await res.json() as { ok: boolean };
+  } catch (e) {
+    console.error('Error al cancelar la venta:', e);
+    throw e;
+  }
+};
+
 export const completeOrder = async (orderId: string, token: string): Promise<{ ok: boolean } | null> => {
   try {
     const res = await fetch(`${API_URL}/orders/${orderId}/complete`, {

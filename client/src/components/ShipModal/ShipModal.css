@@ -139,6 +139,37 @@
   margin: 0;
 }
 
+/* ── Input row with generate button ─────────────────────────────────────── */
+
+.sm-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.sm-input-row .sm-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.sm-generate-btn {
+  flex-shrink: 0;
+  padding: 0 14px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--brand);
+  background: rgba(124, 95, 255, 0.1);
+  color: var(--brand);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.sm-generate-btn:hover {
+  background: var(--brand);
+  color: #fff;
+}
+
 /* ── Actions ────────────────────────────────────────────────────────────── */
 
 .sm-actions {

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
 import { OrderWithDetails } from '../../types/order';
-import { getBuyingOrders, getSellingOrders, receiveOrder, completeOrder } from '../../services/orderService';
+import { getBuyingOrders, getSellingOrders, receiveOrder, completeOrder, cancelExpiredOrder, sellerCancelOrder } from '../../services/orderService';
 import OrderCard from '../../components/OrderCard/OrderCard';
 import ShipModal from '../../components/ShipModal/ShipModal';
 import './Orders.css';
@@ -74,6 +74,27 @@ export default function Orders({ session }: Props) {
     }
   }
 
+  async function handleSellerCancel(orderId: string) {
+    if (!session) return;
+    try {
+      await sellerCancelOrder(orderId, session.access_token);
+      await load();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Error al cancelar la venta');
+    }
+  }
+
+  async function handleExpiredCancel(orderId: string) {
+    if (!session) return;
+    try {
+      await cancelExpiredOrder(orderId, session.access_token);
+      await load();
+    } catch (e) {
+      console.error('Error al cancelar pedido expirado:', e);
+      await load();
+    }
+  }
+
   function handleShipSuccess(_orderId: string) {
     setShipTarget(null);
     load();
@@ -138,6 +159,8 @@ export default function Orders({ session }: Props) {
               onShipClick={setShipTarget}
               onReceiveClick={handleReceive}
               onCompleteClick={handleComplete}
+              onExpiredCancel={tab === 'selling' ? handleExpiredCancel : undefined}
+              onSellerCancel={tab === 'selling' ? handleSellerCancel : undefined}
             />
           ))}
         </div>

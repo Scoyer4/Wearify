@@ -1,4 +1,4 @@
-export type MessageType  = 'text' | 'offer';
+export type MessageType  = 'text' | 'offer' | 'system';
 export type OfferStatus  = 'pending' | 'accepted' | 'rejected' | 'countered';
 
 export interface ConversationRow {

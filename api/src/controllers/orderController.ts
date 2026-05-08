@@ -57,7 +57,7 @@ export const orderController = {
       try {
         const conv = await chatRepository.findOrCreateConversation(productId, me, product.seller_id);
         conversationId = conv.id;
-        await chatRepository.createMessage(
+        await chatRepository.createSystemMessage(
           conv.id,
           me,
           `✅ Compra completada · ${product.price.toFixed(2)} €. El producto ha sido adquirido.`,
@@ -141,7 +141,7 @@ export const orderController = {
         await notificationRepository.insert(order.buyer_id, 'order_shipped', req.user!.id, order.product_id);
         const conv = await chatRepository.findConversation(order.product_id, order.buyer_id, order.seller_id!);
         if (conv) {
-          await chatRepository.createMessage(
+          await chatRepository.createSystemMessage(
             conv.id,
             req.user!.id,
             `📦 Tu pedido está en camino. Nº de seguimiento: ${trackingNumber.trim()}`,
@@ -189,6 +189,85 @@ export const orderController = {
     } catch (error: any) {
       console.error('Error en receiveOrder:', error);
       return res.status(500).json({ error: 'Error al confirmar la recepción' });
+    }
+  },
+
+  // ── PATCH /:orderId/cancel ────────────────────────────────────────────────
+  cancelExpiredOrder: async (req: Request, res: Response) => {
+    try {
+      const { orderId } = req.params;
+
+      const order = await orderLifecycleRepository.findById(orderId);
+      if (!order) return res.status(404).json({ error: 'Pedido no encontrado' });
+      if (order.seller_id !== req.user!.id) {
+        return res.status(403).json({ error: 'Solo el vendedor puede cancelar el pedido' });
+      }
+      if (order.order_status !== 'paid') {
+        return res.status(400).json({ error: 'Solo se pueden cancelar pedidos en estado pagado' });
+      }
+
+      const DEADLINE_DAYS = 5;
+      const deadline = new Date(order.created_at);
+      deadline.setDate(deadline.getDate() + DEADLINE_DAYS);
+      if (Date.now() < deadline.getTime()) {
+        return res.status(400).json({ error: 'El plazo de envío aún no ha vencido' });
+      }
+
+      await orderLifecycleRepository.cancelOrder(orderId, order.product_id);
+
+      try {
+        const conv = await chatRepository.findConversation(order.product_id, order.buyer_id, order.seller_id!);
+        if (conv) {
+          await chatRepository.createSystemMessage(
+            conv.id,
+            order.seller_id!,
+            '❌ Pedido cancelado · El vendedor no realizó el envío en el plazo establecido. El producto vuelve a estar disponible.',
+          );
+        }
+      } catch (chatErr) {
+        console.error('Error al registrar mensaje de cancelación:', chatErr);
+      }
+
+      return res.json({ ok: true });
+    } catch (error: any) {
+      console.error('Error en cancelExpiredOrder:', error);
+      return res.status(500).json({ error: 'Error al cancelar el pedido' });
+    }
+  },
+
+  // ── PATCH /:orderId/seller-cancel ────────────────────────────────────────
+  sellerCancelOrder: async (req: Request, res: Response) => {
+    try {
+      const { orderId } = req.params;
+
+      const order = await orderLifecycleRepository.findById(orderId);
+      if (!order) return res.status(404).json({ error: 'Pedido no encontrado' });
+      if (order.seller_id !== req.user!.id) {
+        return res.status(403).json({ error: 'Solo el vendedor puede cancelar la venta' });
+      }
+      if (order.order_status !== 'paid') {
+        return res.status(400).json({ error: 'Solo se pueden cancelar pedidos en estado pagado' });
+      }
+
+      await orderLifecycleRepository.cancelOrder(orderId, order.product_id);
+
+      try {
+        const conv = await chatRepository.findConversation(order.product_id, order.buyer_id, order.seller_id!);
+        if (conv) {
+          await chatRepository.createSystemMessage(
+            conv.id,
+            order.seller_id!,
+            '❌ Venta cancelada por el vendedor. El importe será reembolsado al comprador. El producto vuelve a estar disponible.',
+          );
+        }
+      } catch (chatErr) {
+        console.error('Error al registrar mensaje de cancelación:', chatErr);
+      }
+
+      return res.json({ ok: true });
+    } catch (error: any) {
+      console.error('Error en sellerCancelOrder:', error);
+      return res.status(500).json({ error: 'Error al cancelar la venta' });
     }
   },
 

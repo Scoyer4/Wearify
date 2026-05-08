@@ -7,10 +7,11 @@ export const notificationRepository = {
     type: NotificationType,
     fromUserId: string | null,
     productId?: string | null,
+    message?: string | null,
   ): Promise<void> => {
     const { error } = await supabase
       .from('notifications')
-      .insert({ user_id: userId, type, from_user_id: fromUserId, product_id: productId ?? null });
+      .insert({ user_id: userId, type, from_user_id: fromUserId, product_id: productId ?? null, message: message ?? null });
     if (error) throw new Error(error.message);
   },
 
@@ -63,7 +64,7 @@ export const notificationRepository = {
     const { data, error, count } = await supabase
       .from('notifications')
       .select(
-        `id, user_id, type, from_user_id, product_id, is_read, created_at,
+        `id, user_id, type, from_user_id, product_id, message, is_read, created_at,
         from_user:users!from_user_id(id, username, avatar_url),
         product:products!product_id(id, title)`,
         { count: 'exact' },

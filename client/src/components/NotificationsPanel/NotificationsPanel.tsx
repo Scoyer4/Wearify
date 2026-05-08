@@ -16,19 +16,21 @@ function timeAgo(dateStr: string): string {
 function notifText(n: Notification): string {
   const who = n.from_user?.username ? `@${n.from_user.username}` : 'Alguien';
   switch (n.type) {
-    case 'follow':          return `${who} te está siguiendo`;
-    case 'follow_request':  return `${who} quiere seguirte`;
-    case 'follow_accepted': return `${who} aceptó tu solicitud`;
-    case 'new_product':     return `${who} publicó: ${n.product?.title ?? 'un nuevo producto'}`;
-    case 'price_drop':      return `Bajada de precio en "${n.product?.title ?? 'un producto'}" que tienes en favoritos`;
-    case 'new_sale':        return `${who} compró tu producto${n.product?.title ? `: "${n.product.title}"` : ''}`;
-    case 'order_shipped':   return `Tu pedido${n.product?.title ? ` "${n.product.title}"` : ''} ha sido enviado`;
-    case 'order_received':  return `${who} confirmó la recepción de "${n.product?.title ?? 'tu producto'}"`;
-    default:                return 'Nueva notificación';
+    case 'follow':           return `${who} te está siguiendo`;
+    case 'follow_request':   return `${who} quiere seguirte`;
+    case 'follow_accepted':  return `${who} aceptó tu solicitud`;
+    case 'new_product':      return `${who} publicó: ${n.product?.title ?? 'un nuevo producto'}`;
+    case 'price_drop':       return `Bajada de precio en "${n.product?.title ?? 'un producto'}" que tienes en favoritos`;
+    case 'new_sale':         return `${who} compró tu producto${n.product?.title ? `: "${n.product.title}"` : ''}`;
+    case 'order_shipped':    return `Tu pedido${n.product?.title ? ` "${n.product.title}"` : ''} ha sido enviado`;
+    case 'order_received':   return `${who} confirmó la recepción de "${n.product?.title ?? 'tu producto'}"`;
+    case 'product_deleted':  return n.message ?? 'Uno de tus productos ha sido eliminado por moderación';
+    default:                 return 'Nueva notificación';
   }
 }
 
 function notifLink(n: Notification): string {
+  if (n.type === 'product_deleted') return '/';
   if ((n.type === 'new_product' || n.type === 'price_drop') && n.product_id) return `/producto/${n.product_id}`;
   if (n.type === 'new_sale' || n.type === 'order_shipped' || n.type === 'order_received') return '/pedidos';
   if (n.from_user_id) return `/usuario/${n.from_user_id}`;
@@ -81,9 +83,11 @@ export default function NotificationsPanel({ notifications, loading, hasMore, on
               onClick={() => handleClick(n)}
             >
               <div className="notif-avatar">
-                {n.from_user?.avatar_url
-                  ? <img src={n.from_user.avatar_url} alt={n.from_user.username ?? ''} />
-                  : <span>{(n.from_user?.username ?? '?')[0].toUpperCase()}</span>
+                {n.type === 'product_deleted'
+                  ? <span>🛡️</span>
+                  : n.from_user?.avatar_url
+                    ? <img src={n.from_user.avatar_url} alt={n.from_user.username ?? ''} />
+                    : <span>{(n.from_user?.username ?? '?')[0].toUpperCase()}</span>
                 }
               </div>
               <div className="notif-body">

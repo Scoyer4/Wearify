@@ -85,6 +85,16 @@ export const chatRepository = {
     return data as MessageRow;
   },
 
+  createSystemMessage: async (conversationId: string, senderId: string, content: string): Promise<MessageRow> => {
+    const { data, error } = await supabase
+      .from('messages')
+      .insert({ conversation_id: conversationId, sender_id: senderId, content, message_type: 'system' })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data as MessageRow;
+  },
+
   createOfferMessage: async (conversationId: string, senderId: string, price: number): Promise<MessageRow> => {
     const content = `Oferta: ${price.toFixed(2)} €`;
     const { data, error } = await supabase

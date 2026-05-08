@@ -9,7 +9,7 @@ import NavMenu from './NavMenu';
 import NotificationsPanel from './NotificationsPanel/NotificationsPanel';
 import logoImage from '../assets/logoWearify2.png';
 
-export default function Navbar({ session }: { session: Session | null }) {
+export default function Navbar({ session, isAdmin }: { session: Session | null; isAdmin?: boolean }) {
   const { carrito } = useCart();
   const location = useLocation();
   const [pendingCount, setPendingCount] = useState(0);
@@ -50,13 +50,6 @@ export default function Navbar({ session }: { session: Session | null }) {
         </div>
 
         <div className="nav-section right">
-          <button className="icon-btn search-btn" aria-label="Buscar">
-            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-          </button>
-
           {session ? (
             <>
               {/* Notificaciones */}
@@ -118,6 +111,14 @@ export default function Navbar({ session }: { session: Session | null }) {
                   <line x1="10" y1="12" x2="14" y2="12" />
                 </svg>
               </Link>
+
+              {isAdmin && (
+                <Link to="/admin" className={`icon-btn ${location.pathname === '/admin' ? 'active' : ''}`} aria-label="Panel de administración" title="Administración">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  </svg>
+                </Link>
+              )}
 
               <Link to="/perfil" className={`icon-btn ${location.pathname === '/perfil' ? 'active' : ''}`}>
                 <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">

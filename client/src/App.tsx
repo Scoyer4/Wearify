@@ -18,13 +18,20 @@ import Checkout from './pages/Checkout/Checkout';
 import CheckoutSuccess from './pages/CheckoutSuccess/CheckoutSuccess';
 import PaymentProcessing from './pages/PaymentProcessing/PaymentProcessing';
 import Orders from './pages/Orders/Orders';
+import AdminPanel from './pages/AdminPanel/AdminPanel';
 
 // Componentes globales
 import Navbar from './components/navbar';
+import BannedScreen from './components/BannedScreen/BannedScreen';
+import { checkIsAdmin } from './services/adminService';
 import './App.css';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function App() {
-  const [session, setSession] = useState<Session | null>(null);
+  const [session,   setSession]   = useState<Session | null>(null);
+  const [isAdmin,   setIsAdmin]   = useState(false);
+  const [banReason, setBanReason] = useState<string | null | undefined>(undefined);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
@@ -32,10 +39,31 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!session) { setIsAdmin(false); setBanReason(undefined); return; }
+
+    // Check ban status first (bypass verifyAuth so banned users can still read their reason)
+    fetch(`${API_URL}/users/ban-status`, {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (d.isBanned) { setBanReason(d.banReason ?? null); return; }
+        setBanReason(undefined);
+        checkIsAdmin(session.access_token).then(setIsAdmin);
+      })
+      .catch(() => setBanReason(undefined));
+  }, [session]);
+
+  // Show ban screen if user is banned (covers entire app)
+  if (banReason !== undefined && session) {
+    return <BannedScreen banReason={banReason} />;
+  }
+
   return (
     <Router>
       <div className="app-container">
-        <Navbar session={session} /> 
+        <Navbar session={session} isAdmin={isAdmin} /> 
         
         <main className="main-content">
           <Routes>
@@ -69,6 +97,11 @@ function App() {
             <Route
               path="/carrito"
               element={session ? <Cart /> : <Navigate to="/login" />}
+            />
+
+            <Route
+              path="/admin"
+              element={isAdmin ? <AdminPanel session={session} /> : <Navigate to="/" />}
             />
 
             <Route path="*" element={<Navigate to="/" />} />

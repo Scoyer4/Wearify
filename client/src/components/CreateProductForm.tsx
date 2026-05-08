@@ -11,6 +11,7 @@ interface ImageEntry { file: File; preview: string }
 const SHOE_KEYWORDS   = ['zapato', 'zapatilla', 'calzado', 'bota', 'sandalia', 'sneaker'];
 const ACCESS_KEYWORDS = ['accesorio', 'bolso', 'bolsa', 'gorra', 'cinturón', 'cinturon',
                          'sombrero', 'joya', 'bisutería', 'bisuteria', 'complemento', 'gorro'];
+const SUIT_KEYWORDS   = ['traje'];
 const MAX_PHOTOS = 4;
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -19,6 +20,7 @@ function getSizeOptions(cat: Category | undefined): string[] {
   const text = `${cat.name} ${cat.slug ?? ''}`.toLowerCase();
   if (SHOE_KEYWORDS.some(k => text.includes(k)))   return ['35','36','37','38','39','40','41','42','43','44','45','46'];
   if (ACCESS_KEYWORDS.some(k => text.includes(k))) return ['Única'];
+  if (SUIT_KEYWORDS.some(k => text.includes(k)))   return ['36','38','40','42','44','46','48','50'];
   return ['XS','S','M','L','XL','XXL'];
 }
 

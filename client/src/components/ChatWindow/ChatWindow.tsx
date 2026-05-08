@@ -15,6 +15,13 @@ function formatBubbleTime(dateStr: string): string {
   return new Date(dateStr).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 }
 
+const SYSTEM_PREFIXES = [
+  '✅ Compra completada',
+  '📦 Tu pedido está en camino',
+  '❌ Pedido cancelado',
+  '❌ Venta cancelada',
+];
+
 // ── Tarjeta de oferta ──────────────────────────────────────────────────────────
 
 interface OfferCardProps {
@@ -191,7 +198,36 @@ export default function ChatWindow({ conversationId, session }: Props) {
   // ── Render burbuja ─────────────────────────────────────────────────────────
 
   function renderMessage(msg: MessageWithSender) {
-    const isMine = msg.sender_id === myId;
+    const isMine   = msg.sender_id === myId;
+    const isSystem = msg.message_type === 'system'
+      || SYSTEM_PREFIXES.some(p => msg.content.startsWith(p));
+
+    if (isSystem) {
+      return (
+        <div key={msg.id} className={`chat-bubble-row${isMine ? ' chat-bubble-row--mine' : ''}`}>
+          {!isMine && (
+            <div className="chat-bubble-avatar">
+              {msg.sender.avatar_url
+                ? <img src={msg.sender.avatar_url} alt={msg.sender.username ?? ''} />
+                : <span>{(msg.sender.username ?? '?')[0].toUpperCase()}</span>
+              }
+            </div>
+          )}
+          <div className={`chat-system-content${isMine ? ' chat-system-content--mine' : ''}`}>
+            <div className={`chat-bubble${isMine ? ' chat-bubble--mine' : ' chat-bubble--theirs'}`}>
+              <p className="chat-bubble-text">{msg.content}</p>
+              <span className="chat-bubble-time">{formatBubbleTime(msg.created_at)}</span>
+            </div>
+            <span className="chat-system-label">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              Mensaje automático de Wearify
+            </span>
+          </div>
+        </div>
+      );
+    }
 
     if (msg.message_type === 'offer') {
       return (
@@ -289,7 +325,7 @@ export default function ChatWindow({ conversationId, session }: Props) {
 
             <div className="chat-window-header-sep" />
 
-            <div className="chat-window-other-user">
+            <Link to={`/usuario/${conversation.otherUser.id}`} className="chat-window-other-user">
               <div className="chat-window-other-avatar">
                 {conversation.otherUser.avatar_url
                   ? <img src={conversation.otherUser.avatar_url} alt={conversation.otherUser.username ?? ''} />
@@ -297,7 +333,7 @@ export default function ChatWindow({ conversationId, session }: Props) {
                 }
               </div>
               <span className="chat-window-other-name">{conversation.otherUser.username ?? 'Usuario'}</span>
-            </div>
+            </Link>
           </>
         )}
       </div>

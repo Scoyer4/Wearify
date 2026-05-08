@@ -16,5 +16,7 @@ router.get   ('/:orderId',          verifyAuth, orderController.getOrder);
 router.patch ('/:orderId/ship',     verifyAuth, orderController.shipOrder);
 router.patch ('/:orderId/receive',  verifyAuth, orderController.receiveOrder);
 router.patch ('/:orderId/complete', verifyAuth, orderController.completeOrder);
+router.patch ('/:orderId/cancel',        verifyAuth, orderController.cancelExpiredOrder);
+router.patch ('/:orderId/seller-cancel', verifyAuth, orderController.sellerCancelOrder);
 
 export default router;

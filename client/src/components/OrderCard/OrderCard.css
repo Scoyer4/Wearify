@@ -185,6 +185,55 @@
   font-weight: 500;
 }
 
+/* ── Countdown ──────────────────────────────────────────────────────────── */
+
+.oc-countdown {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: var(--radius-sm);
+  padding: 9px 14px;
+  font-size: 0.82rem;
+  border: 1px solid;
+}
+
+.oc-countdown-icon { font-size: 1rem; flex-shrink: 0; }
+
+.oc-countdown-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.oc-countdown-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.oc-countdown-value {
+  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+}
+
+.oc-countdown--normal  { background: rgba(0,212,170,0.07);  color: var(--success); border-color: rgba(0,212,170,0.2);  }
+.oc-countdown--warning { background: rgba(255,184,77,0.09); color: var(--warning); border-color: rgba(255,184,77,0.25); }
+.oc-countdown--danger  { background: rgba(255,77,106,0.09); color: var(--danger);  border-color: rgba(255,77,106,0.25); }
+.oc-countdown--expired {
+  background: rgba(255,77,106,0.12);
+  color: var(--danger);
+  border-color: rgba(255,77,106,0.3);
+  animation: oc-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes oc-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
 /* ── Actions ────────────────────────────────────────────────────────────── */
 
 .oc-actions {
@@ -196,6 +245,101 @@
 .oc-action-btn {
   font-size: 0.84rem;
   padding: 8px 18px;
+}
+
+/* ── Cancel modal ───────────────────────────────────────────────────────── */
+
+.oc-cancel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.oc-cancel-modal {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.oc-cancel-danger-strip {
+  background: rgba(255, 77, 106, 0.12);
+  border-bottom: 1px solid rgba(255, 77, 106, 0.2);
+  padding: 18px 24px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.oc-cancel-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.oc-cancel-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--danger);
+  margin: 0;
+  font-family: var(--font-heading);
+}
+
+.oc-cancel-content {
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.oc-cancel-body {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.oc-cancel-refund-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.oc-cancel-refund-note-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.oc-cancel-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.oc-cancel-actions .btn-secondary,
+.oc-cancel-actions .btn-danger {
+  font-size: 0.87rem;
+  padding: 9px 20px;
 }
 
 /* ── Responsive ─────────────────────────────────────────────────────────── */
