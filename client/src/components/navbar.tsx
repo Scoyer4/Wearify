@@ -17,7 +17,7 @@ const NAV_CATEGORIES = [
   { label: 'Marcas',     filter: 'Marcas'  },
 ];
 
-export default function Navbar({ session }: { session: Session | null }) {
+export default function Navbar({ session, isAdmin }: { session: Session | null; isAdmin?: boolean }) {
   const { carrito } = useCart();
   const location    = useLocation();
   const navigate    = useNavigate();
@@ -100,8 +100,6 @@ export default function Navbar({ session }: { session: Session | null }) {
 
         {/* ── DERECHA ───────────────────────────────────────── */}
         <div className="nav-section right">
-
-          {/* Buscar */}
           <button className="icon-btn search-btn" aria-label="Buscar">
             <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
               <circle cx="11" cy="11" r="8" />
@@ -150,25 +148,27 @@ export default function Navbar({ session }: { session: Session | null }) {
                 </div>
               </Link>
 
-              {/* Avatar + Dropdown */}
-              <div className="nav-avatar-wrapper" ref={dropdownRef}>
-                <button
-                  className={`nav-avatar-btn${dropdownOpen ? ' nav-avatar-btn--open' : ''}`}
-                  onClick={() => setDropdownOpen(d => !d)}
-                  aria-label="Menú de usuario"
-                  aria-expanded={dropdownOpen}
-                >
-                  {avatarUrl
-                    ? <img src={avatarUrl} alt="avatar" className="nav-avatar-img" />
-                    : <span className="nav-avatar-initials">{userInitial}</span>
-                  }
-                  <svg
-                    className="nav-avatar-chevron"
-                    viewBox="0 0 24 24" width="11" height="11"
-                    fill="none" stroke="currentColor" strokeWidth="2.5"
-                    strokeLinecap="round" strokeLinejoin="round"
-                  >
-                    <polyline points="6 9 12 15 18 9" />
+              <Link to="/pedidos" className={`icon-btn ${location.pathname === '/pedidos' ? 'active' : ''}`} aria-label="Mis pedidos">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
+                  <polyline points="21 8 21 21 3 21 3 8" />
+                  <rect x="1" y="3" width="22" height="5" />
+                  <line x1="10" y1="12" x2="14" y2="12" />
+                </svg>
+              </Link>
+
+              <Link to="/perfil" className={`icon-btn ${location.pathname === '/perfil' ? 'active' : ''}`}>
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </Link>
+
+              <Link to="/carrito" className="icon-btn cart-link">
+                <div className="cart-badge-wrapper">
+                  <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
+                    <circle cx="9" cy="21" r="1" />
+                    <circle cx="20" cy="21" r="1" />
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
                   </svg>
                 </button>
 

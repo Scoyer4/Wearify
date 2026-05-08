@@ -471,12 +471,21 @@ body {
 .detail-image-wrapper {
   flex: 1;
   min-width: 300px;
+  aspect-ratio: 3 / 4;
+  max-height: 560px;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  flex-shrink: 0;
 }
 .detail-image {
   width: 100%;
+  height: 100%;
   border-radius: var(--radius-md);
   object-fit: cover;
+  object-position: center;
   box-shadow: var(--shadow-md);
+  display: block;
 }
 .detail-thumbnails {
   display: flex;
@@ -515,7 +524,7 @@ body {
 
 .detail-placeholder {
   width: 100%;
-  height: 350px;
+  height: 100%;
   background: var(--bg-secondary);
   display: flex;
   align-items: center;
@@ -1257,6 +1266,18 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 
 .mt-3 { margin-top: 1rem; }
+
+.btn-report-link {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 4px 0;
+  font-family: var(--font-body);
+  transition: color var(--transition-fast);
+}
+.btn-report-link:hover { color: var(--danger); }
 
 /* =========================================
    RESPONSIVE

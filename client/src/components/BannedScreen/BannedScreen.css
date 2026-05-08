@@ -1,0 +1,140 @@
+/* ── Banned Screen ───────────────────────────────────────────────────────────── */
+
+.banned-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1.5rem;
+}
+
+.banned-card {
+  background: var(--bg-secondary);
+  border: 1px solid rgba(255, 77, 106, 0.25);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 2rem;
+  max-width: 460px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  text-align: center;
+  box-shadow: 0 0 60px rgba(255, 77, 106, 0.08), var(--shadow-lg);
+}
+
+.banned-icon {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.banned-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-family: var(--font-heading);
+  color: var(--danger);
+  margin: 0;
+}
+
+.banned-subtitle {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ── Reason box ─────────────────────────────────────────────────────────────── */
+
+.banned-reason {
+  width: 100%;
+  background: rgba(255, 77, 106, 0.07);
+  border: 1px solid rgba(255, 77, 106, 0.2);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.banned-reason-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--danger);
+  opacity: 0.8;
+  margin: 0;
+}
+
+.banned-reason-text {
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.55;
+  font-style: italic;
+}
+
+/* ── Appeal section ─────────────────────────────────────────────────────────── */
+
+.banned-appeal {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.banned-appeal-text {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.banned-appeal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--brand);
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 10px 24px;
+  border-radius: var(--radius-pill);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  font-family: var(--font-body);
+}
+
+.banned-appeal-btn:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.banned-appeal-email {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0;
+  font-family: var(--font-mono);
+}
+
+/* ── Sign out ───────────────────────────────────────────────────────────────── */
+
+.banned-signout {
+  background: none;
+  border: none;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  transition: color var(--transition-fast);
+}
+
+.banned-signout:hover { color: var(--text-primary); }

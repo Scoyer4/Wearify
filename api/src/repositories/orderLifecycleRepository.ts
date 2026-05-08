@@ -120,6 +120,20 @@ export const orderLifecycleRepository = {
     if (error) throw new Error(error.message);
   },
 
+  cancelOrder: async (orderId: string, productId: string): Promise<void> => {
+    const { error: orderErr } = await supabase
+      .from('orders')
+      .update({ order_status: 'cancelled' })
+      .eq('id', orderId);
+    if (orderErr) throw new Error(orderErr.message);
+
+    const { error: productErr } = await supabase
+      .from('products')
+      .update({ status: 'Disponible', is_sold: false })
+      .eq('id', productId);
+    if (productErr) throw new Error(productErr.message);
+  },
+
   getRoles: async (orderId: string, userId: string): Promise<{ isBuyer: boolean; isSeller: boolean }> => {
     const { data, error } = await supabase
       .from('orders')

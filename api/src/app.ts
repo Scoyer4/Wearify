@@ -19,6 +19,8 @@ import orderRoutes from "./routes/orderRoutes";
 import checkoutRoutes from "./routes/checkoutRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
 import reviewRoutes from "./routes/reviewRoutes";
+import adminRoutes from "./routes/adminRoutes";
+import reportRoutes from "./routes/reportRoutes";
 
 const app = express();
 
@@ -49,6 +51,8 @@ app.use("/api/orders",        orderRoutes);
 app.use("/api/checkout",      checkoutRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/reviews",       reviewRoutes);
+app.use("/api/admin",         adminRoutes);
+app.use("/api/reports",       reportRoutes);
 
 // Error handler DESPUÉS de las rutas
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {

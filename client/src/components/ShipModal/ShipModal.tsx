@@ -10,8 +10,14 @@ interface Props {
   onSuccess: (orderId: string) => void;
 }
 
+function generateTrackingNumber(): string {
+  const digits = String(Math.floor(Math.random() * 9_000_000_000) + 1_000_000_000);
+  const suffix = ['ES', 'FR', 'DE', 'PT'][Math.floor(Math.random() * 4)];
+  return `WR${digits}${suffix}`;
+}
+
 export default function ShipModal({ order, token, onClose, onSuccess }: Props) {
-  const [tracking, setTracking] = useState('');
+  const [tracking, setTracking] = useState(() => generateTrackingNumber());
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState<string | null>(null);
 
@@ -65,7 +71,6 @@ export default function ShipModal({ order, token, onClose, onSuccess }: Props) {
           <input
             className={`sm-input${error ? ' sm-input--error' : ''}`}
             type="text"
-            placeholder="Ej: ES123456789ES"
             value={tracking}
             onChange={e => { setTracking(e.target.value); setError(null); }}
             autoFocus

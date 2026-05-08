@@ -1,7 +1,44 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { OrderWithDetails, OrderStatus } from '../../types/order';
 import './OrderCard.css';
+
+const SHIP_DEADLINE_DAYS = 5;
+type CountdownUrgency = 'normal' | 'warning' | 'danger' | 'expired';
+
+function useShippingCountdown(createdAt: string, active: boolean) {
+  const [text,    setText]    = useState('');
+  const [urgency, setUrgency] = useState<CountdownUrgency>('normal');
+
+  useEffect(() => {
+    if (!active) return;
+
+    const deadline = new Date(createdAt);
+    deadline.setDate(deadline.getDate() + SHIP_DEADLINE_DAYS);
+
+    function tick() {
+      const diff = deadline.getTime() - Date.now();
+      if (diff <= 0) {
+        setText('¡Plazo vencido!');
+        setUrgency('expired');
+        return;
+      }
+      const totalH = diff / 3_600_000;
+      const d      = Math.floor(diff / 86_400_000);
+      const h      = Math.floor((diff % 86_400_000) / 3_600_000);
+      const m      = Math.floor((diff % 3_600_000)  / 60_000);
+
+      setUrgency(totalH < 24 ? 'danger' : totalH < 48 ? 'warning' : 'normal');
+      setText(d > 0 ? `${d}d ${h}h ${m}m` : `${h}h ${m}m`);
+    }
+
+    tick();
+    const id = setInterval(tick, 60_000);
+    return () => clearInterval(id);
+  }, [active, createdAt]);
+
+  return { text, urgency };
+}
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
   paid:      'Pagado',
@@ -21,11 +58,13 @@ const TIMELINE_STEPS: { status: OrderStatus; label: string }[] = [
 const STATUS_ORDER: OrderStatus[] = ['paid', 'shipped', 'received', 'completed'];
 
 interface Props {
-  order:            OrderWithDetails;
-  role:             'buyer' | 'seller';
-  onShipClick:      (order: OrderWithDetails) => void;
-  onReceiveClick:   (orderId: string) => void;
-  onCompleteClick:  (orderId: string) => void;
+  order:              OrderWithDetails;
+  role:               'buyer' | 'seller';
+  onShipClick:        (order: OrderWithDetails) => void;
+  onReceiveClick:     (orderId: string) => void;
+  onCompleteClick:    (orderId: string) => void;
+  onExpiredCancel?:   (orderId: string) => void;
+  onSellerCancel?:    (orderId: string) => void;
 }
 
 function formatDate(iso: string | null): string {
@@ -33,9 +72,19 @@ function formatDate(iso: string | null): string {
   return new Date(iso).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-export default function OrderCard({ order, role, onShipClick, onReceiveClick, onCompleteClick }: Props) {
-  const navigate    = useNavigate();
-  const currentIdx  = STATUS_ORDER.indexOf(order.order_status);
+export default function OrderCard({ order, role, onShipClick, onReceiveClick, onCompleteClick, onExpiredCancel, onSellerCancel }: Props) {
+  const navigate           = useNavigate();
+  const currentIdx         = STATUS_ORDER.indexOf(order.order_status);
+  const countdown          = useShippingCountdown(order.created_at, role === 'seller' && order.order_status === 'paid');
+  const cancelFiredRef     = useRef(false);
+  const [confirmCancel, setConfirmCancel] = useState(false);
+
+  useEffect(() => {
+    if (countdown.urgency === 'expired' && !cancelFiredRef.current && onExpiredCancel) {
+      cancelFiredRef.current = true;
+      onExpiredCancel(order.id);
+    }
+  }, [countdown.urgency]);
   const otherUser   = role === 'buyer' ? order.seller : order.buyer;
   const finalPrice  = order.final_price ?? order.price_at_purchase ?? 0;
 
@@ -97,6 +146,17 @@ export default function OrderCard({ order, role, onShipClick, onReceiveClick, on
         </div>
       </div>
 
+      {/* Countdown (seller, estado paid) */}
+      {role === 'seller' && order.order_status === 'paid' && countdown.text && (
+        <div className={`oc-countdown oc-countdown--${countdown.urgency}`}>
+          <span className="oc-countdown-icon">⏱</span>
+          <div className="oc-countdown-body">
+            <span className="oc-countdown-label">Tiempo para enviar</span>
+            <span className="oc-countdown-value">{countdown.text}</span>
+          </div>
+        </div>
+      )}
+
       {/* Timeline */}
       <div className="oc-timeline">
         {timelineItems}
@@ -123,9 +183,16 @@ export default function OrderCard({ order, role, onShipClick, onReceiveClick, on
       {/* Action buttons */}
       <div className="oc-actions">
         {role === 'seller' && order.order_status === 'paid' && (
-          <button className="btn-primary oc-action-btn" onClick={() => onShipClick(order)}>
-            Marcar como enviado
-          </button>
+          <>
+            <button className="btn-primary oc-action-btn" onClick={() => onShipClick(order)}>
+              Marcar como enviado
+            </button>
+            {onSellerCancel && (
+              <button className="btn-danger oc-action-btn" onClick={() => setConfirmCancel(true)}>
+                Cancelar venta
+              </button>
+            )}
+          </>
         )}
         {role === 'buyer' && order.order_status === 'shipped' && (
           <button className="btn-primary oc-action-btn" onClick={() => onReceiveClick(order.id)}>
@@ -146,6 +213,39 @@ export default function OrderCard({ order, role, onShipClick, onReceiveClick, on
           </button>
         )}
       </div>
+
+      {/* Seller cancel confirmation modal */}
+      {confirmCancel && (
+        <div className="oc-cancel-overlay" onClick={() => setConfirmCancel(false)}>
+          <div className="oc-cancel-modal" onClick={e => e.stopPropagation()}>
+            <div className="oc-cancel-danger-strip">
+              <span className="oc-cancel-icon">⚠️</span>
+              <h3 className="oc-cancel-title">¿Cancelar la venta?</h3>
+            </div>
+            <div className="oc-cancel-content">
+              <p className="oc-cancel-body">
+                Estás a punto de cancelar la venta de <strong>{order.product.title}</strong>.
+                Esta acción no se puede deshacer.
+              </p>
+              <div className="oc-cancel-refund-note">
+                <span className="oc-cancel-refund-note-icon">💳</span>
+                <span>El importe abonado por el comprador será reembolsado íntegramente y el producto volverá a estar disponible.</span>
+              </div>
+              <div className="oc-cancel-actions">
+                <button className="btn-secondary" onClick={() => setConfirmCancel(false)}>
+                  Volver
+                </button>
+                <button
+                  className="btn-danger"
+                  onClick={() => { setConfirmCancel(false); onSellerCancel!(order.id); }}
+                >
+                  Sí, cancelar venta
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

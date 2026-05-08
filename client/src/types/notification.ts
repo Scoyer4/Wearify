@@ -1,7 +1,8 @@
 export type NotificationType =
   | 'follow' | 'follow_request' | 'follow_accepted'
   | 'new_product' | 'price_drop'
-  | 'new_sale' | 'order_shipped' | 'order_received';
+  | 'new_sale' | 'order_shipped' | 'order_received'
+  | 'product_deleted';
 
 export interface Notification {
   id: string;
@@ -9,6 +10,7 @@ export interface Notification {
   type: NotificationType;
   from_user_id: string | null;
   product_id: string | null;
+  message: string | null;
   is_read: boolean;
   created_at: string;
   from_user?: {

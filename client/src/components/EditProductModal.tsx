@@ -3,42 +3,80 @@ import { supabase } from '../lib/supabase';
 import { getCategories, updateProduct } from '../services/api';
 import { Producto } from '../types';
 import './EditProductModal.css';
+import './CreateProductForm.css';
 
 interface Category { id: number; name: string; slug: string | null }
 interface Props { producto: Producto; token: string; onClose: () => void; onSaved: (updated: Producto) => void; }
 
-export default function EditProductModal({ producto, token, onClose, onSaved }: Props) {
-  const [title, setTitle]             = useState(producto.title);
-  const [description, setDescription] = useState(producto.description ?? '');
-  const [price, setPrice]             = useState(String(producto.price));
-  const [brand, setBrand]             = useState(producto.brand ?? '');
-  const [size, setSize]               = useState(producto.size);
-  const [condition, setCondition]     = useState(producto.condition);
-  const [status, setStatus]           = useState(producto.status);
-  const [categoryId, setCategoryId]   = useState(String(producto.category_id ?? ''));
-  const [categories, setCategories]   = useState<Category[]>([]);
+const SHOE_KEYWORDS   = ['zapato', 'zapatilla', 'calzado', 'bota', 'sandalia', 'sneaker'];
+const ACCESS_KEYWORDS = ['accesorio', 'bolso', 'bolsa', 'gorra', 'cinturón', 'cinturon',
+                         'sombrero', 'joya', 'bisutería', 'bisuteria', 'complemento', 'gorro'];
+const SUIT_KEYWORDS   = ['traje'];
+const MAX_PHOTOS = 4;
 
-  // Imágenes ya guardadas que queremos conservar
+function getSizeOptions(cat: Category | undefined): string[] {
+  if (!cat) return [];
+  const text = `${cat.name} ${cat.slug ?? ''}`.toLowerCase();
+  if (SHOE_KEYWORDS.some(k => text.includes(k)))   return ['35','36','37','38','39','40','41','42','43','44','45','46'];
+  if (ACCESS_KEYWORDS.some(k => text.includes(k))) return ['Única'];
+  if (SUIT_KEYWORDS.some(k => text.includes(k)))   return ['36','38','40','42','44','46','48','50'];
+  return ['XS','S','M','L','XL','XXL'];
+}
+
+type SlotItem =
+  | { type: 'kept'; url: string; index: number }
+  | { type: 'new';  preview: string; index: number };
+
+export default function EditProductModal({ producto, token, onClose, onSaved }: Props) {
+  const [title,       setTitle]       = useState(producto.title);
+  const [description, setDescription] = useState(producto.description ?? '');
+  const [price,       setPrice]       = useState(String(producto.price));
+  const [brand,       setBrand]       = useState(producto.brand ?? '');
+  const [size,        setSize]        = useState(producto.size);
+  const [condition,   setCondition]   = useState(producto.condition);
+  const [status,      setStatus]      = useState(producto.status);
+  const [categoryId,  setCategoryId]  = useState(String(producto.category_id ?? ''));
+  const [categories,  setCategories]  = useState<Category[]>([]);
+
   const initialImages = producto.images?.length
     ? producto.images
     : producto.image_url ? [producto.image_url] : [];
-  const [keptImages, setKeptImages]   = useState<string[]>(initialImages);
+  const [keptImages, setKeptImages] = useState<string[]>(initialImages);
+  const [newEntries, setNewEntries] = useState<{ file: File; preview: string }[]>([]);
 
-  // Nuevos archivos a subir
-  const [newEntries, setNewEntries]   = useState<{ file: File; preview: string }[]>([]);
-  const [uploading, setUploading]     = useState(false);
-  const [saving, setSaving]           = useState(false);
-  const [error, setError]             = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [saving,    setSaving]    = useState(false);
+  const [error,     setError]     = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     getCategories().then(data => { if (data) setCategories(data); });
   }, []);
 
+  const selectedCategory = categories.find(c => c.id === parseInt(categoryId));
+  const sizeOptions      = getSizeOptions(selectedCategory);
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCategoryId(e.target.value);
+    setSize('');
+  };
+
+  const totalImages = keptImages.length + newEntries.length;
+
+  const allSlots: SlotItem[] = [
+    ...keptImages.map((url, index) => ({ type: 'kept' as const, url, index })),
+    ...newEntries.map((entry, index) => ({ type: 'new' as const, preview: entry.preview, index })),
+  ];
+
   const addFiles = (files: FileList | null) => {
     if (!files) return;
     const valid = Array.from(files).filter(f => f.type.startsWith('image/'));
-    setNewEntries(prev => [...prev, ...valid.map(f => ({ file: f, preview: URL.createObjectURL(f) }))]);
+    setNewEntries(prev => {
+      const remaining = MAX_PHOTOS - (keptImages.length + prev.length);
+      if (remaining <= 0) return prev;
+      const entries = valid.slice(0, remaining).map(f => ({ file: f, preview: URL.createObjectURL(f) }));
+      return [...prev, ...entries];
+    });
   };
 
   const removeKept = (index: number) => setKeptImages(prev => prev.filter((_, i) => i !== index));
@@ -58,7 +96,7 @@ export default function EditProductModal({ producto, token, onClose, onSaved }: 
       setUploading(true);
       for (let i = 0; i < newEntries.length; i++) {
         const { file } = newEntries[i];
-        const ext = file.name.split('.').pop();
+        const ext  = file.name.split('.').pop();
         const path = `${producto.id}_${Date.now()}_${i}.${ext}`;
         const { error: uploadError } = await supabase.storage
           .from('products').upload(path, file, { upsert: true });
@@ -89,90 +127,166 @@ export default function EditProductModal({ producto, token, onClose, onSaved }: 
     }
   };
 
-  const totalImages = keptImages.length + newEntries.length;
-
   return (
-    <div className="edit-modal-overlay" onClick={onClose}>
-      <div className="edit-modal" onClick={e => e.stopPropagation()}>
+    <div className="edit-modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="edit-modal">
+
         <div className="edit-modal__header">
           <h2 className="edit-modal__title">Editar prenda</h2>
           <button className="edit-modal__close" onClick={onClose} aria-label="Cerrar">✕</button>
         </div>
 
-        <form onSubmit={handleSubmit} className="edit-modal__form">
-          <input className="form-input span-2" type="text" placeholder="Título" required
-            value={title} onChange={e => setTitle(e.target.value)} />
+        <div className="edit-modal__body">
+          <form onSubmit={handleSubmit} className="cpf-form">
 
-          <input className="form-input" type="text" placeholder="Marca" required
-            value={brand} onChange={e => setBrand(e.target.value)} />
-
-          <input className="form-input" type="number" step="0.01" placeholder="Precio (€)" required
-            value={price} onChange={e => setPrice(e.target.value)} />
-
-          <select className="form-input" value={categoryId} onChange={e => setCategoryId(e.target.value)} required>
-            <option value="" disabled>Categoría...</option>
-            {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
-          </select>
-
-          <select className="form-input" value={size} onChange={e => setSize(e.target.value)} required>
-            <option value="" disabled>Talla...</option>
-            {['XS','S','M','L','XL','XXL'].map(s => <option key={s} value={s}>{s}</option>)}
-            <option value="Talla Única">Talla Única</option>
-          </select>
-
-          <select className="form-input" value={condition} onChange={e => setCondition(e.target.value as Producto['condition'])} required>
-            <option value="" disabled>Condición...</option>
-            {['Sin usar','Usado','Buen estado','Excelente','Como nuevo'].map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-
-          <select className="form-input" value={status} onChange={e => setStatus(e.target.value as Producto['status'])} required>
-            <option value="Disponible">Disponible</option>
-            <option value="Reservado">Reservado</option>
-            <option value="Vendido">Vendido</option>
-          </select>
-
-          {/* Gestor de imágenes */}
-          <div className="multi-image-picker span-2">
-            {keptImages.map((url, i) => (
-              <div key={`kept-${i}`} className="multi-image-thumb">
-                <img src={url} alt={`Foto ${i + 1}`} />
-                {i === 0 && <span className="multi-image-badge">Principal</span>}
-                <button type="button" className="multi-image-remove" onClick={() => removeKept(i)} title="Eliminar">✕</button>
-              </div>
-            ))}
-            {newEntries.map((entry, i) => (
-              <div key={`new-${i}`} className="multi-image-thumb">
-                <img src={entry.preview} alt={`Nueva ${i + 1}`} />
-                <button type="button" className="multi-image-remove" onClick={() => removeNew(i)} title="Eliminar">✕</button>
-              </div>
-            ))}
-            <button type="button" className="multi-image-add"
-              onClick={() => inputRef.current?.click()}
+            {/* ── Zona de fotos ─────────────────────── */}
+            <div
+              className="cpf-photo-zone"
               onDragOver={e => e.preventDefault()}
               onDrop={e => { e.preventDefault(); addFiles(e.dataTransfer.files); }}
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-              <span>{totalImages === 0 ? 'Añadir fotos' : '+ Más fotos'}</span>
-            </button>
-            <input ref={inputRef} type="file" accept="image/*" multiple style={{ display: 'none' }}
-              onChange={e => { addFiles(e.target.files); e.target.value = ''; }} />
-          </div>
+              <div className="cpf-photo-slots">
+                {[0, 1, 2, 3].map(i => {
+                  const slot = allSlots[i];
+                  const imgSrc = slot ? (slot.type === 'kept' ? slot.url : slot.preview) : null;
+                  return imgSrc ? (
+                    <div key={i} className="cpf-slot cpf-slot--filled">
+                      <img src={imgSrc} alt={`Foto ${i + 1}`} />
+                      {i === 0 && <span className="cpf-slot-badge">Principal</span>}
+                      <button
+                        type="button"
+                        className="cpf-slot-remove"
+                        onClick={e => {
+                          e.stopPropagation();
+                          if (slot.type === 'kept') removeKept(slot.index);
+                          else removeNew(slot.index);
+                        }}
+                        aria-label="Eliminar foto"
+                      >✕</button>
+                    </div>
+                  ) : (
+                    <button
+                      key={i}
+                      type="button"
+                      className="cpf-slot cpf-slot--empty"
+                      onClick={() => inputRef.current?.click()}
+                      disabled={totalImages >= MAX_PHOTOS}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                        <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                      <span className="cpf-slot-text">Añadir foto</span>
+                      {i === 0 && <span className="cpf-slot-principal">Principal</span>}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="cpf-photo-hint">Añade hasta 4 fotos · La primera será la foto principal</p>
+              <input
+                ref={inputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                style={{ display: 'none' }}
+                onChange={e => { addFiles(e.target.files); e.target.value = ''; }}
+              />
+            </div>
 
-          <textarea className="form-input span-2" rows={3} placeholder="Descripción..."
-            value={description} onChange={e => setDescription(e.target.value)} />
+            {/* ── Título ───────────────────────────── */}
+            <input
+              type="text"
+              placeholder="Título (ej. Camiseta Nike Vintage)"
+              required
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              className="cpf-input"
+            />
 
-          {error && <p className="edit-modal__error span-2">{error}</p>}
+            {/* ── Marca | Precio ───────────────────── */}
+            <div className="cpf-row">
+              <input
+                type="text"
+                placeholder="Marca (ej. Nike, Zara, Levis)"
+                required
+                value={brand}
+                onChange={e => setBrand(e.target.value)}
+                className="cpf-input"
+              />
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="Precio (€)"
+                required
+                value={price}
+                onChange={e => setPrice(e.target.value)}
+                className="cpf-input"
+              />
+            </div>
 
-          <div className="edit-modal__actions span-2">
-            <button type="button" className="edit-modal__btn-cancel" onClick={onClose}>Cancelar</button>
-            <button type="submit" className="btn-primary edit-modal__btn-save" disabled={saving || uploading}>
-              {uploading ? 'Subiendo imágenes...' : saving ? 'Guardando...' : 'Guardar cambios'}
-            </button>
-          </div>
-        </form>
+            {/* ── Categoría | Talla ────────────────── */}
+            <div className="cpf-row">
+              <select value={categoryId} onChange={handleCategoryChange} required className="cpf-input">
+                <option value="" disabled>Categoría...</option>
+                {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+              </select>
+
+              <select
+                value={size}
+                onChange={e => setSize(e.target.value)}
+                required
+                disabled={!categoryId}
+                className="cpf-input"
+              >
+                <option value="" disabled>
+                  {categoryId ? 'Talla...' : 'Selecciona primero una categoría'}
+                </option>
+                {sizeOptions.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+
+            {/* ── Condición | Estado ───────────────── */}
+            <div className="cpf-row">
+              <select value={condition} onChange={e => setCondition(e.target.value as Producto['condition'])} required className="cpf-input">
+                <option value="" disabled>Condición de la prenda...</option>
+                {['Sin usar', 'Como nuevo', 'Excelente', 'Buen estado', 'Usado'].map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+
+              <select value={status} onChange={e => setStatus(e.target.value as Producto['status'])} required className="cpf-input">
+                <option value="Disponible">Disponible</option>
+                <option value="Reservado">Reservado</option>
+                <option value="Vendido">Vendido</option>
+              </select>
+            </div>
+
+            {/* ── Descripción ──────────────────────── */}
+            <textarea
+              placeholder="Describe la prenda, posibles defectos, medidas..."
+              rows={4}
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              className="cpf-input cpf-textarea"
+            />
+
+            {error && (
+              <p className={`cpf-message cpf-message--err`}>{error}</p>
+            )}
+
+            {/* ── Acciones ─────────────────────────── */}
+            <div className="edit-modal__actions">
+              <button type="button" className="edit-modal__btn-cancel" onClick={onClose} disabled={saving || uploading}>
+                Cancelar
+              </button>
+              <button type="submit" className="btn-primary edit-modal__btn-save" disabled={saving || uploading}>
+                {uploading ? 'Subiendo imágenes...' : saving ? 'Guardando...' : 'Guardar cambios'}
+              </button>
+            </div>
+
+          </form>
+        </div>
+
       </div>
     </div>
   );

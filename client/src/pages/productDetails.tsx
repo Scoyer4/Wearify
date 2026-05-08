@@ -7,6 +7,7 @@ import { Producto } from '../types';
 import { useCart } from '../context/cartContext';
 import ContactSellerButton from '../components/ContactSellerButton/ContactSellerButton';
 import EditProductModal from '../components/EditProductModal';
+import ReportModal from '../components/ReportModal/ReportModal';
 
 export default function ProductDetail({ session }: { session: Session | null }) {
   const { id } = useParams();
@@ -30,6 +31,7 @@ export default function ProductDetail({ session }: { session: Session | null }) 
 
   const isOwner = !!(session && producto && session.user.id === producto.seller_id);
   const isSold  = producto?.is_sold ?? false;
+  const [showReport, setShowReport] = useState(false);
 
   useEffect(() => {
     const cargarDetalle = async () => {
@@ -263,6 +265,14 @@ export default function ProductDetail({ session }: { session: Session | null }) 
                   session={session}
                 />
               )}
+              {session && !isOwner && (
+                <button
+                  className="btn-report-link"
+                  onClick={() => setShowReport(true)}
+                >
+                  🚩 Reportar producto
+                </button>
+              )}
             </div>
           ) : (
             <div style={{ marginTop: '1.5rem', padding: '14px 18px', background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.2)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
@@ -282,6 +292,15 @@ export default function ProductDetail({ session }: { session: Session | null }) 
             setActiveImage(updated.image_url ?? null);
             setShowEditModal(false);
           }}
+        />
+      )}
+
+      {showReport && session && producto && (
+        <ReportModal
+          token={session.access_token}
+          productId={producto.id}
+          targetName={producto.title}
+          onClose={() => setShowReport(false)}
         />
       )}
 

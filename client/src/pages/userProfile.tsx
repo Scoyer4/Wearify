@@ -5,6 +5,7 @@ import { getPublicProfile, getProductsBySeller } from '../services/api';
 import { getUserReviews, ReviewWithReviewer } from '../services/reviewService';
 import { useFollow } from '../hooks/useFollow';
 import { Producto, PerfilPublico } from '../types';
+import ReportModal from '../components/ReportModal/ReportModal';
 
 export default function UserProfile({ session }: { session: Session | null }) {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +21,7 @@ export default function UserProfile({ session }: { session: Session | null }) {
 
   const esMiPerfil = session?.user?.id === id;
   const perfilPrivado = perfil?.is_private && !esMiPerfil && iFollow !== 'accepted';
+  const [showReport, setShowReport] = useState(false);
 
   useEffect(() => {
     const cargarDatos = async () => {
@@ -118,18 +120,25 @@ export default function UserProfile({ session }: { session: Session | null }) {
           </div>
         </div>
 
-        {!esMiPerfil && session && (
-          <button
-            onClick={handleFollowClick}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            disabled={followLoading}
-            className={`action-btn ${followModifier}`}
-            style={{ padding: '10px 24px' }}
-          >
-            {followLoading ? '···' : followLabel}
-          </button>
-        )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
+          {!esMiPerfil && session && (
+            <button
+              onClick={handleFollowClick}
+              onMouseEnter={() => setHovered(true)}
+              onMouseLeave={() => setHovered(false)}
+              disabled={followLoading}
+              className={`action-btn ${followModifier}`}
+              style={{ padding: '10px 24px' }}
+            >
+              {followLoading ? '···' : followLabel}
+            </button>
+          )}
+          {!esMiPerfil && session && (
+            <button className="btn-report-link" onClick={() => setShowReport(true)}>
+              🚩 Reportar usuario
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="profile-content" style={{ marginTop: '2rem' }}>
@@ -208,6 +217,21 @@ export default function UserProfile({ session }: { session: Session | null }) {
                           ))}
                         </div>
                       </div>
+                      {r.product && (
+                        <div
+                          className="review-card-product"
+                          onClick={() => navigate(`/producto/${r.product!.id}`)}
+                        >
+                          {r.product.image_url
+                            ? <img src={r.product.image_url} alt={r.product.title} className="review-card-product-img" />
+                            : <div className="review-card-product-img review-card-product-img--placeholder" />
+                          }
+                          <span className="review-card-product-title">{r.product.title}</span>
+                          <svg className="review-card-product-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                          </svg>
+                        </div>
+                      )}
                       {r.comment && <p className="review-card-comment">{r.comment}</p>}
                     </div>
                   ))}
@@ -217,6 +241,15 @@ export default function UserProfile({ session }: { session: Session | null }) {
           </>
         )}
       </div>
+
+      {showReport && session && perfil && (
+        <ReportModal
+          token={session.access_token}
+          userId={perfil.id}
+          targetName={perfil.username ?? 'Este usuario'}
+          onClose={() => setShowReport(false)}
+        />
+      )}
     </section>
   );
 }
