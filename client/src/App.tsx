@@ -18,6 +18,7 @@ import Checkout from './pages/Checkout/Checkout';
 import CheckoutSuccess from './pages/CheckoutSuccess/CheckoutSuccess';
 import PaymentProcessing from './pages/PaymentProcessing/PaymentProcessing';
 import Orders from './pages/Orders/Orders';
+import Notifications from './pages/Notifications/Notifications';
 
 // Componentes globales
 import Navbar from './components/navbar';
@@ -61,6 +62,11 @@ function App() {
               element={session ? <Profile session={session} /> : <Navigate to="/login" />} 
             />
             
+            <Route
+              path="/notifications"
+              element={session ? <Notifications session={session} /> : <Navigate to="/login" />}
+            />
+
             <Route
               path="/pedidos"
               element={session ? <Orders session={session} /> : <Navigate to="/login" />}

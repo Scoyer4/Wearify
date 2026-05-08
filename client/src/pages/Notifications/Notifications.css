@@ -1,0 +1,367 @@
+/* ── Página ───────────────────────────────────────────────────────────────── */
+
+.nf-page {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 28px 16px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+
+.nf-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.nf-back-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  transition: color var(--transition-fast), background var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.nf-back-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-card);
+}
+
+.nf-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+  flex: 1;
+}
+
+.nf-mark-all-btn {
+  background: none;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 6px 14px;
+  white-space: nowrap;
+  transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+}
+
+.nf-mark-all-btn:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+  background: rgba(124, 95, 255, 0.06);
+}
+
+/* ── Groups & separators ────────────────────────────────────────────────── */
+
+.nf-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
+}
+
+.nf-group-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  padding: 14px 4px 8px;
+}
+
+/* ── Notification row ───────────────────────────────────────────────────── */
+
+.nf-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 12px;
+  border-radius: var(--radius-md);
+  background: var(--ink-800, #11112a);
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: background-color 0.25s ease, border-color var(--transition-fast);
+  outline: none;
+}
+
+.nf-row:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-glow);
+}
+
+.nf-row:focus-visible {
+  border-color: var(--brand);
+}
+
+.nf-row--unread {
+  background: rgba(27, 27, 58, 0.9);
+  border-color: rgba(124, 95, 255, 0.12);
+}
+
+.nf-row--unread:hover {
+  background: rgba(35, 35, 72, 0.95);
+}
+
+/* ── Indicador de no leída ──────────────────────────────────────────────── */
+
+.nf-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--brand);
+  flex-shrink: 0;
+  margin-top: 6px;
+  box-shadow: 0 0 8px var(--brand-glow);
+  opacity: 1;
+  transition: opacity 0.35s ease;
+}
+
+.nf-indicator--hidden {
+  opacity: 0;
+}
+
+/* ── Avatar (foto usuario) ──────────────────────────────────────────────── */
+
+.nf-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.nf-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Avatar (icono por tipo) ────────────────────────────────────────────── */
+
+.nf-avatar--icon {
+  border: none;
+}
+
+.nf-avatar--success { background: rgba(0, 212, 170, 0.15);  color: var(--success); }
+.nf-avatar--brand   { background: rgba(124, 95, 255, 0.15); color: var(--brand);   }
+.nf-avatar--warning { background: rgba(255, 184, 77, 0.15); color: var(--warning); }
+.nf-avatar--teal    { background: rgba(0, 212, 170, 0.10);  color: var(--accent-2);}
+
+/* ── Cuerpo del texto ───────────────────────────────────────────────────── */
+
+.nf-row-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.nf-row-text {
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.nf-row-time {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.nf-time-relative {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.nf-time-exact {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  opacity: 0.65;
+}
+
+.nf-time-exact::before {
+  content: '·';
+  margin-right: 6px;
+}
+
+/* ── Acción "Ver →" ─────────────────────────────────────────────────────── */
+
+.nf-row-action {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--brand);
+  flex-shrink: 0;
+  align-self: center;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  white-space: nowrap;
+}
+
+.nf-row:hover .nf-row-action {
+  opacity: 1;
+}
+
+/* ── Cargar más ─────────────────────────────────────────────────────────── */
+
+.nf-load-more {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.87rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.nf-load-more:hover:not(:disabled) {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+  border-color: var(--border-glow);
+}
+
+.nf-load-more:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Empty state ────────────────────────────────────────────────────────── */
+
+.nf-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 80px 20px;
+  gap: 14px;
+}
+
+.nf-empty-icon {
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+.nf-empty-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.nf-empty-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+  max-width: 300px;
+  line-height: 1.5;
+}
+
+/* ── Error ──────────────────────────────────────────────────────────────── */
+
+.nf-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* ── Skeleton ───────────────────────────────────────────────────────────── */
+
+.nf-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nf-skeleton-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.nf-skeleton-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.nf-skeleton-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nf-skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-elevated) 50%, var(--bg-card) 75%);
+  background-size: 200% 100%;
+  animation: nf-shimmer 1.4s infinite;
+}
+
+@keyframes nf-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  .nf-page {
+    padding: 16px 12px 60px;
+  }
+
+  .nf-title {
+    font-size: 1.25rem;
+  }
+
+  .nf-mark-all-btn {
+    font-size: 0.72rem;
+    padding: 5px 10px;
+  }
+
+  .nf-row-action {
+    display: none;
+  }
+}

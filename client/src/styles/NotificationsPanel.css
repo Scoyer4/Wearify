@@ -1,12 +1,13 @@
+/* ── Panel ───────────────────────────────────────────────────────────────── */
+
 .notif-panel {
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
   width: 340px;
-  max-height: 480px;
   display: flex;
   flex-direction: column;
-  background: rgba(17, 17, 42, 0.96);
+  background: rgba(17, 17, 42, 0.97);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(124, 95, 255, 0.15);
@@ -14,56 +15,56 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 30px rgba(124, 95, 255, 0.06);
   overflow: hidden;
   z-index: 600;
-  animation: fadeInDown 0.18s ease;
+  animation: notifFadeIn 0.18s ease;
 }
 
-@keyframes fadeInDown {
+@keyframes notifFadeIn {
   from { opacity: 0; transform: translateY(-8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Header ─────────────────────────────────────────────────────────────── */
+
 .notif-panel__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px 18px 12px;
+  padding: 14px 16px 10px;
   border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0;
 }
 
 .notif-panel__title {
-  font-family: var(--font-display);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: 0.3px;
 }
 
+/* ── Empty / loading ────────────────────────────────────────────────────── */
+
 .notif-panel__empty {
   text-align: center;
   color: var(--text-muted);
-  padding: 3rem 1rem;
-  font-size: 0.9rem;
+  padding: 2.5rem 1rem;
+  font-size: 0.87rem;
 }
 
 .notif-panel__loading {
-  padding: 8px 0;
+  padding: 6px 0;
 }
+
+/* ── List ───────────────────────────────────────────────────────────────── */
 
 .notif-list {
   list-style: none;
-  overflow-y: auto;
-  flex: 1;
-  padding: 6px 0;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(124, 95, 255, 0.2) transparent;
+  padding: 4px 0;
 }
 
 .notif-item {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 10px 14px;
   cursor: pointer;
   transition: background var(--transition-fast);
   position: relative;
@@ -74,16 +75,22 @@
 }
 
 .notif-item--unread {
-  background: rgba(124, 95, 255, 0.06);
+  background: rgba(27, 27, 58, 0.8);
+}
+
+.notif-item--unread:hover {
+  background: rgba(35, 35, 70, 0.9);
 }
 
 .notif-item--skeleton {
   pointer-events: none;
 }
 
+/* ── Avatar (foto de usuario) ───────────────────────────────────────────── */
+
 .notif-avatar {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
@@ -93,8 +100,9 @@
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--text-secondary);
+  margin-top: 1px;
 }
 
 .notif-avatar img {
@@ -110,60 +118,79 @@
   border: none;
 }
 
+/* ── Avatar (icono por tipo) ────────────────────────────────────────────── */
+
+.notif-avatar--icon {
+  border: none;
+}
+
+.notif-avatar--success { background: rgba(0, 212, 170, 0.15);  color: var(--success); }
+.notif-avatar--brand   { background: rgba(124, 95, 255, 0.15); color: var(--brand);   }
+.notif-avatar--warning { background: rgba(255, 184, 77, 0.15); color: var(--warning); }
+.notif-avatar--teal    { background: rgba(0, 212, 170, 0.10);  color: var(--accent-2);}
+
+/* ── Body ───────────────────────────────────────────────────────────────── */
+
 .notif-body {
   flex: 1;
   min-width: 0;
 }
 
 .notif-text {
-  font-size: 0.85rem;
+  font-size: 0.83rem;
   color: var(--text-primary);
-  line-height: 1.4;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.45;
   margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .notif-time {
-  font-size: 0.75rem;
+  font-size: 0.73rem;
   color: var(--text-muted);
   margin-top: 3px;
   display: block;
 }
 
+/* ── Punto de no leída ──────────────────────────────────────────────────── */
+
 .notif-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--brand);
   flex-shrink: 0;
   box-shadow: 0 0 6px var(--brand-glow);
+  margin-top: 5px;
 }
 
-.notif-panel__more {
+/* ── Footer "Ver todas" ─────────────────────────────────────────────────── */
+
+.notif-panel__footer {
   width: 100%;
-  padding: 12px;
+  padding: 11px 16px;
   background: transparent;
   border: none;
   border-top: 1px solid var(--border-subtle);
-  color: var(--text-secondary);
+  color: var(--brand);
   font-family: var(--font-sans);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 600;
   cursor: pointer;
+  text-align: center;
   transition: background var(--transition-fast), color var(--transition-fast);
   flex-shrink: 0;
+  letter-spacing: 0.01em;
 }
 
-.notif-panel__more:hover:not(:disabled) {
-  background: var(--bg-card-hover);
+.notif-panel__footer:hover {
+  background: rgba(124, 95, 255, 0.06);
   color: var(--text-primary);
 }
 
-.notif-panel__more:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
+/* ── Skeleton lines ─────────────────────────────────────────────────────── */
 
 .skeleton-line {
   height: 11px;
@@ -178,7 +205,8 @@
   100% { background-position: -200% 0; }
 }
 
-/* Responsive */
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+
 @media (max-width: 600px) {
   .notif-panel {
     position: fixed;
@@ -186,7 +214,6 @@
     right: 12px;
     left: 12px;
     width: auto;
-    max-height: 70vh;
     border-radius: var(--radius-md);
   }
 }

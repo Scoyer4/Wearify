@@ -136,3 +136,214 @@
     gap: 12px;
   }
 }
+
+/* ═══════════════════════════════════════════════════════
+   CATEGORY LINKS (desktop only)
+═══════════════════════════════════════════════════════ */
+
+.nav-categories {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.nav-cat-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: rgba(245, 245, 240, 0.6);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background var(--transition-fast);
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.nav-cat-link:hover {
+  color: var(--bone);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ═══════════════════════════════════════════════════════
+   AVATAR BUTTON + DROPDOWN
+═══════════════════════════════════════════════════════ */
+
+.nav-avatar-wrapper {
+  position: relative;
+}
+
+.nav-avatar-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  padding: 4px 10px 4px 4px;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.nav-avatar-btn:hover,
+.nav-avatar-btn--open {
+  border-color: var(--border-glow);
+  background: var(--bg-card-hover);
+}
+
+.nav-avatar-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.nav-avatar-initials {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+.nav-avatar-chevron {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: transform var(--transition-fast);
+}
+
+.nav-avatar-btn--open .nav-avatar-chevron {
+  transform: rotate(180deg);
+}
+
+/* ── Dropdown panel ── */
+
+.nav-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 210px;
+  background: var(--ink-800);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 6px;
+  box-shadow: var(--shadow-lg);
+  z-index: 600;
+  animation: fadeInDown 0.15s ease;
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.nav-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.87rem;
+  text-decoration: none;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  text-align: left;
+}
+
+.nav-dropdown-item:hover {
+  background: var(--ink-700);
+  color: var(--text-primary);
+}
+
+.nav-dropdown-item--danger {
+  color: var(--danger);
+}
+
+.nav-dropdown-item--danger:hover {
+  background: rgba(255, 77, 106, 0.1);
+  color: var(--danger);
+}
+
+.nav-dropdown-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+}
+
+.nav-dropdown-badge {
+  margin-left: auto;
+  background: var(--brand);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  border-radius: var(--radius-pill);
+  padding: 1px 7px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.nav-dropdown-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 6px 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   AUTH BUTTONS (no session)
+═══════════════════════════════════════════════════════ */
+
+.nav-auth-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-auth-btn {
+  font-size: 0.82rem;
+  padding: 7px 16px;
+  text-decoration: none;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════════ */
+
+/* Móvil: ocultar categorías */
+@media (max-width: 768px) {
+  .nav-categories {
+    display: none;
+  }
+
+  .nav-auth-btns {
+    gap: 6px;
+  }
+
+  .nav-auth-btn {
+    font-size: 0.78rem;
+    padding: 6px 12px;
+  }
+}
+
+/* Pantallas muy pequeñas: reducir dropdown */
+@media (max-width: 420px) {
+  .nav-dropdown {
+    right: -8px;
+    min-width: 190px;
+  }
+}
