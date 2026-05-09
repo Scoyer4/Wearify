@@ -54,7 +54,7 @@ body {
 .main-content {
   margin: 0 auto;
   width: 100%;
-  padding-bottom: 5rem;
+  display: flow-root;
 }
 
 /* =========================================
@@ -95,6 +95,7 @@ body {
   transition: transform var(--transition-fast);
   user-select: none;
   display: flex;
+  justify-content: center;
   align-items: center;
 }
 .logo-title img {
@@ -231,10 +232,9 @@ body {
 
 .product-grid {
   display: grid;
-  gap: 1.2rem;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  margin: 0.5rem 4rem 0;
-  padding-bottom: 2rem;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
+  margin: 0.5rem 4rem 1.5rem;
   animation: fadeInUp 0.4s ease;
 }
 
@@ -260,7 +260,7 @@ body {
 .product-image-wrapper {
   position: relative;
   width: 100%;
-  height: 260px;
+  height: 210px;
   background: var(--bg-secondary);
   overflow: hidden;
   display: flex;
@@ -382,11 +382,11 @@ body {
 
 /* ── Product Info ── */
 .product-info {
-  padding: 14px 16px 16px;
+  padding: 10px 12px 12px;
 }
 .product-title {
   font-family: var(--font-heading);
-  font-size: 1.05rem;
+  font-size: 0.9rem;
   font-weight: 600;
   margin-bottom: 4px;
   color: var(--text-primary);
@@ -399,8 +399,8 @@ body {
   color: var(--accent);
   font-family: var(--font-mono);
   font-weight: 700;
-  font-size: 1.1rem;
-  margin: 6px 0;
+  font-size: 0.95rem;
+  margin: 4px 0;
 }
 
 /* ── Chips ── */
@@ -436,7 +436,7 @@ body {
    ========================================= */
 .product-detail-section {
   animation: fadeInUp 0.35s ease;
-  margin: 1rem 4rem 0;
+  margin: 0 4rem;
 }
 
 .product-detail-section .section-block {
@@ -648,37 +648,8 @@ body {
 }
 
 /* =========================================
-   LOGIN SCREEN
+   LOGIN SCREEN — ver client/src/styles/Login.css
    ========================================= */
-.login-screen {
-  display: flex;
-  flex-direction: column;
-  min-height: 80vh;
-  align-items: center;
-  justify-content: center;
-  animation: fadeInUp 0.5s ease;
-}
-.login-logo-large {
-  font-family: var(--font-heading);
-  color: var(--text-primary);
-  font-size: 2.4rem;
-  font-weight: 700;
-  margin-bottom: 0.8rem;
-  letter-spacing: -0.5px;
-  text-align: center;
-}
-.login-subtitle {
-  color: var(--text-secondary);
-  font-family: var(--font-body);
-  margin-bottom: 2rem;
-  font-size: 1.05rem;
-  text-align: center;
-}
-.login-box {
-  border: none;
-  margin-top: 10px;
-  border-radius: var(--radius-lg);
-}
 
 /* =========================================
    CARRITO
@@ -847,8 +818,8 @@ body {
 .profile-section {
   background: var(--bg-card);
   max-width: 1060px;
-  margin: 2.5rem auto 6rem;
-  padding: 2.5rem 3.5rem 6rem;
+  margin: 2.5rem auto 3rem;
+  padding: 0 3.5rem 2rem;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-subtle);
   animation: fadeInUp 0.35s ease;
@@ -1289,8 +1260,8 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 
 /* ── Tablet / phablet (≤ 768 px) ───────── */
 @media (max-width: 768px) {
-  /* Variables globales */
-  :root { --nav-height: 96px; }
+  /* Variables globales — 3 filas: logo+acciones + búsqueda + cats */
+  :root { --nav-height: 152px; }
 
   /* Layout */
   .main-content { padding: 0; }
@@ -1336,11 +1307,12 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
   /* Filtros del catálogo */
   .filter-bar     { width: 100%; }
   .filter-select  { flex: 1; min-width: 0; }
+
 }
 
 /* ── Móvil pequeño (≤ 480 px) ──────────── */
 @media (max-width: 480px) {
-  :root { --nav-height: 88px; }
+  :root { --nav-height: 132px; }
 
   /* Ajuste extra del logo */
   .logo-title img { height: 36px; }
@@ -1372,7 +1344,7 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
    ========================================= */
 .hero-section {
   position: relative;
-  padding: 3.5rem 0 2.5rem;
+  padding: 3rem 0 4.5rem;
   text-align: center;
   overflow: hidden;
 }
@@ -1433,7 +1405,7 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
   color: var(--text-secondary);
   font-size: 1rem;
   margin-bottom: 2rem;
-  max-width: 440px;
+  max-width: 550px;
   margin-left: auto;
   margin-right: auto;
   line-height: 1.6;
@@ -1572,7 +1544,7 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
    SECTION BLOCK (recién añadido, etc.)
    ========================================= */
 .section-block {
-  margin: 2rem 4rem;
+  margin: 2rem 4rem 0;
 }
 .section-block-title {
   font-family: var(--font-heading);
@@ -1585,7 +1557,7 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
   display: flex;
   gap: 1rem;
   overflow-x: auto;
-  padding-bottom: 0.75rem;
+  padding-bottom: 1.5rem;
   scrollbar-width: thin;
   scrollbar-color: rgba(108, 99, 255, 0.3) transparent;
 }
@@ -1758,18 +1730,18 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 .skeleton-image {
   width: 100%;
-  height: 260px;
+  height: 210px;
   border-radius: 0;
   display: block;
 }
 .skeleton-title {
-  height: 14px;
-  margin: 14px 16px 8px;
+  height: 13px;
+  margin: 10px 12px 7px;
   width: 65%;
 }
 .skeleton-price {
-  height: 14px;
-  margin: 0 16px 16px;
+  height: 13px;
+  margin: 0 12px 12px;
   width: 35%;
 }
 

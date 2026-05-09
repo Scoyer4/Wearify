@@ -98,19 +98,20 @@ export default function Navbar({ session, isAdmin }: { session: Session | null; 
     return false;
   }
 
-  const isHome = location.pathname === '/' && !catParam && !ordenParam && !searchParam;
+  const isHome      = location.pathname === '/' && !catParam && !ordenParam && !searchParam;
+  const isLoginPage = location.pathname === '/login';
 
   return (
     <header className="main-header">
 
       {/* ── FILA 1 ──────────────────────────────────────────── */}
-      <div className="nav-top">
+      <div className={`nav-top${isLoginPage ? ' nav-top--login' : ''}`}>
 
         <Link to="/" className="logo-title">
           <img src={logoImage} alt="logoWearify" />
         </Link>
 
-        <form className="nav-search" onSubmit={handleSearch}>
+        {!isLoginPage && <form className="nav-search" onSubmit={handleSearch}>
           <svg className="nav-search-icon" viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -122,9 +123,9 @@ export default function Navbar({ session, isAdmin }: { session: Session | null; 
             onChange={e => setSearchValue(e.target.value)}
             placeholder="Busca por marca, estilo, talla..."
           />
-        </form>
+        </form>}
 
-        <div className="nav-actions">
+        {!isLoginPage && <div className="nav-actions">
           {session ? (
             <>
               {/* Notificaciones */}
@@ -268,11 +269,11 @@ export default function Navbar({ session, isAdmin }: { session: Session | null; 
               <Link to="/login" className="btn-primary  nav-auth-btn">Registrarse</Link>
             </div>
           )}
-        </div>
+        </div>}
       </div>
 
       {/* ── FILA 2 ──────────────────────────────────────────── */}
-      <nav className="nav-cats">
+      {!isLoginPage && <nav className="nav-cats">
         <button
           className={`nav-cat-item${isHome ? ' nav-cat-item--active' : ''}`}
           onClick={() => navigate('/')}
@@ -294,7 +295,7 @@ export default function Navbar({ session, isAdmin }: { session: Session | null; 
             {item.label}
           </button>
         ))}
-      </nav>
+      </nav>}
 
     </header>
   );

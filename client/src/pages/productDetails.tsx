@@ -8,6 +8,7 @@ import { useCart } from '../context/cartContext';
 import ContactSellerButton from '../components/ContactSellerButton/ContactSellerButton';
 import EditProductModal from '../components/EditProductModal';
 import ReportModal from '../components/ReportModal/ReportModal';
+import '../styles/ProductDetail.css';
 
 export default function ProductDetail({ session }: { session: Session | null }) {
   const { id } = useParams();
@@ -37,8 +38,14 @@ export default function ProductDetail({ session }: { session: Session | null }) 
   const [swapLoading, setSwapLoading]           = useState(false);
   const [swapError, setSwapError]               = useState<string | null>(null);
 
+  // UI local
+  const [descExpanded, setDescExpanded]   = useState(false);
+  const [openAccordion, setOpenAccordion] = useState<number | null>(null);
+
   const isOwner = !!(session && producto && session.user.id === producto.seller_id);
   const isSold  = producto?.is_sold ?? false;
+  const isLongDesc = (producto?.description?.length ?? 0) > 200;
+
   const [showReport, setShowReport] = useState(false);
 
   // Más del vendedor
@@ -49,14 +56,15 @@ export default function ProductDetail({ session }: { session: Session | null }) 
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
+
+  useEffect(() => {
     const cargarDetalle = async () => {
       setLoading(true);
       setError(false);
-
       if (!id) return;
-
       const data = await getProductById(id);
-
       if (data) {
         let nombreVendedor = 'Usuario Desconocido';
         if (data.seller_id) {
@@ -71,11 +79,9 @@ export default function ProductDetail({ session }: { session: Session | null }) 
       }
       setLoading(false);
     };
-
     cargarDetalle();
   }, [id]);
 
-  // Cargar productos del vendedor cuando el producto principal cargue
   useEffect(() => {
     if (!producto?.seller_id) return;
     setSellerProductsLoading(true);
@@ -85,7 +91,6 @@ export default function ProductDetail({ session }: { session: Session | null }) 
     });
   }, [producto?.seller_id, producto?.id]);
 
-  // Cargar favoritos del usuario
   useEffect(() => {
     if (!session?.access_token) return;
     getMyFavorites(session.access_token).then(data => {
@@ -109,7 +114,7 @@ export default function ProductDetail({ session }: { session: Session | null }) 
     const token = session.access_token;
     const nuevoSet = new Set(favoritos);
     const adding = !nuevoSet.has(prodId);
-    adding ? nuevoSet.add(prodId) : nuevoSet.delete(prodId);
+    if (adding) nuevoSet.add(prodId); else nuevoSet.delete(prodId);
     setFavoritos(nuevoSet);
     setSellerProducts(prev => prev.map(p =>
       p.id === prodId
@@ -157,12 +162,12 @@ export default function ProductDetail({ session }: { session: Session | null }) 
     setSwapProductsLoading(false);
   };
 
-  const toggleSwapProduct = (id: string) => {
+  const toggleSwapProduct = (pid: string) => {
     setSwapError(null);
     setSelectedSwapIds(prev => {
-      if (prev.includes(id)) return prev.filter(x => x !== id);
+      if (prev.includes(pid)) return prev.filter(x => x !== pid);
       if (prev.length >= 4) { setSwapError('Puedes seleccionar máximo 4 prendas'); return prev; }
-      return [...prev, id];
+      return [...prev, pid];
     });
   };
 
@@ -200,7 +205,6 @@ export default function ProductDetail({ session }: { session: Session | null }) 
 
   const handleSubmitOffer = async () => {
     if (!session || !producto) return;
-
     const price = parseFloat(offerInput.replace(',', '.'));
     if (isNaN(price) || price <= 0) {
       setOfferError('Introduce un precio válido mayor que 0');
@@ -210,10 +214,8 @@ export default function ProductDetail({ session }: { session: Session | null }) 
       setOfferError(`La oferta debe ser menor que el precio original (${producto.price} €)`);
       return;
     }
-
     setOfferLoading(true);
     setOfferError(null);
-
     try {
       const result = await makeDirectOffer(producto.id, price, session.access_token);
       setShowOfferModal(false);
@@ -225,15 +227,35 @@ export default function ProductDetail({ session }: { session: Session | null }) 
     }
   };
 
+  // ── Skeleton ──────────────────────────────────────────
   if (loading) {
-    return <section className="product-detail-section"><p className="loading-text">Cargando información del producto...</p></section>;
+    return (
+      <section className="pd-page">
+        <div className="pd-skel-layout">
+          <div className="pd-left">
+            <div className="skeleton pd-skel-img" />
+            <div className="pd-skel-thumbs">
+              {[0, 1, 2].map(i => <div key={i} className="skeleton pd-skel-thumb" />)}
+            </div>
+          </div>
+          <div className="pd-skel-right">
+            <div className="skeleton pd-skel-title" />
+            <div className="skeleton pd-skel-price" />
+            <div className="skeleton pd-skel-seller" />
+            <div className="skeleton pd-skel-chips" />
+            <div className="skeleton pd-skel-desc" />
+            <div className="skeleton pd-skel-actions" />
+          </div>
+        </div>
+      </section>
+    );
   }
 
+  // ── Error ─────────────────────────────────────────────
   if (error || !producto) {
     return (
-      <section className="product-detail-section">
-        <button onClick={() => navigate(-1)} className="btn-primary back-btn">← Volver</button>
-        <div className="empty-state">
+      <section className="pd-page">
+          <div className="empty-state">
           <p className="empty-state-text" style={{ color: 'var(--danger)', fontWeight: 'bold' }}>
             ⚠️ Error: No se pudo cargar la información del producto.
           </p>
@@ -243,43 +265,55 @@ export default function ProductDetail({ session }: { session: Session | null }) 
     );
   }
 
-  return (
-    <section className="product-detail-section">
-      <button onClick={() => navigate(-1)} className="back-btn" style={{ borderRadius: '16px' }}>←</button>
+  // ── Acordeones data ───────────────────────────────────
+  const ACCORDIONS = [
+    {
+      title: 'Política de devoluciones',
+      body: 'Los productos de segunda mano no admiten devoluciones salvo que no correspondan con la descripción.',
+    },
+    {
+      title: 'Compra segura',
+      body: 'Tu compra está protegida. El vendedor tiene 48h para confirmar el envío.',
+    },
+    {
+      title: 'Sobre el vendedor',
+      body: `Vendedor: @${producto.nombreVendedor}. Visita su perfil para ver más prendas y valoraciones.`,
+    },
+  ];
 
-      <div className="detail-container">
-        <div className="detail-image-wrapper" style={{ position: 'relative' }}>
-          {activeImage ? (
-            <img
-              src={activeImage}
-              alt={producto.title}
-              className="detail-image"
-              style={isSold ? { filter: 'grayscale(40%)', opacity: 0.8 } : undefined}
-            />
-          ) : (
-            <div className="detail-placeholder">Sin foto</div>
-          )}
-          {isSold && (
-            <div style={{
-              position: 'absolute', inset: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(0,0,0,0.32)',
-              borderRadius: 'var(--radius-md)',
-            }}>
-              <span style={{
-                background: 'rgba(255,77,106,0.92)',
-                color: '#fff', fontFamily: 'var(--font-mono)', fontWeight: 700,
-                fontSize: '1.15rem', letterSpacing: '0.14em', textTransform: 'uppercase',
-                padding: '10px 28px', borderRadius: 'var(--radius-pill)',
-              }}>Vendido</span>
-            </div>
-          )}
+  // ── Render ────────────────────────────────────────────
+  return (
+    <section className="pd-page">
+
+      {/* ── Layout dos columnas ── */}
+      <div className="pd-layout">
+
+        {/* ══ COLUMNA IZQUIERDA ══════════════════════════ */}
+        <div className="pd-left">
+          <div className="pd-img-main-wrap">
+            {activeImage ? (
+              <img
+                key={activeImage}
+                src={activeImage}
+                alt={producto.title}
+                className="pd-img-main"
+              />
+            ) : (
+              <div className="pd-img-placeholder">Sin foto</div>
+            )}
+            {isSold && (
+              <div className="pd-sold-overlay">
+                <span className="pd-sold-overlay-text">VENDIDO</span>
+              </div>
+            )}
+          </div>
+
           {(producto.images?.length ?? 0) > 1 && (
-            <div className="detail-thumbnails">
+            <div className="pd-thumbs">
               {producto.images!.map((url, i) => (
                 <button
                   key={i}
-                  className={`detail-thumb${activeImage === url ? ' detail-thumb--active' : ''}`}
+                  className={`pd-thumb${activeImage === url ? ' pd-thumb--active' : ''}`}
                   onClick={() => setActiveImage(url)}
                 >
                   <img src={url} alt={`Foto ${i + 1}`} />
@@ -289,125 +323,167 @@ export default function ProductDetail({ session }: { session: Session | null }) 
           )}
         </div>
 
-        <div className="detail-info-wrapper">
-          <h2 className="detail-title">{producto.title}</h2>
-          <p className="detail-price">{producto.price ? `${producto.price} €` : 'Consultar precio'}</p>
+        {/* ══ COLUMNA DERECHA ════════════════════════════ */}
+        <div className="pd-right">
 
-          <div className="seller-badge">
-            <div className="seller-avatar">
-              {sellerAvatarUrl
-                ? <img src={sellerAvatarUrl} alt={producto.nombreVendedor} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-                : <span style={{ fontSize: '1.1rem' }}>👤</span>
-              }
+          {/* Breadcrumb */}
+          <nav className="pd-breadcrumb" aria-label="breadcrumb">
+            <Link to="/" className="pd-breadcrumb-link">Inicio</Link>
+            <span className="pd-breadcrumb-sep">/</span>
+            <span className="pd-breadcrumb-cur">{producto.title}</span>
+          </nav>
+
+          {/* Título */}
+          <h1 className="pd-title">{producto.title}</h1>
+
+          {/* Precio */}
+          <p className={`pd-price${isSold ? ' pd-price--sold' : ''}`}>
+            {producto.price ? `${producto.price} €` : 'Consultar precio'}
+          </p>
+
+          {/* Tarjeta vendedor */}
+          <div className="pd-seller">
+            <div className="pd-seller-avatar">
+              {sellerAvatarUrl ? (
+                <img src={sellerAvatarUrl} alt={producto.nombreVendedor} className="pd-seller-avatar-img" />
+              ) : (
+                <span className="pd-seller-avatar-fallback">
+                  {(producto.nombreVendedor ?? '?')[0].toUpperCase()}
+                </span>
+              )}
             </div>
-            <div>
-              <p className="seller-label">Subido por</p>
-              <Link to={`/usuario/${producto.seller_id}`} style={{ fontWeight: 'bold', fontSize: '1.1rem', color: 'var(--accent)', textDecoration: 'none' }}>
+            <div className="pd-seller-info">
+              <span className="pd-seller-label">Subido por</span>
+              <Link to={`/usuario/${producto.seller_id}`} className="pd-seller-name">
                 @{producto.nombreVendedor}
               </Link>
             </div>
+            <Link to={`/usuario/${producto.seller_id}`} className="pd-seller-profile-btn">
+              Ver perfil
+            </Link>
           </div>
 
-          <div className="detail-desc-box">
-            <h3 className="detail-desc-title">Descripción</h3>
-            <p className="detail-desc-text">{producto.description || 'El vendedor no ha añadido una descripción.'}</p>
-          </div>
-
-          <div className="detail-tags">
-            {producto.brand     && <span className="detail-tag">Marca: {producto.brand}</span>}
-            {producto.size      && <span className="detail-tag">Talla: {producto.size}</span>}
-            {producto.condition && <span className="detail-tag">Estado: {producto.condition}</span>}
-          </div>
-
-          {isOwner ? (
-            <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem' }}>
-              <button className="btn-primary full-width-btn" onClick={() => setShowEditModal(true)}>
-                ✏️ Editar prenda
-              </button>
-              <button
-                className="btn-pay full-width-btn"
-                onClick={handleDelete}
-                disabled={deleting}
-                style={{ background: 'var(--danger)', borderColor: 'var(--danger)' }}
-              >
-                {deleting ? 'Eliminando...' : '🗑 Eliminar'}
-              </button>
-            </div>
-          ) : !isSold ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '1.5rem' }}>
-              {/* Fila superior: carrito + compra directa */}
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button className="btn-primary full-width-btn" onClick={() => handleAñadirAlCarrito(producto)}>
-                  Añadir al carrito
-                </button>
-                <button
-                  className="btn-pay full-width-btn"
-                  onClick={handleComprarYa}
-                >
-                  Comprar ya
-                </button>
-              </div>
-              {/* Oferta + Intercambio en la misma fila */}
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button className="btn-offer full-width-btn" onClick={openOfferModal}>
-                  💰 Hacer una oferta
-                </button>
-                <button className="btn-offer full-width-btn" onClick={openSwapModal} style={{ background: 'var(--ink-700)', borderColor: 'rgba(108,99,255,0.4)' }}>
-                  🔄 Proponer intercambio
-                </button>
-              </div>
-              {/* Contactar vendedor */}
-              {producto.seller_id && (
-                <ContactSellerButton
-                  productId={producto.id}
-                  sellerId={producto.seller_id}
-                  productTitle={producto.title}
-                  productImage={producto.image_url ?? null}
-                  session={session}
-                />
-              )}
-              {session && !isOwner && (
-                <button
-                  className="btn-report-link"
-                  onClick={() => setShowReport(true)}
-                >
-                  🚩 Reportar producto
-                </button>
-              )}
-            </div>
-          ) : (
-            <div style={{ marginTop: '1.5rem', padding: '14px 18px', background: 'rgba(255,80,80,0.08)', border: '1px solid rgba(255,80,80,0.2)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
-              <p style={{ margin: 0, fontWeight: 700, color: 'var(--danger)' }}>🏷️ Este producto ya ha sido vendido</p>
+          {/* Chips */}
+          {(producto.brand || producto.size || producto.condition) && (
+            <div className="pd-chips">
+              {producto.brand     && <span className="pd-chip">Marca: {producto.brand}</span>}
+              {producto.size      && <span className="pd-chip">Talla: {producto.size}</span>}
+              {producto.condition && <span className="pd-chip">Estado: {producto.condition}</span>}
             </div>
           )}
+
+          {/* Descripción */}
+          <div className="pd-desc">
+            <p className="pd-desc-label">Descripción</p>
+            <p className="pd-desc-text">
+              {!isLongDesc || descExpanded
+                ? (producto.description || 'El vendedor no ha añadido una descripción.')
+                : producto.description!.slice(0, 200) + '...'}
+            </p>
+            {isLongDesc && (
+              <button className="pd-desc-toggle" onClick={() => setDescExpanded(p => !p)}>
+                {descExpanded ? 'Leer menos ↑' : 'Leer más ↓'}
+              </button>
+            )}
+          </div>
+
+          {/* ── Acciones ── */}
+          <div className="pd-actions">
+            {isOwner ? (
+              <div className="pd-actions-owner">
+                <button className="pd-btn pd-btn--edit" onClick={() => setShowEditModal(true)}>
+                  ✏️ Editar prenda
+                </button>
+                <button
+                  className="pd-btn pd-btn--delete"
+                  onClick={handleDelete}
+                  disabled={deleting}
+                >
+                  {deleting ? 'Eliminando...' : '🗑 Eliminar'}
+                </button>
+              </div>
+            ) : isSold ? (
+              <div className="pd-sold-msg">
+                <span>🏷️</span> Este producto ya ha sido vendido.
+              </div>
+            ) : (
+              <>
+                <div className="pd-actions-row">
+                  <button className="pd-btn pd-btn--cart" onClick={() => handleAñadirAlCarrito(producto)}>
+                    Añadir al carrito
+                  </button>
+                  <button className="pd-btn pd-btn--buy" onClick={handleComprarYa}>
+                    Comprar ya
+                  </button>
+                </div>
+                <div className="pd-actions-row pd-actions-row--secondary">
+                  <button className="pd-btn pd-btn--outline" onClick={openOfferModal}>
+                    💰 Hacer una oferta
+                  </button>
+                  <button className="pd-btn pd-btn--outline" onClick={openSwapModal}>
+                    🔄 Proponer intercambio
+                  </button>
+                </div>
+                {producto.seller_id && (
+                  <div className="pd-actions-contact">
+                    <ContactSellerButton
+                      productId={producto.id}
+                      sellerId={producto.seller_id}
+                      productTitle={producto.title}
+                      productImage={producto.image_url ?? null}
+                      session={session}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* ── Acordeones ── */}
+          <div className="pd-accordions">
+            {ACCORDIONS.map((acc, idx) => (
+              <div key={idx} className={`pd-accordion${openAccordion === idx ? ' pd-accordion--open' : ''}`}>
+                <button
+                  className="pd-accordion-header"
+                  onClick={() => setOpenAccordion(prev => prev === idx ? null : idx)}
+                >
+                  <span>{acc.title}</span>
+                  <svg
+                    className="pd-accordion-chevron"
+                    viewBox="0 0 24 24"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+                {openAccordion === idx && (
+                  <div className="pd-accordion-body">
+                    <p>{acc.body}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Reportar */}
+          {session && !isOwner && (
+            <button className="pd-report-btn" onClick={() => setShowReport(true)}>
+              🚩 Reportar producto
+            </button>
+          )}
+
         </div>
       </div>
 
-      {showEditModal && session && (
-        <EditProductModal
-          producto={producto}
-          token={session.access_token}
-          onClose={() => setShowEditModal(false)}
-          onSaved={(updated) => {
-            setProducto(prev => prev ? { ...prev, ...updated } : prev);
-            setActiveImage(updated.image_url ?? null);
-            setShowEditModal(false);
-          }}
-        />
-      )}
-
-      {showReport && session && producto && (
-        <ReportModal
-          token={session.access_token}
-          productId={producto.id}
-          targetName={producto.title}
-          onClose={() => setShowReport(false)}
-        />
-      )}
-
       {/* ── Más del vendedor ── */}
       {(sellerProductsLoading || sellerProducts.length > 0) && (
-        <div className="section-block">
+        <div className="section-block pd-more-seller">
           <h3 className="section-block-title">
             Más de <span style={{ color: 'var(--accent)' }}>@{producto.nombreVendedor}</span>
           </h3>
@@ -427,9 +503,9 @@ export default function ProductDetail({ session }: { session: Session | null }) 
             <div className="products-scroll">
               {sellerProducts.map(p => {
                 const vendido = p.is_sold || p.status === 'Vendido';
-                const isOwn = !!session && p.seller_id === session.user.id;
-                const liked = favoritos.has(p.id);
-                const count = p.favorites_count ?? 0;
+                const isOwn   = !!session && p.seller_id === session.user.id;
+                const liked   = favoritos.has(p.id);
+                const count   = p.favorites_count ?? 0;
                 return (
                   <div
                     key={p.id}
@@ -439,7 +515,14 @@ export default function ProductDetail({ session }: { session: Session | null }) 
                     <div className="product-image-wrapper">
                       {p.image_url
                         ? <img src={p.image_url} alt={p.title} className="product-image" />
-                        : <div className="img-placeholder"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+                        : (
+                          <div className="img-placeholder">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                              <circle cx="12" cy="13" r="4" />
+                            </svg>
+                          </div>
+                        )
                       }
                       {isOwn ? (
                         <button
@@ -475,17 +558,29 @@ export default function ProductDetail({ session }: { session: Session | null }) 
         </div>
       )}
 
-      {ownToast && (
-        <div className="own-product-toast" key={String(ownToast)}>
-          <div className="own-product-toast__body">
-            <span className="own-product-toast__icon">🤍</span>
-            <p className="own-product-toast__text">No puedes añadir tu propio producto a favoritos</p>
-          </div>
-          <div className="own-product-toast__bar" />
-        </div>
+      {/* ── Modales ── */}
+      {showEditModal && session && (
+        <EditProductModal
+          producto={producto}
+          token={session.access_token}
+          onClose={() => setShowEditModal(false)}
+          onSaved={(updated) => {
+            setProducto(prev => prev ? { ...prev, ...updated } : prev);
+            setActiveImage(updated.image_url ?? null);
+            setShowEditModal(false);
+          }}
+        />
       )}
 
-      {/* ── Modal de intercambio ── */}
+      {showReport && session && producto && (
+        <ReportModal
+          token={session.access_token}
+          productId={producto.id}
+          targetName={producto.title}
+          onClose={() => setShowReport(false)}
+        />
+      )}
+
       {showSwapModal && producto && (
         <div className="offer-modal-backdrop" onClick={() => setShowSwapModal(false)}>
           <div className="offer-modal-card swap-select-modal" onClick={e => e.stopPropagation()}>
@@ -497,7 +592,6 @@ export default function ProductDetail({ session }: { session: Session | null }) 
                 </svg>
               </button>
             </div>
-
             <div className="offer-modal-product">
               {producto.image_url && <img src={producto.image_url} alt={producto.title} className="offer-modal-product-img" />}
               <div>
@@ -505,16 +599,15 @@ export default function ProductDetail({ session }: { session: Session | null }) 
                 <p className="offer-modal-product-price">Precio: <strong>{producto.price} €</strong></p>
               </div>
             </div>
-
             <div className="offer-modal-divider" />
-
             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
               Selecciona hasta 4 prendas para ofrecer
               {selectedSwapIds.length > 0 && (
-                <span style={{ color: 'var(--accent)', fontWeight: 600 }}> — {selectedSwapIds.length}/4 seleccionada{selectedSwapIds.length > 1 ? 's' : ''}</span>
+                <span style={{ color: 'var(--accent)', fontWeight: 600 }}>
+                  {' '}— {selectedSwapIds.length}/4 seleccionada{selectedSwapIds.length > 1 ? 's' : ''}
+                </span>
               )}:
             </p>
-
             {swapProductsLoading ? (
               <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)' }}>Cargando tus prendas…</div>
             ) : swapProducts.length === 0 ? (
@@ -545,9 +638,7 @@ export default function ProductDetail({ session }: { session: Session | null }) 
                 })}
               </div>
             )}
-
             {swapError && <p className="offer-modal-error">⚠ {swapError}</p>}
-
             <button
               className="btn-primary full-width-btn offer-submit-btn"
               onClick={handleSubmitSwap}
@@ -555,21 +646,14 @@ export default function ProductDetail({ session }: { session: Session | null }) 
             >
               {swapLoading ? 'Enviando…' : 'Proponer intercambio'}
             </button>
-
             <p className="offer-modal-hint">El vendedor recibirá tu propuesta y podrá aceptarla o rechazarla.</p>
           </div>
         </div>
       )}
 
-      {/* ── Modal de oferta directa ── */}
       {showOfferModal && producto && (
-        <div
-          className="offer-modal-backdrop"
-          onClick={() => setShowOfferModal(false)}
-        >
+        <div className="offer-modal-backdrop" onClick={() => setShowOfferModal(false)}>
           <div className="offer-modal-card" onClick={e => e.stopPropagation()}>
-
-            {/* Cabecera */}
             <div className="offer-modal-header">
               <h3 className="offer-modal-title">Hacer una oferta</h3>
               <button className="offer-modal-close-btn" onClick={() => setShowOfferModal(false)} aria-label="Cerrar">
@@ -578,8 +662,6 @@ export default function ProductDetail({ session }: { session: Session | null }) 
                 </svg>
               </button>
             </div>
-
-            {/* Producto */}
             <div className="offer-modal-product">
               {producto.image_url && (
                 <img src={producto.image_url} alt={producto.title} className="offer-modal-product-img" />
@@ -591,10 +673,7 @@ export default function ProductDetail({ session }: { session: Session | null }) 
                 </p>
               </div>
             </div>
-
             <div className="offer-modal-divider" />
-
-            {/* Presets de descuento */}
             <div className="offer-presets">
               {(['10', '20'] as const).map(pct => {
                 const discounted = producto.price * (1 - Number(pct) / 100);
@@ -614,8 +693,6 @@ export default function ProductDetail({ session }: { session: Session | null }) 
                 <span className="offer-preset-label">Ponle un precio</span>
               </button>
             </div>
-
-            {/* Input de precio */}
             <div className="offer-input-wrap">
               <input
                 type="number"
@@ -629,9 +706,7 @@ export default function ProductDetail({ session }: { session: Session | null }) 
               />
               <span className="offer-input-suffix">€</span>
             </div>
-
             {offerError && <p className="offer-modal-error">⚠ {offerError}</p>}
-
             <button
               className="btn-primary full-width-btn offer-submit-btn"
               onClick={handleSubmitOffer}
@@ -639,11 +714,21 @@ export default function ProductDetail({ session }: { session: Session | null }) 
             >
               {offerLoading ? 'Enviando…' : 'Ofrecer'}
             </button>
-
             <p className="offer-modal-hint">El vendedor recibirá tu oferta y podrá aceptarla, rechazarla o contraofertar.</p>
           </div>
         </div>
       )}
+
+      {ownToast && (
+        <div className="own-product-toast" key={String(ownToast)}>
+          <div className="own-product-toast__body">
+            <span className="own-product-toast__icon">🤍</span>
+            <p className="own-product-toast__text">No puedes añadir tu propio producto a favoritos</p>
+          </div>
+          <div className="own-product-toast__bar" />
+        </div>
+      )}
+
     </section>
   );
 }

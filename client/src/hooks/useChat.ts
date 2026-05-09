@@ -10,6 +10,10 @@ import {
   OfferStatus,
 } from '../types/chat';
 
+function errMsg(e: unknown): string {
+  return e instanceof Error ? e.message : 'Error desconocido';
+}
+
 export function useChat(conversationId: string, session: Session | null) {
   const [messages, setMessages]         = useState<MessageWithSender[]>([]);
   const [conversation, setConversation] = useState<ConversationWithDetails | null>(null);
@@ -78,17 +82,19 @@ export function useChat(conversationId: string, session: Session | null) {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
+  // myId y session se cubren con token (cambian juntos); loadData depende de conversationId+token
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId, token]);
 
   // ── Helpers para construir mensajes optimistas ─────────────────────────────
 
-  const myMeta = (): MessageSender => ({
+  const myMeta = useCallback((): MessageSender => ({
     id:         myId ?? '',
     username:   session?.user.user_metadata?.username   ?? null,
     avatar_url: session?.user.user_metadata?.avatar_url ?? null,
-  });
+  }), [myId, session]);
 
-  const tempBase = (content: string): Omit<MessageWithSender, 'id'> => ({
+  const tempBase = useCallback((content: string): Omit<MessageWithSender, 'id'> => ({
     conversation_id:  conversationId,
     sender_id:        myId ?? '',
     content,
@@ -101,7 +107,7 @@ export function useChat(conversationId: string, session: Session | null) {
     swap_product_ids: null,
     swap_products:    [],
     sender:           myMeta(),
-  });
+  }), [conversationId, myId, myMeta]);
 
   // ── Enviar mensaje de texto ────────────────────────────────────────────────
 
@@ -121,7 +127,27 @@ export function useChat(conversationId: string, session: Session | null) {
       if (real) return prev.map(m => m.id === tempId ? { ...real, sender: tempMsg.sender } : m);
       return prev.filter(m => m.id !== tempId);
     });
-  }, [conversationId, token, myId, session]);
+  }, [conversationId, token, myId, tempBase]);
+
+  // ── Utilidad: mensaje de sistema ──────────────────────────────────────────
+
+  const addSystemMessage = useCallback((content: string) => {
+    const sysMsg: MessageWithSender = {
+      id:               `sys-${Date.now()}`,
+      conversation_id:  conversationId,
+      sender_id:        myId ?? '',
+      content,
+      is_read:          true,
+      created_at:       new Date().toISOString(),
+      message_type:     'text',
+      offer_price:      null,
+      offer_status:     null,
+      swap_product_id:  null,
+      swap_product_ids: null,
+      sender:           myMeta(),
+    };
+    setMessages(prev => [...prev, sysMsg]);
+  }, [conversationId, myId, myMeta]);
 
   // ── Ofertas ────────────────────────────────────────────────────────────────
 
@@ -146,11 +172,11 @@ export function useChat(conversationId: string, session: Session | null) {
         return prev.map(m => m.id === tempId ? { ...real, sender: tempMsg.sender } : m);
       });
       return null;
-    } catch (e: any) {
+    } catch (e: unknown) {
       setMessages(prev => prev.filter(m => m.id !== tempId));
-      return e.message as string;
+      return errMsg(e);
     }
-  }, [conversationId, token, myId, session]);
+  }, [conversationId, token, myId, tempBase]);
 
   const acceptOffer = useCallback(async (messageId: string): Promise<{ orderId: string } | string> => {
     if (!token || !conversationId) return 'Sin sesión';
@@ -163,13 +189,13 @@ export function useChat(conversationId: string, session: Session | null) {
     try {
       const result = await chatService.acceptOffer(conversationId, messageId, token);
       return { orderId: result.orderId };
-    } catch (e: any) {
+    } catch (e: unknown) {
       // Revertir en caso de error
       setMessages(prev => updateOfferStatus(prev, messageId, 'pending'));
       setConversation(prev => prev ? { ...prev, product: { ...prev.product, is_sold: false } } : prev);
-      return e.message as string;
+      return errMsg(e);
     }
-  }, [conversationId, token]);
+  }, [conversationId, token, addSystemMessage]);
 
   const rejectOffer = useCallback(async (messageId: string): Promise<string | null> => {
     if (!token || !conversationId) return 'Sin sesión';
@@ -180,11 +206,11 @@ export function useChat(conversationId: string, session: Session | null) {
     try {
       await chatService.rejectOffer(conversationId, messageId, token);
       return null;
-    } catch (e: any) {
+    } catch (e: unknown) {
       setMessages(prev => updateOfferStatus(prev, messageId, 'pending'));
-      return e.message as string;
+      return errMsg(e);
     }
-  }, [conversationId, token]);
+  }, [conversationId, token, addSystemMessage]);
 
   // ── Intercambio ────────────────────────────────────────────────────────────
 
@@ -212,11 +238,11 @@ export function useChat(conversationId: string, session: Session | null) {
         return prev.map(m => m.id === tempId ? { ...real, sender: tempMsg.sender } : m);
       });
       return null;
-    } catch (e: any) {
+    } catch (e: unknown) {
       setMessages(prev => prev.filter(m => m.id !== tempId));
-      return e.message as string;
+      return errMsg(e);
     }
-  }, [conversationId, token, myId, session]);
+  }, [conversationId, token, myId, tempBase]);
 
   const acceptSwap = useCallback(async (messageId: string): Promise<string | null> => {
     if (!token || !conversationId) return 'Sin sesión';
@@ -228,12 +254,12 @@ export function useChat(conversationId: string, session: Session | null) {
     try {
       await chatService.acceptSwap(conversationId, messageId, token);
       return null;
-    } catch (e: any) {
+    } catch (e: unknown) {
       setMessages(prev => updateOfferStatus(prev, messageId, 'pending'));
       setConversation(prev => prev ? { ...prev, product: { ...prev.product, is_sold: false } } : prev);
-      return e.message as string;
+      return errMsg(e);
     }
-  }, [conversationId, token]);
+  }, [conversationId, token, addSystemMessage]);
 
   const rejectSwap = useCallback(async (messageId: string): Promise<string | null> => {
     if (!token || !conversationId) return 'Sin sesión';
@@ -244,11 +270,11 @@ export function useChat(conversationId: string, session: Session | null) {
     try {
       await chatService.rejectSwap(conversationId, messageId, token);
       return null;
-    } catch (e: any) {
+    } catch (e: unknown) {
       setMessages(prev => updateOfferStatus(prev, messageId, 'pending'));
-      return e.message as string;
+      return errMsg(e);
     }
-  }, [conversationId, token]);
+  }, [conversationId, token, addSystemMessage]);
 
   const counterOffer = useCallback(async (messageId: string, price: number): Promise<string | null> => {
     if (!token || !conversationId || !myId) return 'Sin sesión';
@@ -272,34 +298,18 @@ export function useChat(conversationId: string, session: Session | null) {
         return prev.map(m => m.id === tempId ? { ...real, sender: tempCounter.sender } : m);
       });
       return null;
-    } catch (e: any) {
+    } catch (e: unknown) {
       setMessages(prev => [
         ...updateOfferStatus(prev.filter(m => m.id !== tempId), messageId, 'pending'),
       ]);
-      return e.message as string;
+      return errMsg(e);
     }
-  }, [conversationId, token, myId, session]);
+  }, [conversationId, token, myId, tempBase]);
 
   // ── Utilidades internas ────────────────────────────────────────────────────
 
   function updateOfferStatus(msgs: MessageWithSender[], id: string, status: OfferStatus): MessageWithSender[] {
     return msgs.map(m => m.id === id ? { ...m, offer_status: status } : m);
-  }
-
-  function addSystemMessage(content: string) {
-    const sysMsg: MessageWithSender = {
-      id:              `sys-${Date.now()}`,
-      conversation_id: conversationId,
-      sender_id:       myId ?? '',
-      content,
-      is_read:         true,
-      created_at:      new Date().toISOString(),
-      message_type:    'text',
-      offer_price:     null,
-      offer_status:    null,
-      sender:          myMeta(),
-    };
-    setMessages(prev => [...prev, sysMsg]);
   }
 
   return {

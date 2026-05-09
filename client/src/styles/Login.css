@@ -1,0 +1,188 @@
+/* ═══════════════════════════════════════════════════════
+   LOGIN PAGE — dos columnas
+═══════════════════════════════════════════════════════ */
+
+.login-page {
+  display: flex;
+  min-height: calc(100vh - 75px);
+  width: 100%;
+}
+
+/* ── Columna izquierda: imagen ── */
+
+.login-left {
+  flex: 0 0 50%;
+  position: relative;
+  background-color: #1a1a2e;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.login-left-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 10, 20, 0.3) 0%,
+    rgba(10, 10, 20, 0.72) 100%
+  );
+  display: flex;
+  align-items: flex-end;
+  padding: 3rem;
+}
+
+.login-left-content {
+  max-width: 480px;
+}
+
+.login-tagline {
+  font-family: var(--font-heading);
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: var(--bone);
+  line-height: 1.15;
+  margin: 0 0 0.75rem;
+  letter-spacing: -0.5px;
+}
+
+.login-tagline-sub {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: rgba(245, 245, 240, 0.68);
+  margin: 0;
+}
+
+/* ── Columna derecha: formulario ── */
+
+.login-right {
+  flex: 0 0 50%;
+  background: var(--ink-900);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2.5rem;
+  border-left: 1px solid var(--ink-700);
+}
+
+.login-right-inner {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-logo-img {
+  height: 42px;
+  margin-bottom: 2.25rem;
+}
+
+.login-welcome {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--bone);
+  text-align: center;
+  margin: 0 0 0.35rem;
+  letter-spacing: -0.3px;
+}
+
+.login-welcome-sub {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: rgba(245, 245, 240, 0.55);
+  text-align: center;
+  margin: 0 0 1.75rem;
+}
+
+.login-legal {
+  font-family: var(--font-body);
+  font-size: 0.74rem;
+  color: rgba(245, 245, 240, 0.35);
+  text-align: center;
+  margin-top: 1.5rem;
+  line-height: 1.6;
+  max-width: 300px;
+}
+
+/* ── AuthForm overrides dentro del login ── */
+
+.login-right-inner .auth-container {
+  width: 100%;
+  max-width: 100%;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* El título del AuthForm se oculta; lo ponemos en login.tsx */
+.login-right-inner .auth-title { display: none; }
+
+.login-right-inner .auth-form { gap: 14px; }
+
+.login-right-inner .auth-input {
+  background: var(--ink-800);
+  border: 1px solid var(--ink-700);
+  color: var(--bone);
+  padding: 0.85rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.login-right-inner .auth-input::placeholder {
+  color: rgba(245, 245, 240, 0.3);
+}
+
+.login-right-inner .auth-input:focus {
+  border-color: rgba(124, 95, 255, 0.55);
+  box-shadow: 0 0 0 3px rgba(124, 95, 255, 0.1);
+}
+
+.login-right-inner .submit-btn {
+  background: var(--brand);
+  border-radius: 0.5rem;
+  padding: 0.9rem;
+  font-size: 0.95rem;
+  margin-top: 4px;
+}
+
+.login-right-inner .submit-btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: none;
+  box-shadow: none;
+}
+
+.login-right-inner .toggle-btn {
+  margin-top: 16px;
+  color: var(--accent);
+  font-size: 0.87rem;
+}
+
+.login-right-inner .toggle-btn:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 768px) {
+  .login-page {
+    flex-direction: column;
+  }
+
+  .login-left {
+    display: none;
+  }
+
+  .login-right {
+    flex: 1;
+    min-height: calc(100vh - 75px);
+    padding: 2.5rem 1.5rem;
+    border-left: none;
+  }
+}

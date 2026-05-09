@@ -1,0 +1,572 @@
+/* ═══════════════════════════════════════════════════════
+   PRODUCT DETAIL — layout dos columnas estilo marketplace
+═══════════════════════════════════════════════════════ */
+
+/* ── Página ── */
+.pd-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 0;
+  animation: fadeInUp 0.3s ease;
+}
+
+.pd-page .section-block {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* ── Botón volver ── */
+.pd-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  padding: 7px 14px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  transition: border-color var(--transition-fast), color var(--transition-fast),
+    background var(--transition-fast);
+}
+.pd-back:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  color: var(--bone);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* ═══════════════════════════════════════════════════════
+   LAYOUT DOS COLUMNAS
+═══════════════════════════════════════════════════════ */
+.pd-layout {
+  display: grid;
+  grid-template-columns: 55% 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* ═══════════════════════════════════════════════════════
+   COLUMNA IZQUIERDA — imagen sticky
+═══════════════════════════════════════════════════════ */
+.pd-left {
+  position: sticky;
+  top: 155px;
+}
+
+/* Contenedor imagen principal */
+.pd-img-main-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  max-height: calc(100vh - 200px);
+  background: var(--ink-800);
+  border-radius: 1rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pd-img-main {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: pdFadeIn 0.18s ease;
+  display: block;
+}
+
+@keyframes pdFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.pd-img-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Overlay vendido */
+.pd-sold-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+}
+.pd-sold-overlay-text {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: 0.18em;
+  color: #fff;
+  background: rgba(255, 77, 106, 0.9);
+  padding: 12px 32px;
+  border-radius: var(--radius-pill);
+}
+
+/* Miniaturas */
+.pd-thumbs {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.pd-thumbs::-webkit-scrollbar { display: none; }
+
+.pd-thumb {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  border-radius: 0.5rem;
+  border: 2px solid transparent;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--ink-800);
+  padding: 0;
+  transition: border-color var(--transition-fast);
+}
+.pd-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.pd-thumb:hover { border-color: rgba(245, 245, 240, 0.35); }
+.pd-thumb--active { border-color: var(--brand); }
+
+/* ═══════════════════════════════════════════════════════
+   COLUMNA DERECHA — info
+═══════════════════════════════════════════════════════ */
+.pd-right {
+  min-width: 0;
+}
+
+/* Breadcrumb */
+.pd-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: rgba(245, 245, 240, 0.38);
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+.pd-breadcrumb-link {
+  color: rgba(245, 245, 240, 0.38);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+.pd-breadcrumb-link:hover { color: rgba(245, 245, 240, 0.65); }
+.pd-breadcrumb-sep  { user-select: none; }
+.pd-breadcrumb-cur  {
+  color: rgba(245, 245, 240, 0.5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 220px;
+}
+
+/* Título y precio */
+.pd-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 700;
+  color: var(--bone);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+
+.pd-price {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2rem;
+  color: var(--brand);
+  line-height: 1;
+}
+.pd-price--sold {
+  text-decoration: line-through;
+  color: rgba(245, 245, 240, 0.32);
+}
+
+/* ── Tarjeta vendedor ── */
+.pd-seller {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--ink-800);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-top: 1.1rem;
+}
+.pd-seller-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pd-seller-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pd-seller-avatar-fallback {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+}
+.pd-seller-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pd-seller-label {
+  font-size: 0.68rem;
+  color: rgba(245, 245, 240, 0.45);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.pd-seller-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--bone);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color var(--transition-fast);
+}
+.pd-seller-name:hover { color: var(--brand); }
+
+.pd-seller-profile-btn {
+  flex-shrink: 0;
+  font-size: 0.76rem;
+  color: rgba(245, 245, 240, 0.55);
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-pill);
+  padding: 5px 12px;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+  white-space: nowrap;
+}
+.pd-seller-profile-btn:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  color: var(--bone);
+}
+
+/* ── Chips de información ── */
+.pd-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 1rem;
+}
+.pd-chip {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: rgba(245, 245, 240, 0.72);
+  background: var(--ink-800);
+  border: 1px solid var(--ink-700);
+  border-radius: 999px;
+  padding: 0.38rem 0.85rem;
+  white-space: nowrap;
+}
+
+/* ── Descripción ── */
+.pd-desc { margin-top: 1.25rem; }
+
+.pd-desc-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: rgba(245, 245, 240, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.45rem;
+}
+.pd-desc-text {
+  font-size: 0.9rem;
+  color: rgba(245, 245, 240, 0.78);
+  line-height: 1.65;
+}
+.pd-desc-toggle {
+  background: none;
+  border: none;
+  color: var(--brand);
+  font-size: 0.82rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  padding: 4px 0;
+  margin-top: 4px;
+  transition: opacity var(--transition-fast);
+  display: inline-block;
+}
+.pd-desc-toggle:hover { opacity: 0.72; }
+
+/* ═══════════════════════════════════════════════════════
+   BLOQUE DE ACCIONES
+═══════════════════════════════════════════════════════ */
+.pd-actions {
+  background: var(--ink-800);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pd-actions-row {
+  display: flex;
+  gap: 10px;
+}
+.pd-actions-row + .pd-actions-row { margin-top: 0.75rem; }
+.pd-actions-contact { margin-top: 0.75rem; }
+.pd-actions-owner   { display: flex; gap: 10px; }
+
+/* Base botón */
+.pd-btn {
+  flex: 1;
+  padding: 13px 16px;
+  border-radius: 0.625rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: opacity var(--transition-fast), transform var(--transition-fast),
+    background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+  white-space: nowrap;
+  text-align: center;
+  line-height: 1;
+}
+.pd-btn:hover:not(:disabled) { transform: translateY(-1px); }
+.pd-btn:disabled { opacity: 0.42; cursor: not-allowed; transform: none; }
+
+.pd-btn--cart {
+  background: transparent;
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.pd-btn--cart:hover:not(:disabled) { background: rgba(124, 95, 255, 0.1); }
+
+.pd-btn--buy {
+  background: var(--brand);
+  color: var(--bone);
+}
+.pd-btn--buy:hover:not(:disabled) { background: var(--accent-hover); }
+
+.pd-btn--outline {
+  background: transparent;
+  border-color: rgba(245, 245, 240, 0.16);
+  color: rgba(245, 245, 240, 0.72);
+}
+.pd-btn--outline:hover:not(:disabled) {
+  border-color: rgba(245, 245, 240, 0.32);
+  color: var(--bone);
+}
+
+.pd-btn--edit {
+  background: var(--brand);
+  color: #fff;
+}
+.pd-btn--edit:hover:not(:disabled) { background: var(--accent-hover); }
+
+.pd-btn--delete {
+  background: var(--danger);
+  color: #fff;
+}
+.pd-btn--delete:hover:not(:disabled) { background: var(--danger-hover); }
+
+/* Mensaje vendido */
+.pd-sold-msg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 0.625rem;
+  background: rgba(255, 77, 106, 0.07);
+  border: 1px solid rgba(255, 77, 106, 0.2);
+  color: var(--danger);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ACORDEONES
+═══════════════════════════════════════════════════════ */
+.pd-accordions {
+  margin-top: 1.25rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.pd-accordion {
+  background: var(--ink-800);
+  border-bottom: 1px solid var(--ink-700);
+}
+.pd-accordion:last-child { border-bottom: none; }
+
+.pd-accordion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(245, 245, 240, 0.75);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: left;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+.pd-accordion-header:hover {
+  color: var(--bone);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.pd-accordion-chevron {
+  flex-shrink: 0;
+  transition: transform var(--transition-fast);
+  color: var(--text-muted);
+}
+.pd-accordion--open .pd-accordion-chevron {
+  transform: rotate(180deg);
+  color: var(--brand);
+}
+
+.pd-accordion-body {
+  padding: 0.5rem 1rem;
+  animation: fadeInUp 0.15s ease;
+}
+.pd-accordion-body p {
+  font-size: 0.85rem;
+  color: rgba(245, 245, 240, 0.5);
+  line-height: 1.65;
+}
+
+/* ── Botón reportar ── */
+.pd-report-btn {
+  background: none;
+  border: none;
+  color: rgba(245, 245, 240, 0.28);
+  font-size: 0.78rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  padding: 6px 0;
+  margin-top: 0.75rem;
+  transition: color var(--transition-fast);
+  display: block;
+}
+.pd-report-btn:hover { color: var(--danger); }
+
+/* ── Más del vendedor ── */
+.pd-more-seller { margin-top: 3rem; }
+
+/* ═══════════════════════════════════════════════════════
+   SKELETON LOADING
+═══════════════════════════════════════════════════════ */
+.pd-skel-layout {
+  display: grid;
+  grid-template-columns: 55% 1fr;
+  gap: 2rem;
+  align-items: start;
+  margin-top: 0.5rem;
+}
+.pd-skel-img {
+  aspect-ratio: 4 / 5;
+  max-height: calc(100vh - 200px);
+  border-radius: 1rem;
+}
+.pd-skel-thumbs {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.pd-skel-thumb {
+  width: 72px;
+  height: 72px;
+  border-radius: 0.5rem;
+  flex-shrink: 0;
+}
+.pd-skel-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.pd-skel-title  { height: 52px; border-radius: 8px; width: 78%; }
+.pd-skel-price  { height: 34px; border-radius: 8px; width: 28%; }
+.pd-skel-seller { height: 70px; border-radius: 0.75rem; }
+.pd-skel-chips  { height: 32px; border-radius: 999px; width: 65%; }
+.pd-skel-desc   { height: 84px; border-radius: 8px; }
+.pd-skel-actions { height: 130px; border-radius: 1rem; }
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .pd-page { padding: 0.75rem 0.75rem 0; }
+
+  .pd-layout,
+  .pd-skel-layout {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .pd-left { position: static; }
+
+  .pd-img-main-wrap {
+    aspect-ratio: 1 / 1;
+    max-height: none;
+    border-radius: 0.75rem;
+  }
+  .pd-skel-img {
+    aspect-ratio: 1 / 1;
+    max-height: none;
+  }
+
+  /* Carrito+Comprar: siguen en fila */
+  .pd-actions-row { flex-direction: row; }
+  /* Oferta+Intercambio: columna */
+  .pd-actions-row--secondary { flex-direction: column; }
+
+  .pd-back { margin-bottom: 1rem; }
+}
+
+@media (max-width: 480px) {
+  .pd-page { padding: 0.5rem 0.5rem 0; }
+
+  .pd-sold-overlay-text { font-size: 1.1rem; padding: 8px 20px; }
+
+  .pd-thumb { width: 58px; height: 58px; }
+
+  .pd-title { font-size: 1.35rem; }
+  .pd-price { font-size: 1.65rem; }
+
+  .pd-btn { font-size: 0.84rem; padding: 11px 10px; }
+}

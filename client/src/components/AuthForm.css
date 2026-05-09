@@ -3,7 +3,7 @@
   background: rgba(18, 18, 42, 0.7);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  max-width: 420px;
+  width: 400px;
   color: var(--text-primary);
   padding: 3rem 2.5rem;
   border-radius: var(--radius-lg);
@@ -116,4 +116,16 @@
 .toggle-btn:hover {
   color: #9d96ff;
   text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .auth-container {
+    max-width: 100%;
+    width: 100%;
+    padding: 2rem 1.25rem;
+    border-radius: var(--radius-md);
+    border-left: none;
+    border-right: none;
+    box-shadow: none;
+  }
 }
