@@ -62,7 +62,7 @@
   --transition-smooth: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Layout */
-  --nav-height: 100px;
+  --nav-height: 112px;
 
   /* Typography */
   --font-display: 'Space Grotesk', sans-serif;

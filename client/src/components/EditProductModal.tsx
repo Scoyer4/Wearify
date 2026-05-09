@@ -90,7 +90,7 @@ export default function EditProductModal({ producto, token, onClose, onSaved }: 
     setSaving(true);
     setError('');
 
-    let uploadedUrls: string[] = [];
+    const uploadedUrls: string[] = [];
 
     if (newEntries.length > 0) {
       setUploading(true);
@@ -114,10 +114,9 @@ export default function EditProductModal({ producto, token, onClose, onSaved }: 
 
     const updated = await updateProduct(producto.id, {
       title, description: description || null, price: parseFloat(price),
-      brand, size, condition: condition as Producto['condition'],
-      status: status as Producto['status'], category_id: parseInt(categoryId),
+      brand, size, condition, status, category_id: parseInt(categoryId),
       image_urls: finalUrls,
-    } as any, token);
+    }, token);
 
     setSaving(false);
     if (updated) {

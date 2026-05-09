@@ -11,6 +11,8 @@ import Profile from './pages/profiles';
 import Cart from './pages/cart';
 import Login from './pages/login';
 import RequestsPage from './pages/RequestsPage';
+import Notifications from './pages/Notifications/Notifications';
+import AdminPanel from './pages/AdminPanel/AdminPanel';
 import FollowListPage from './pages/FollowListPage';
 import ChatsPage from './pages/ChatsPage';
 import ChatWindowPage from './pages/ChatWindowPage';

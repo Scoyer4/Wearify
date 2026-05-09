@@ -53,6 +53,14 @@ export default function Home({ session }: { session: Session | null }) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const categoriaActiva = searchParams.get('categoria');
+  const ordenActivo     = searchParams.get('orden')    ?? '';
+  const searchActivo    = searchParams.get('search')   ?? '';
+
+  useEffect(() => {
+    setFiltroOrden(ordenActivo);
+    setFiltroBusqueda(searchActivo);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ordenActivo, searchActivo]);
 
   const marcasUnicas = new Set(productos.map(p => p.brand).filter(Boolean));
   const productosDisponibles = productos.filter(p => !p.status || p.status === 'Disponible');
@@ -80,8 +88,9 @@ export default function Home({ session }: { session: Session | null }) {
       return true;
     })
     .sort((a, b) => {
-      if (filtroOrden === 'precio-asc') return a.price - b.price;
+      if (filtroOrden === 'precio-asc')  return a.price - b.price;
       if (filtroOrden === 'precio-desc') return b.price - a.price;
+      if (filtroOrden === 'reciente')    return new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime();
       return 0;
     });
 

@@ -61,14 +61,13 @@ body {
    HEADER / NAVBAR
    ========================================= */
 .main-header {
-  height: var(--nav-height);
   display: flex;
-  align-items: center;
-  padding: 0 40px;
+  flex-direction: column;
+  align-items: stretch;
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: rgba(10, 10, 26, 0.75);
+  background: rgba(10, 10, 26, 0.85);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border-bottom: 1px solid var(--border-subtle);
@@ -99,7 +98,7 @@ body {
   align-items: center;
 }
 .logo-title img {
-  height: 68px;
+  height: 120px;
   transition: transform var(--transition-base);
   filter: drop-shadow(0 0 12px rgba(108, 99, 255, 0.15));
 }
@@ -1286,11 +1285,10 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 /* ── Tablet / phablet (≤ 768 px) ───────── */
 @media (max-width: 768px) {
   /* Variables globales */
-  :root { --nav-height: 68px; }
+  :root { --nav-height: 96px; }
 
   /* Layout */
   .main-content { padding: 0; }
-  .main-header  { padding: 0 14px; }
 
   /* Logo */
   .logo-title img { height: 46px; }
@@ -1337,10 +1335,10 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 
 /* ── Móvil pequeño (≤ 480 px) ──────────── */
 @media (max-width: 480px) {
-  :root { --nav-height: 60px; }
+  :root { --nav-height: 88px; }
 
   /* Ajuste extra del logo */
-  .logo-title img { height: 40px; }
+  .logo-title img { height: 36px; }
 
   /* Hero search — menos padding derecho para que el botón quepa */
   .hero-search-input { padding: 12px 82px 12px 40px; }
