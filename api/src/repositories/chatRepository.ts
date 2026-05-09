@@ -95,6 +95,24 @@ export const chatRepository = {
     return data as MessageRow;
   },
 
+  createSwapMessage: async (conversationId: string, senderId: string, swapProductIds: string[]): Promise<MessageRow> => {
+    const { data, error } = await supabase
+      .from('messages')
+      .insert({
+        conversation_id:  conversationId,
+        sender_id:        senderId,
+        content:          'Propuesta de intercambio',
+        message_type:     'swap',
+        swap_product_id:  swapProductIds[0],
+        swap_product_ids: swapProductIds,
+        offer_status:     'pending',
+      })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data as MessageRow;
+  },
+
   createOfferMessage: async (conversationId: string, senderId: string, price: number): Promise<MessageRow> => {
     const content = `Oferta: ${price.toFixed(2)} €`;
     const { data, error } = await supabase
@@ -128,7 +146,7 @@ export const chatRepository = {
       .from('messages')
       .select('*')
       .eq('conversation_id', conversationId)
-      .eq('message_type', 'offer')
+      .in('message_type', ['offer', 'swap'])
       .eq('offer_status', 'pending')
       .maybeSingle();
     if (error) throw new Error(error.message);
@@ -286,29 +304,64 @@ export const chatRepository = {
 
     const { data, error, count } = await supabase
       .from('messages')
-      .select('*, sender:users!sender_id(id, username, avatar_url)', { count: 'exact' })
+      .select(`
+        *,
+        sender:users!sender_id(id, username, avatar_url),
+        swap_product:products!swap_product_id(id, title, price, is_sold, productImages(image_url))
+      `, { count: 'exact' })
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true })
       .range(from, to);
 
     if (error) throw new Error(error.message);
 
-    const rows: MessageWithSender[] = (data ?? []).map((m: any) => ({
-      id:              m.id,
-      conversation_id: m.conversation_id,
-      sender_id:       m.sender_id,
-      content:         m.content,
-      is_read:         m.is_read,
-      created_at:      m.created_at,
-      message_type:    m.message_type  ?? 'text',
-      offer_price:     m.offer_price   ?? null,
-      offer_status:    m.offer_status  ?? null,
-      sender: {
-        id:         m.sender?.id         ?? '',
-        username:   m.sender?.username   ?? null,
-        avatar_url: m.sender?.avatar_url ?? null,
-      },
-    }));
+    // Recoger todos los IDs de swap_product_ids para cargarlos en lote
+    const allSwapIds = new Set<string>();
+    for (const m of (data ?? []) as any[]) {
+      for (const id of ((m.swap_product_ids as string[] | null) ?? (m.swap_product_id ? [m.swap_product_id as string] : []))) {
+        allSwapIds.add(id);
+      }
+    }
+
+    const swapProductMap: Record<string, any> = {};
+    if (allSwapIds.size > 0) {
+      const { data: prods } = await supabase
+        .from('products')
+        .select('id, title, price, is_sold, productImages(image_url)')
+        .in('id', Array.from(allSwapIds));
+      for (const p of prods ?? []) {
+        swapProductMap[p.id] = {
+          id:        p.id,
+          title:     p.title,
+          price:     p.price,
+          is_sold:   p.is_sold   ?? false,
+          image_url: (p.productImages ?? [])[0]?.image_url ?? null,
+        };
+      }
+    }
+
+    const rows: MessageWithSender[] = (data ?? []).map((m: any) => {
+      const ids: string[] = m.swap_product_ids ?? (m.swap_product_id ? [m.swap_product_id] : []);
+      return {
+        id:               m.id,
+        conversation_id:  m.conversation_id,
+        sender_id:        m.sender_id,
+        content:          m.content,
+        is_read:          m.is_read,
+        created_at:       m.created_at,
+        message_type:     m.message_type    ?? 'text',
+        offer_price:      m.offer_price     ?? null,
+        offer_status:     m.offer_status    ?? null,
+        swap_product_id:  m.swap_product_id ?? null,
+        swap_product_ids: m.swap_product_ids ?? null,
+        swap_products:    ids.map(id => swapProductMap[id]).filter(Boolean),
+        sender: {
+          id:         m.sender?.id         ?? '',
+          username:   m.sender?.username   ?? null,
+          avatar_url: m.sender?.avatar_url ?? null,
+        },
+      };
+    });
 
     return { rows, total: count ?? 0 };
   },

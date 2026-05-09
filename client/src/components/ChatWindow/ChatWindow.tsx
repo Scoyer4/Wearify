@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useChat } from '../../hooks/useChat';
 import { MessageWithSender } from '../../types/chat';
 import { getReviewStatus, createReview, ReviewStatus } from '../../services/reviewService';
+import { getProductsBySeller } from '../../services/api';
+import { Producto } from '../../types';
 import '../../styles/ChatWindow.css';
 
 interface Props {
@@ -68,6 +70,103 @@ function OfferCard({ msg, isMine, onAccept, onReject, onCounter, actionLoading }
   );
 }
 
+// ── Tarjeta de intercambio ─────────────────────────────────────────────────────
+
+interface SwapCardProps {
+  msg: MessageWithSender;
+  isMine: boolean;
+  conversationProductTitle: string;
+  conversationProductImage: string | null;
+  conversationProductPrice: number | null;
+  onAccept: () => void;
+  onReject: () => void;
+  actionLoading: boolean;
+}
+
+function SwapCard({ msg, isMine, conversationProductTitle, conversationProductImage, conversationProductPrice, onAccept, onReject, actionLoading }: SwapCardProps) {
+  const isRecipient = !isMine;
+  const canAct      = isRecipient && msg.offer_status === 'pending';
+  const offeredProducts = msg.swap_products && msg.swap_products.length > 0
+    ? msg.swap_products
+    : (msg.swap_product ? [msg.swap_product] : []);
+
+  const statusLabel: Record<string, string> = {
+    accepted: '✅ Intercambio aceptado',
+    rejected: '❌ Intercambio rechazado',
+  };
+
+  return (
+    <div className={`swap-card swap-card--${msg.offer_status}`}>
+      <div className="swap-card-label">
+        {msg.offer_status === 'pending'
+          ? (isMine ? 'Tu propuesta de intercambio' : 'Propuesta de intercambio recibida')
+          : (statusLabel[msg.offer_status ?? ''] ?? '')}
+      </div>
+
+      <div className="swap-card-products">
+        {/* Lado izquierdo: productos ofrecidos (1-4) */}
+        <div className="swap-card-offered">
+          <span className="swap-card-product-tag">Ofrecen</span>
+          <div className={`swap-card-offered-grid swap-card-offered-grid--${Math.min(offeredProducts.length, 4)}`}>
+            {offeredProducts.map(sp => (
+              <Link
+                key={sp.id}
+                to={`/producto/${sp.id}`}
+                className="swap-card-product-img swap-card-product-img--link"
+                title={`Ver ${sp.title}`}
+              >
+                {sp.image_url
+                  ? <img src={sp.image_url} alt={sp.title} />
+                  : <span>📦</span>}
+              </Link>
+            ))}
+          </div>
+          {offeredProducts.length === 1 && (
+            <div className="swap-card-product-info" style={{ alignItems: 'center' }}>
+              <span className="swap-card-product-name">{offeredProducts[0].title}</span>
+              <span className="swap-card-product-price">{offeredProducts[0].price} €</span>
+            </div>
+          )}
+          {offeredProducts.length > 1 && (
+            <span className="swap-card-offered-count">{offeredProducts.length} prendas</span>
+          )}
+        </div>
+
+        <div className="swap-card-arrow">⇄</div>
+
+        {/* Lado derecho: producto del chat */}
+        <div className="swap-card-product">
+          <div className="swap-card-product-img">
+            {conversationProductImage
+              ? <img src={conversationProductImage} alt={conversationProductTitle} />
+              : <span>📦</span>}
+          </div>
+          <div className="swap-card-product-info">
+            <span className="swap-card-product-tag">A cambio de</span>
+            <span className="swap-card-product-name">{conversationProductTitle}</span>
+            {conversationProductPrice != null && (
+              <span className="swap-card-product-price">{conversationProductPrice} €</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {canAct && (
+        <div className="offer-card-actions">
+          <button className="offer-action-btn offer-action-btn--accept" onClick={onAccept} disabled={actionLoading}>
+            Aceptar
+          </button>
+          <button className="offer-action-btn offer-action-btn--reject" onClick={onReject} disabled={actionLoading}>
+            Rechazar
+          </button>
+        </div>
+      )}
+
+      <div className="swap-card-time">{formatBubbleTime(msg.created_at)}</div>
+    </div>
+  );
+}
+
 // ── Componente principal ───────────────────────────────────────────────────────
 
 export default function ChatWindow({ conversationId, session }: Props) {
@@ -75,6 +174,7 @@ export default function ChatWindow({ conversationId, session }: Props) {
   const {
     messages, conversation, sendMessage,
     makeOffer, acceptOffer, rejectOffer, counterOffer,
+    makeSwap, acceptSwap, rejectSwap,
     loading, error, isBuyer,
   } = useChat(conversationId, session);
 
@@ -86,6 +186,13 @@ export default function ChatWindow({ conversationId, session }: Props) {
   const [offerModal, setOfferModal]     = useState<{ open: boolean; mode: 'make' | 'counter'; messageId?: string }>({ open: false, mode: 'make' });
   const [offerInput, setOfferInput]     = useState('');
   const [offerError, setOfferError]     = useState('');
+
+  // Modal de swap
+  const [swapModal, setSwapModal]             = useState(false);
+  const [myProducts, setMyProducts]           = useState<Producto[]>([]);
+  const [myProductsLoading, setMyProductsLoading] = useState(false);
+  const [selectedSwapIds, setSelectedSwapIds] = useState<string[]>([]);
+  const [swapError, setSwapError]             = useState('');
 
   // Reseña
   const [reviewStatus, setReviewStatus] = useState<ReviewStatus | null>(null);
@@ -99,8 +206,49 @@ export default function ChatWindow({ conversationId, session }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const myId = session.user.id;
 
-  const isSold         = conversation?.product.is_sold ?? false;
-  const hasPendingOffer = messages.some(m => m.message_type === 'offer' && m.offer_status === 'pending');
+  const isSold          = conversation?.product.is_sold ?? false;
+  const hasPendingOffer = messages.some(m => (m.message_type === 'offer' || m.message_type === 'swap') && m.offer_status === 'pending');
+
+  const openSwapModal = async () => {
+    setSwapModal(true);
+    setSelectedSwapIds([]);
+    setSwapError('');
+    setMyProductsLoading(true);
+    const data = await getProductsBySeller(session.user.id);
+    const available = (data ?? []).filter(p => !p.is_sold && p.status !== 'Vendido' && p.id !== conversation?.product_id);
+    setMyProducts(available);
+    setMyProductsLoading(false);
+  };
+
+  const toggleSwapProduct = (id: string) => {
+    setSwapError('');
+    setSelectedSwapIds(prev => {
+      if (prev.includes(id)) return prev.filter(x => x !== id);
+      if (prev.length >= 4) { setSwapError('Puedes seleccionar máximo 4 prendas'); return prev; }
+      return [...prev, id];
+    });
+  };
+
+  const handleSubmitSwap = async () => {
+    if (selectedSwapIds.length === 0) { setSwapError('Selecciona al menos una prenda para ofrecer'); return; }
+    setActionLoading(true);
+    const err = await makeSwap(selectedSwapIds);
+    setActionLoading(false);
+    if (err) { setSwapError(err); return; }
+    setSwapModal(false);
+  };
+
+  const handleAcceptSwap = async (messageId: string) => {
+    setActionLoading(true);
+    await acceptSwap(messageId);
+    setActionLoading(false);
+  };
+
+  const handleRejectSwap = async (messageId: string) => {
+    setActionLoading(true);
+    await rejectSwap(messageId);
+    setActionLoading(false);
+  };
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -246,6 +394,31 @@ export default function ChatWindow({ conversationId, session }: Props) {
             onAccept={() => handleAccept(msg.id)}
             onReject={() => handleReject(msg.id)}
             onCounter={() => openOfferModal('counter', msg.id)}
+            actionLoading={actionLoading}
+          />
+        </div>
+      );
+    }
+
+    if (msg.message_type === 'swap') {
+      return (
+        <div key={msg.id} className={`chat-bubble-row${isMine ? ' chat-bubble-row--mine' : ''}`}>
+          {!isMine && (
+            <div className="chat-bubble-avatar">
+              {msg.sender.avatar_url
+                ? <img src={msg.sender.avatar_url} alt={msg.sender.username ?? ''} />
+                : <span>{(msg.sender.username ?? '?')[0].toUpperCase()}</span>
+              }
+            </div>
+          )}
+          <SwapCard
+            msg={msg}
+            isMine={isMine}
+            conversationProductTitle={conversation?.product.title ?? ''}
+            conversationProductImage={conversation?.product.image_url ?? null}
+            conversationProductPrice={conversation?.product.price ?? null}
+            onAccept={() => handleAcceptSwap(msg.id)}
+            onReject={() => handleRejectSwap(msg.id)}
             actionLoading={actionLoading}
           />
         </div>
@@ -409,15 +582,26 @@ export default function ChatWindow({ conversationId, session }: Props) {
       {/* ── Input ── */}
       <div className={`chat-window-input-area${isSold ? ' chat-window-input-area--disabled' : ''}`}>
         {isBuyer && !isSold && (
-          <button
-            className="offer-trigger-btn"
-            onClick={() => openOfferModal('make')}
-            disabled={hasPendingOffer}
-            title={hasPendingOffer ? 'Ya tienes una oferta pendiente' : 'Hacer una oferta al vendedor'}
-            aria-label="Hacer oferta"
-          >
-            💰
-          </button>
+          <>
+            <button
+              className="offer-trigger-btn"
+              onClick={() => openOfferModal('make')}
+              disabled={hasPendingOffer}
+              title={hasPendingOffer ? 'Ya hay una oferta pendiente' : 'Hacer una oferta al vendedor'}
+              aria-label="Hacer oferta"
+            >
+              💰
+            </button>
+            <button
+              className="offer-trigger-btn"
+              onClick={openSwapModal}
+              disabled={hasPendingOffer}
+              title={hasPendingOffer ? 'Ya hay una oferta pendiente' : 'Proponer intercambio'}
+              aria-label="Proponer intercambio"
+            >
+              🔄
+            </button>
+          </>
         )}
 
         <textarea
@@ -443,6 +627,70 @@ export default function ChatWindow({ conversationId, session }: Props) {
           </svg>
         </button>
       </div>
+
+      {/* ── Modal de intercambio ── */}
+      {swapModal && (
+        <div className="offer-modal-overlay" onClick={() => setSwapModal(false)}>
+          <div className="offer-modal swap-select-modal" onClick={e => e.stopPropagation()}>
+            <div className="offer-modal-header">
+              <span>🔄 Proponer intercambio</span>
+              <button className="offer-modal-close" onClick={() => setSwapModal(false)} aria-label="Cerrar">✕</button>
+            </div>
+            <p className="offer-modal-ref">
+              Selecciona hasta 4 prendas para ofrecer a cambio
+              {selectedSwapIds.length > 0 && (
+                <span className="swap-select-count"> — {selectedSwapIds.length}/4 seleccionada{selectedSwapIds.length > 1 ? 's' : ''}</span>
+              )}:
+            </p>
+
+            {myProductsLoading ? (
+              <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)' }}>Cargando tus prendas…</div>
+            ) : myProducts.length === 0 ? (
+              <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                No tienes prendas disponibles para intercambiar.
+              </div>
+            ) : (
+              <div className="swap-product-list">
+                {myProducts.map(p => {
+                  const selected = selectedSwapIds.includes(p.id);
+                  const disabled = !selected && selectedSwapIds.length >= 4;
+                  return (
+                    <button
+                      key={p.id}
+                      className={`swap-product-item${selected ? ' swap-product-item--selected' : ''}${disabled ? ' swap-product-item--disabled' : ''}`}
+                      onClick={() => toggleSwapProduct(p.id)}
+                    >
+                      <div className="swap-product-item-img">
+                        {p.image_url
+                          ? <img src={p.image_url} alt={p.title} />
+                          : <span>📦</span>}
+                      </div>
+                      <div className="swap-product-item-info">
+                        <span className="swap-product-item-name">{p.title}</span>
+                        <span className="swap-product-item-price">{p.price} €</span>
+                      </div>
+                      {selected && <span className="swap-product-item-check">✓</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {swapError && <p className="offer-modal-error">{swapError}</p>}
+
+            <div className="offer-modal-footer">
+              <button className="offer-modal-cancel" onClick={() => setSwapModal(false)}>Cancelar</button>
+              <button
+                className="offer-modal-submit"
+                onClick={handleSubmitSwap}
+                disabled={selectedSwapIds.length === 0 || actionLoading || myProductsLoading}
+              >
+                {actionLoading ? 'Enviando…' : 'Proponer intercambio'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Modal de oferta ── */}
       {offerModal.open && (

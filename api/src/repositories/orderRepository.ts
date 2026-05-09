@@ -15,17 +15,16 @@ export const orderRepository = {
   },
 
   createOrder: async (dto: CreateOrderDTO): Promise<Order> => {
-    const { data, error } = await supabase
-      .from('orders')
-      .insert({
-        buyer_id:          dto.buyer_id,
-        seller_id:         dto.seller_id,
-        product_id:        dto.product_id,
-        price_at_purchase: dto.price_at_purchase,
-        status:            dto.status ?? 'completado',
-      })
-      .select()
-      .single();
+    const payload: Record<string, any> = {
+      buyer_id:          dto.buyer_id,
+      seller_id:         dto.seller_id,
+      product_id:        dto.product_id,
+      price_at_purchase: dto.price_at_purchase,
+      status:            dto.status ?? 'completado',
+    };
+    if (dto.swap_group_id) payload.swap_group_id = dto.swap_group_id;
+
+    const { data, error } = await (supabase.from('orders') as any).insert(payload).select().single();
     if (error) throw new Error(error.message);
     return data as Order;
   },

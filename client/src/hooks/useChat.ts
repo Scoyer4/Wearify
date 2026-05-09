@@ -89,15 +89,18 @@ export function useChat(conversationId: string, session: Session | null) {
   });
 
   const tempBase = (content: string): Omit<MessageWithSender, 'id'> => ({
-    conversation_id: conversationId,
-    sender_id:       myId ?? '',
+    conversation_id:  conversationId,
+    sender_id:        myId ?? '',
     content,
-    is_read:         false,
-    created_at:      new Date().toISOString(),
-    message_type:    'text',
-    offer_price:     null,
-    offer_status:    null,
-    sender:          myMeta(),
+    is_read:          false,
+    created_at:       new Date().toISOString(),
+    message_type:     'text',
+    offer_price:      null,
+    offer_status:     null,
+    swap_product_id:  null,
+    swap_product_ids: null,
+    swap_products:    [],
+    sender:           myMeta(),
   });
 
   // ── Enviar mensaje de texto ────────────────────────────────────────────────
@@ -183,6 +186,70 @@ export function useChat(conversationId: string, session: Session | null) {
     }
   }, [conversationId, token]);
 
+  // ── Intercambio ────────────────────────────────────────────────────────────
+
+  const makeSwap = useCallback(async (swapProductIds: string[]): Promise<string | null> => {
+    if (!token || !conversationId || !myId) return 'Sin sesión';
+
+    const tempId = `temp-swap-${Date.now()}`;
+    const tempMsg: MessageWithSender = {
+      id: tempId,
+      ...tempBase('Propuesta de intercambio'),
+      message_type:     'swap',
+      offer_price:      null,
+      offer_status:     'pending',
+      swap_product_id:  swapProductIds[0] ?? null,
+      swap_product_ids: swapProductIds,
+      swap_products:    [],
+    };
+
+    setMessages(prev => [...prev, tempMsg]);
+
+    try {
+      const real = await chatService.makeSwap(conversationId, swapProductIds, token);
+      setMessages(prev => {
+        if (prev.some(m => m.id === real.id)) return prev.filter(m => m.id !== tempId);
+        return prev.map(m => m.id === tempId ? { ...real, sender: tempMsg.sender } : m);
+      });
+      return null;
+    } catch (e: any) {
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+      return e.message as string;
+    }
+  }, [conversationId, token, myId, session]);
+
+  const acceptSwap = useCallback(async (messageId: string): Promise<string | null> => {
+    if (!token || !conversationId) return 'Sin sesión';
+
+    setMessages(prev => updateOfferStatus(prev, messageId, 'accepted'));
+    addSystemMessage('🔄 ¡Intercambio aceptado! Accede a "Mis ventas" para enviar tu prenda con número de seguimiento.');
+    setConversation(prev => prev ? { ...prev, product: { ...prev.product, is_sold: true } } : prev);
+
+    try {
+      await chatService.acceptSwap(conversationId, messageId, token);
+      return null;
+    } catch (e: any) {
+      setMessages(prev => updateOfferStatus(prev, messageId, 'pending'));
+      setConversation(prev => prev ? { ...prev, product: { ...prev.product, is_sold: false } } : prev);
+      return e.message as string;
+    }
+  }, [conversationId, token]);
+
+  const rejectSwap = useCallback(async (messageId: string): Promise<string | null> => {
+    if (!token || !conversationId) return 'Sin sesión';
+
+    setMessages(prev => updateOfferStatus(prev, messageId, 'rejected'));
+    addSystemMessage('❌ Propuesta de intercambio rechazada.');
+
+    try {
+      await chatService.rejectSwap(conversationId, messageId, token);
+      return null;
+    } catch (e: any) {
+      setMessages(prev => updateOfferStatus(prev, messageId, 'pending'));
+      return e.message as string;
+    }
+  }, [conversationId, token]);
+
   const counterOffer = useCallback(async (messageId: string, price: number): Promise<string | null> => {
     if (!token || !conversationId || !myId) return 'Sin sesión';
 
@@ -243,6 +310,9 @@ export function useChat(conversationId: string, session: Session | null) {
     acceptOffer,
     rejectOffer,
     counterOffer,
+    makeSwap,
+    acceptSwap,
+    rejectSwap,
     loading,
     error,
     isBuyer: conversation?.buyer_id === myId,

@@ -316,8 +316,11 @@
 
 .nav-auth-btn {
   font-size: 0.82rem;
-  padding: 7px 16px;
+  padding: 7px 14px;
   text-decoration: none;
+  min-width: 130px;
+  text-align: center;
+  white-space: nowrap;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -336,7 +339,9 @@
 
   .nav-auth-btn {
     font-size: 0.78rem;
-    padding: 6px 12px;
+    padding: 6px 10px;
+    min-width: 110px;
+    white-space: nowrap;
   }
 }
 
@@ -354,9 +359,10 @@
 
 /* ── Fila 1 ── */
 .nav-top {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 32px;
+  gap: 24px;
   padding: 0 40px;
   height: 95px;
   width: 100%;
@@ -369,8 +375,7 @@
 
 /* ── Barra de búsqueda ── */
 .nav-search {
-  flex: 1;
-  max-width: 700px;
+  width: clamp(280px, 38vw, 620px);
   position: relative;
   display: flex;
   align-items: center;
@@ -411,7 +416,7 @@
   display: flex;
   align-items: center;
   gap: 15px;
-  margin-left: auto;
+  justify-self: end;
 }
 
 /* ── Fila 2 — barra de categorías ── */
@@ -465,6 +470,7 @@
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .nav-top {
+    display: flex;
     padding: 0 16px;
     gap: 14px;
     height: 56px;
@@ -475,7 +481,13 @@
   }
 
   .nav-search {
-    max-width: none;
+    flex: 1;
+    width: auto;
+  }
+
+  .nav-actions {
+    justify-self: unset;
+    margin-left: auto;
   }
 
   .nav-cats {

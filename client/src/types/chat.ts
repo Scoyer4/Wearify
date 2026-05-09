@@ -1,4 +1,4 @@
-export type MessageType  = 'text' | 'offer' | 'system';
+export type MessageType  = 'text' | 'offer' | 'system' | 'swap';
 export type OfferStatus  = 'pending' | 'accepted' | 'rejected' | 'countered';
 export type OrderStatus  = 'completado' | 'pendiente' | 'cancelado';
 
@@ -11,6 +11,14 @@ export interface ConversationRow {
   last_message_at: string;
 }
 
+export interface SwapProduct {
+  id: string;
+  title: string;
+  price: number;
+  image_url: string | null;
+  is_sold: boolean;
+}
+
 export interface MessageRow {
   id: string;
   conversation_id: string;
@@ -21,6 +29,8 @@ export interface MessageRow {
   message_type: MessageType;
   offer_price: number | null;
   offer_status: OfferStatus | null;
+  swap_product_id: string | null;
+  swap_product_ids: string[] | null;
 }
 
 export interface OfferMessageRow extends MessageRow {
@@ -62,6 +72,8 @@ export interface MessageSender {
 
 export interface MessageWithSender extends MessageRow {
   sender: MessageSender;
+  swap_product?: SwapProduct | null;
+  swap_products?: SwapProduct[];
 }
 
 export interface StartConversationResponse {

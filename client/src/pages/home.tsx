@@ -240,23 +240,6 @@ export default function Home({ session }: { session: Session | null }) {
           Marketplace curado por coleccionistas. Lo que llevas dice quién eres.
         </p>
 
-        <div className="hero-search-wrapper">
-          <span className="hero-search-icon">🔍</span>
-          <input
-            type="text"
-            placeholder="Busca por título, marca, estilo..."
-            value={filtroBusqueda}
-            onChange={e => setFiltroBusqueda(e.target.value)}
-            className="hero-search-input"
-          />
-          <button
-            className="hero-search-submit"
-            onClick={() => filtroBusqueda ? setFiltroBusqueda('') : undefined}
-          >
-            {filtroBusqueda ? '✕' : 'Buscar'}
-          </button>
-        </div>
-
         {!cargando && (
           <div className="hero-stats">
             <div className="hero-stat">

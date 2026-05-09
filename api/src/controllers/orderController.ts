@@ -215,6 +215,10 @@ export const orderController = {
 
       await orderLifecycleRepository.cancelOrder(orderId, order.product_id);
 
+      if (order.swap_group_id) {
+        await orderLifecycleRepository.cancelSwapGroup(order.swap_group_id, orderId);
+      }
+
       try {
         const conv = await chatRepository.findConversation(order.product_id, order.buyer_id, order.seller_id!);
         if (conv) {
@@ -251,13 +255,18 @@ export const orderController = {
 
       await orderLifecycleRepository.cancelOrder(orderId, order.product_id);
 
+      // Si es parte de un intercambio, cancelar también las órdenes relacionadas
+      if (order.swap_group_id) {
+        await orderLifecycleRepository.cancelSwapGroup(order.swap_group_id, orderId);
+      }
+
       try {
         const conv = await chatRepository.findConversation(order.product_id, order.buyer_id, order.seller_id!);
         if (conv) {
           await chatRepository.createSystemMessage(
             conv.id,
             order.seller_id!,
-            '❌ Venta cancelada por el vendedor. El importe será reembolsado al comprador. El producto vuelve a estar disponible.',
+            '❌ Venta cancelada por el vendedor. El producto vuelve a estar disponible.',
           );
         }
       } catch (chatErr) {

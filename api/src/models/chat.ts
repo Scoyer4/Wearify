@@ -1,4 +1,4 @@
-export type MessageType  = 'text' | 'offer' | 'system';
+export type MessageType  = 'text' | 'offer' | 'system' | 'swap';
 export type OfferStatus  = 'pending' | 'accepted' | 'rejected' | 'countered';
 
 export interface ConversationRow {
@@ -20,6 +20,16 @@ export interface MessageRow {
   message_type: MessageType;
   offer_price: number | null;
   offer_status: OfferStatus | null;
+  swap_product_id: string | null;
+  swap_product_ids: string[] | null;
+}
+
+export interface SwapProduct {
+  id: string;
+  title: string;
+  price: number;
+  image_url: string | null;
+  is_sold: boolean;
 }
 
 // MessageRow con campos de oferta garantizados (message_type = 'offer')
@@ -62,6 +72,7 @@ export interface MessageSender {
 
 export interface MessageWithSender extends MessageRow {
   sender: MessageSender;
+  swap_products?: SwapProduct[];
 }
 
 export interface StartConversationResponse {

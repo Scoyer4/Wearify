@@ -398,6 +398,252 @@
 .offer-action-btn--counter { background: var(--brand); color: #fff; }
 .offer-action-btn--reject  { background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-subtle); }
 
+/* ── Tarjeta de intercambio (swap) ───────────────── */
+
+.swap-card {
+  border-radius: 16px;
+  padding: 14px 16px;
+  border: 1.5px solid;
+  max-width: 340px;
+  min-width: 260px;
+}
+
+.swap-card--pending  { background: rgba(124, 95, 255, 0.1); border-color: rgba(124, 95, 255, 0.35); }
+.swap-card--accepted { background: rgba(34, 197, 94, 0.1);  border-color: rgba(34, 197, 94, 0.3); }
+.swap-card--rejected { background: var(--bg-elevated); border-color: var(--border-subtle); opacity: 0.65; }
+
+.swap-card-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.swap-card-products {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.swap-card-product {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Lado izquierdo: prendas ofrecidas (puede ser 1-4) */
+.swap-card-offered {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.swap-card-offered-grid {
+  display: grid;
+  gap: 4px;
+}
+.swap-card-offered-grid--1 { grid-template-columns: 1fr; }
+.swap-card-offered-grid--2 { grid-template-columns: 1fr 1fr; }
+.swap-card-offered-grid--3 { grid-template-columns: 1fr 1fr; }
+.swap-card-offered-grid--4 { grid-template-columns: 1fr 1fr; }
+
+/* Imágenes pequeñas en grid multi-prenda */
+.swap-card-offered-grid--2 .swap-card-product-img,
+.swap-card-offered-grid--3 .swap-card-product-img,
+.swap-card-offered-grid--4 .swap-card-product-img {
+  width: 48px;
+  height: 48px;
+}
+
+.swap-card-offered-count {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+
+.swap-card-product-img {
+  width: 70px;
+  height: 70px;
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.swap-card-product-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.swap-card-product-img--link {
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity var(--transition-fast), box-shadow var(--transition-fast);
+}
+.swap-card-product-img--link:hover {
+  opacity: 0.82;
+  box-shadow: 0 0 0 2px var(--brand);
+}
+
+.swap-card-product-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.swap-card-product-tag {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.swap-card-product-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.swap-card-product-price {
+  font-size: 0.78rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.swap-card-arrow {
+  font-size: 1.4rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-top: 22px;
+}
+
+.swap-card-time {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-align: right;
+  margin-bottom: 8px;
+}
+
+/* ── Modal de selección de producto swap ─────────── */
+
+.swap-select-modal {
+  max-width: 480px !important;
+}
+
+.swap-product-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(108, 99, 255, 0.3) transparent;
+}
+
+.swap-product-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  width: 100%;
+}
+
+.swap-product-item:hover {
+  border-color: rgba(124, 95, 255, 0.5);
+  background: rgba(124, 95, 255, 0.06);
+}
+
+.swap-product-item--selected {
+  border-color: var(--accent);
+  background: rgba(124, 95, 255, 0.12);
+}
+
+.swap-product-item--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.swap-product-item--disabled:hover {
+  border-color: var(--border-subtle);
+  background: none;
+}
+
+.swap-select-count {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.swap-product-item-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: var(--bg-card);
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.swap-product-item-img img { width: 100%; height: 100%; object-fit: cover; }
+
+.swap-product-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.swap-product-item-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.swap-product-item-price {
+  font-size: 0.8rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.swap-product-item-check {
+  font-size: 1rem;
+  color: var(--accent);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
 /* ── Input ───────────────────────────────────────── */
 
 .chat-window-input-area {

@@ -176,6 +176,53 @@ export const counterOffer = async (
   );
 };
 
+// ── Intercambio (swap) ─────────────────────────────────────────────────────────
+
+export const makeDirectSwap = async (
+  productId: string,
+  swapProductIds: string[],
+  token: string,
+): Promise<StartConversationResponse> => {
+  return apiFetch<StartConversationResponse>(`${API_URL}/chats/direct-swap`, {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify({ productId, swapProductIds }),
+  });
+};
+
+export const makeSwap = async (
+  conversationId: string,
+  swapProductIds: string[],
+  token: string,
+): Promise<MessageWithSender> => {
+  return apiFetch<MessageWithSender>(
+    `${API_URL}/chats/${conversationId}/swap`,
+    { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ swapProductIds }) },
+  );
+};
+
+export const acceptSwap = async (
+  conversationId: string,
+  messageId: string,
+  token: string,
+): Promise<{ ok: boolean }> => {
+  return apiFetch<{ ok: boolean }>(
+    `${API_URL}/chats/${conversationId}/swap/${messageId}/accept`,
+    { method: 'PATCH', headers: authHeaders(token) },
+  );
+};
+
+export const rejectSwap = async (
+  conversationId: string,
+  messageId: string,
+  token: string,
+): Promise<{ ok: boolean }> => {
+  return apiFetch<{ ok: boolean }>(
+    `${API_URL}/chats/${conversationId}/swap/${messageId}/reject`,
+    { method: 'PATCH', headers: authHeaders(token) },
+  );
+};
+
 // ── Compra directa ─────────────────────────────────────────────────────────────
 
 export const createOrder = async (

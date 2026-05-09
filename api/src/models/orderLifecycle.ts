@@ -7,6 +7,7 @@ export interface OrderRow {
   product_id:           string;
   status:               string;
   order_status:         OrderStatus;
+  swap_group_id:        string | null;
   price_at_purchase:    number | null;
   final_price:          number | null;
   shipping_cost:        number;

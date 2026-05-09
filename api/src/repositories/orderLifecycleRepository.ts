@@ -134,6 +134,32 @@ export const orderLifecycleRepository = {
     if (productErr) throw new Error(productErr.message);
   },
 
+  // Cancela todas las órdenes del grupo de intercambio (excepto la ya cancelada)
+  // y revierte sus productos a disponible
+  cancelSwapGroup: async (swapGroupId: string, excludeOrderId: string): Promise<void> => {
+    const { data: siblings, error: fetchErr } = await (supabase
+      .from('orders')
+      .select('id, product_id') as any)
+      .eq('swap_group_id', swapGroupId)
+      .neq('id', excludeOrderId)
+      .neq('order_status', 'cancelled');
+    if (fetchErr) throw new Error(fetchErr.message);
+
+    for (const sibling of siblings ?? []) {
+      const { error: orderErr } = await supabase
+        .from('orders')
+        .update({ order_status: 'cancelled' })
+        .eq('id', sibling.id);
+      if (orderErr) throw new Error(orderErr.message);
+
+      const { error: productErr } = await supabase
+        .from('products')
+        .update({ status: 'Disponible', is_sold: false })
+        .eq('id', sibling.product_id);
+      if (productErr) throw new Error(productErr.message);
+    }
+  },
+
   getRoles: async (orderId: string, userId: string): Promise<{ isBuyer: boolean; isSeller: boolean }> => {
     const { data, error } = await supabase
       .from('orders')

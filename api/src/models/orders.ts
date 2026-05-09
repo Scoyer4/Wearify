@@ -7,6 +7,7 @@ export interface Order {
   product_id: string;
   status: OrderStatus;
   price_at_purchase: number;
+  swap_group_id?: string | null;
   created_at?: string;
 }
 
@@ -16,4 +17,5 @@ export interface CreateOrderDTO {
   product_id: string;
   price_at_purchase: number;
   status?: OrderStatus;
+  swap_group_id?: string | null;
 }
