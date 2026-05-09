@@ -23,7 +23,7 @@
   gap: 0.75rem;
 }
 
-.ap-header-icon { font-size: 1.5rem; }
+.ap-header-icon { display: flex; align-items: center; color: var(--brand); }
 
 .ap-header-title h1 {
   font-size: 1.5rem;
@@ -98,6 +98,10 @@
   margin-bottom: -1px;
   transition: color var(--transition-fast), border-color var(--transition-fast);
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
 }
 
 .ap-tab:hover { color: var(--text-primary); }
@@ -346,7 +350,7 @@
 
 .ap-report-target-item { display: flex; align-items: center; gap: 0.5rem; }
 
-.ap-report-target-label { color: var(--text-muted); font-size: 0.8rem; }
+.ap-report-target-label { color: var(--text-muted); font-size: 0.8rem; display: flex; align-items: center; gap: 4px; }
 
 .ap-report-reason {
   font-size: 0.88rem;

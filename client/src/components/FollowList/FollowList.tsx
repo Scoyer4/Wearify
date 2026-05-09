@@ -74,7 +74,7 @@ export default function FollowList({ userId, mode, session }: Props) {
         <div key={user.id} className="follow-list-item">
           <div
             className="follow-list-avatar"
-            onClick={() => navigate(`/profile/${user.id}`)}
+            onClick={() => navigate(`/usuario/${user.id}`)}
           >
             {user.avatar_url
               ? <img src={user.avatar_url} alt={user.username ?? ''} />
@@ -83,7 +83,7 @@ export default function FollowList({ userId, mode, session }: Props) {
           </div>
           <div
             className="follow-list-info"
-            onClick={() => navigate(`/profile/${user.id}`)}
+            onClick={() => navigate(`/usuario/${user.id}`)}
           >
             <p className="follow-list-name">{user.full_name ?? user.username}</p>
             <p className="follow-list-username">@{user.username}</p>

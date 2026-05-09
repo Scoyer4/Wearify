@@ -1831,32 +1831,31 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
   animation: none;
 }
 
-/* FAB overlay (bottom-sheet) */
+/* FAB overlay (modal centrado) */
 .fab-overlay {
   position: fixed;
   inset: 0;
   background: rgba(10, 10, 20, 0.78);
   backdrop-filter: blur(6px);
-  z-index: 800;
+  z-index: 1100;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  padding: 0 1rem;
+  padding: 1rem;
   animation: fadeIn 0.2s ease;
 }
 .fab-panel {
   background: var(--ink-800);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  margin: 10px 0;
   padding: 2rem 2rem 2.5rem;
   width: 100%;
   max-width: 700px;
-  max-height: 100vh;
+  max-height: 90vh;
   backdrop-filter: blur(2px);
   overflow-y: auto;
   position: relative;
-  animation: slideUp 0.28s cubic-bezier(0.5, 1.56, 0.9, 1);
+  animation: fadeInUp 0.25s ease;
 }
 .fab-panel-close {
   position: absolute;

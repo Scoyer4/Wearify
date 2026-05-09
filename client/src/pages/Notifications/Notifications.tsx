@@ -37,8 +37,9 @@ function notifText(n: Notification): string {
     case 'price_drop':      return `Bajada de precio en "${n.product?.title ?? 'un producto'}" que tienes en favoritos`;
     case 'new_sale':        return `${who} compró tu producto${n.product?.title ? `: "${n.product.title}"` : ''}`;
     case 'order_shipped':   return `Tu pedido${n.product?.title ? ` "${n.product.title}"` : ''} ha sido enviado. Revisa el número de seguimiento en Mis pedidos`;
-    case 'order_received':  return `${who} confirmó la recepción de "${n.product?.title ?? 'tu producto'}". Puedes ver el estado del pedido en Mis ventas`;
-    default:                return 'Nueva notificación';
+    case 'order_received':   return `${who} confirmó la recepción de "${n.product?.title ?? 'tu producto'}". Puedes ver el estado del pedido en Mis ventas`;
+    case 'product_deleted':  return n.message ?? `Tu producto ha sido eliminado por el equipo de moderación`;
+    default:                 return 'Nueva notificación';
   }
 }
 
@@ -55,6 +56,8 @@ function notifContextLink(n: Notification): string {
     case 'order_shipped':
     case 'order_received':
       return '/pedidos';
+    case 'product_deleted':
+      return '/perfil';
     default:
       return '/';
   }
@@ -125,6 +128,18 @@ function NotifAvatar({ n }: { n: Notification }) {
           <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
           <line x1="3" y1="6" x2="21" y2="6" />
           <path d="M16 10a4 4 0 0 1-8 0" />
+        </svg>
+      </div>
+    );
+  }
+  if (n.type === 'product_deleted') {
+    return (
+      <div className="nf-avatar nf-avatar--icon nf-avatar--danger">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="3 6 5 6 21 6" />
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+          <path d="M10 11v6M14 11v6" />
+          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
         </svg>
       </div>
     );

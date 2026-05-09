@@ -272,7 +272,11 @@ export default function AdminPanel({ session }: Props) {
       {/* Header */}
       <div className="ap-header">
         <div className="ap-header-title">
-          <span className="ap-header-icon">🛡️</span>
+          <span className="ap-header-icon">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </span>
           <h1>Panel de administración</h1>
         </div>
       </div>
@@ -299,7 +303,32 @@ export default function AdminPanel({ session }: Props) {
       <div className="ap-tabs">
         {(['products', 'users', 'reports'] as Tab[]).map(t => (
           <button key={t} className={`ap-tab${tab === t ? ' ap-tab--active' : ''}`} onClick={() => setTab(t)}>
-            {t === 'products' ? '📦 Productos' : t === 'users' ? '👥 Usuarios' : '🚩 Reportes'}
+            {t === 'products' ? (
+              <>
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                </svg>
+                Productos
+              </>
+            ) : t === 'users' ? (
+              <>
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                Usuarios
+              </>
+            ) : (
+              <>
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                  <line x1="4" y1="22" x2="4" y2="15" />
+                </svg>
+                Reportes
+              </>
+            )}
           </button>
         ))}
       </div>
@@ -497,13 +526,24 @@ export default function AdminPanel({ session }: Props) {
                     <div className="ap-report-target">
                       {r.reported_product && (
                         <div className="ap-report-target-item">
-                          <span className="ap-report-target-label">📦 Producto:</span>
+                          <span className="ap-report-target-label">
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                            </svg>
+                            Producto:
+                          </span>
                           <Link to={`/producto/${r.reported_product.id}`} className="ap-link">{r.reported_product.title}</Link>
                         </div>
                       )}
                       {r.reported_user && (
                         <div className="ap-report-target-item">
-                          <span className="ap-report-target-label">👤 Usuario:</span>
+                          <span className="ap-report-target-label">
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                              <circle cx="12" cy="7" r="4" />
+                            </svg>
+                            Usuario:
+                          </span>
                           <Link to={`/usuario/${r.reported_user.id}`} className="ap-link">{r.reported_user.username ?? 'Sin username'}</Link>
                         </div>
                       )}

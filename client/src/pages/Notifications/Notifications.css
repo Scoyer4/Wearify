@@ -167,6 +167,7 @@
 .nf-avatar--brand   { background: rgba(124, 95, 255, 0.15); color: var(--brand);   }
 .nf-avatar--warning { background: rgba(255, 184, 77, 0.15); color: var(--warning); }
 .nf-avatar--teal    { background: rgba(0, 212, 170, 0.10);  color: var(--accent-2);}
+.nf-avatar--danger  { background: rgba(255, 77, 106, 0.15); color: var(--danger);  }
 
 /* ── Cuerpo del texto ───────────────────────────────────────────────────── */
 
