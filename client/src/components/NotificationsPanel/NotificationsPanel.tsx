@@ -33,12 +33,6 @@ function notifText(n: Notification): string {
   }
 }
 
-function notifLink(n: Notification): string {
-  if ((n.type === 'new_product' || n.type === 'price_drop') && n.product_id) return `/producto/${n.product_id}`;
-  if (n.type === 'new_sale' || n.type === 'order_shipped' || n.type === 'order_received') return '/pedidos';
-  if (n.from_user_id) return `/usuario/${n.from_user_id}`;
-  return '/';
-}
 
 interface Props {
   notifications: Notification[];
