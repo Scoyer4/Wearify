@@ -6,4 +6,6 @@ dist/
 
 .env
 
+migrations/
+
 supabase/

@@ -39,3 +39,14 @@ export interface OrderConfirmation {
   finalPrice: number;
   shippingCost: number;
 }
+
+export interface StripeSessionInfo {
+  orderId:         string | null;
+  productTitle:    string;
+  productImage:    string | null;
+  shippingAddress: ShippingAddress;
+  shippingType:    ShippingType;
+  productPrice:    number;
+  shippingCost:    number;
+  totalAmount:     number;
+}

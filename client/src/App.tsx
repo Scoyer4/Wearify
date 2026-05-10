@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import { supabase } from './lib/supabase';
 import { Session } from '@supabase/supabase-js';
 
@@ -18,6 +19,7 @@ import ChatsPage from './pages/ChatsPage';
 import ChatWindowPage from './pages/ChatWindowPage';
 import Checkout from './pages/Checkout/Checkout';
 import CheckoutSuccess from './pages/CheckoutSuccess/CheckoutSuccess';
+import CheckoutCancel from './pages/CheckoutCancel/CheckoutCancel';
 import PaymentProcessing from './pages/PaymentProcessing/PaymentProcessing';
 import Orders from './pages/Orders/Orders';
 
@@ -34,6 +36,7 @@ function App() {
   const [session,   setSession]   = useState<Session | null>(null);
   const [isAdmin,   setIsAdmin]   = useState(false);
   const [banReason, setBanReason] = useState<string | null | undefined>(undefined);
+  const adminCheckedRef           = useRef<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
@@ -42,7 +45,14 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!session) { setIsAdmin(false); setBanReason(undefined); return; }
+    if (!session) {
+      setIsAdmin(false);
+      setBanReason(undefined);
+      adminCheckedRef.current = null;
+      return;
+    }
+
+    const userId = session.user.id;
 
     // Check ban status first (bypass verifyAuth so banned users can still read their reason)
     fetch(`${API_URL}/users/ban-status`, {
@@ -52,7 +62,12 @@ function App() {
       .then(d => {
         if (d.isBanned) { setBanReason(d.banReason ?? null); return; }
         setBanReason(undefined);
-        checkIsAdmin(session.access_token).then(setIsAdmin);
+        // Evita llamadas repetidas cuando Supabase refresca el token o dispara
+        // múltiples eventos de auth para el mismo usuario.
+        if (adminCheckedRef.current !== userId) {
+          adminCheckedRef.current = userId;
+          checkIsAdmin(session.access_token).then(setIsAdmin);
+        }
       })
       .catch(() => setBanReason(undefined));
   }, [session]);
@@ -64,6 +79,21 @@ function App() {
 
   return (
     <Router>
+      <Toaster
+        position="bottom-right"
+        toastOptions={{
+          style: {
+            background: 'var(--ink-800)',
+            border: '1px solid var(--ink-700)',
+            color: 'var(--bone)',
+            fontFamily: 'var(--font-sans)',
+            fontSize: '0.875rem',
+          },
+          className: 'wearify-toast',
+        }}
+        richColors
+        closeButton
+      />
       <div className="app-container">
         <Navbar session={session} isAdmin={isAdmin} /> 
         
@@ -80,8 +110,9 @@ function App() {
             <Route path="/chats" element={<ChatsPage session={session} />} />
             <Route path="/chats/:conversationId" element={<ChatWindowPage session={session} />} />
 
-            <Route path="/checkout/success"   element={<CheckoutSuccess />} />
-            <Route path="/checkout/payment"   element={<PaymentProcessing />} />
+            <Route path="/checkout/success"    element={<CheckoutSuccess session={session} />} />
+            <Route path="/checkout/cancel"     element={<CheckoutCancel />} />
+            <Route path="/checkout/payment"    element={<PaymentProcessing />} />
             <Route path="/checkout/:productId" element={<Checkout session={session} />} />
 
             <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />

@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from '../lib/toast';
+import { useConfirmModal } from '../hooks/useConfirmModal';
 import { supabase } from '../lib/supabase';
 import { Session } from '@supabase/supabase-js';
 import { getProductsBySeller, getMyFavorites, getUserById, deleteProduct, updateUserProfile } from '../services/api';
@@ -43,6 +45,7 @@ export default function Profile({ session }: { session: Session }) {
 
   const initial = username[0].toUpperCase();
   const navigate = useNavigate();
+  const { confirm, ModalComponent } = useConfirmModal();
 
   useEffect(() => {
     const fetchDatos = async () => {
@@ -88,6 +91,9 @@ export default function Profile({ session }: { session: Session }) {
     if (updated) {
       setUsername(trimmed);
       await supabase.auth.updateUser({ data: { username: trimmed } });
+      toast.success('✓ Nombre de usuario guardado');
+    } else {
+      toast.error('No se pudo guardar el nombre de usuario.');
     }
     setSavingUsername(false);
     setEditingUsername(false);
@@ -97,7 +103,12 @@ export default function Profile({ session }: { session: Session }) {
     if (bioInput === bio) { setEditingBio(false); return; }
     setSavingBio(true);
     const updated = await updateUserProfile({ bio: bioInput.trim() || null }, session.access_token);
-    if (updated) setBio(bioInput.trim());
+    if (updated) {
+      setBio(bioInput.trim());
+      toast.success('✓ Biografía guardada');
+    } else {
+      toast.error('No se pudo guardar la biografía.');
+    }
     setSavingBio(false);
     setEditingBio(false);
   };
@@ -111,37 +122,56 @@ export default function Profile({ session }: { session: Session }) {
     if (!file) return;
 
     setUploadingAvatar(true);
-    const ext = file.name.split('.').pop();
-    const path = `${session.user.id}/avatar.${ext}`;
 
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(path, file, { upsert: true });
+    const doUpload = async () => {
+      const ext  = file.name.split('.').pop();
+      const path = `${session.user.id}/avatar.${ext}`;
 
-    if (uploadError) {
-      console.error('Error al subir avatar:', uploadError);
-      setUploadingAvatar(false);
-      return;
-    }
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { upsert: true });
+      if (uploadError) throw new Error('No se pudo subir la foto de perfil.');
 
-    const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
-    const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+      const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path);
+      const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;
 
-    const updated = await updateUserProfile({ avatar_url: publicUrl }, session.access_token);
-    if (updated) {
+      const updated = await updateUserProfile({ avatar_url: publicUrl }, session.access_token);
+      if (!updated) throw new Error('No se pudo actualizar la foto de perfil.');
+
+      return publicUrl;
+    };
+
+    const p = doUpload();
+    toast.promise(p, {
+      loading: 'Actualizando foto de perfil…',
+      success: '✓ Foto de perfil actualizada',
+      error:   (err) => err instanceof Error ? err.message : 'Error al actualizar la foto',
+    });
+
+    try {
+      const publicUrl = await p;
       setAvatarUrl(publicUrl);
       await supabase.auth.updateUser({ data: { avatar_url: publicUrl } });
+    } catch {
+      // el error ya lo muestra toast.promise
+    } finally {
+      setUploadingAvatar(false);
+      e.target.value = '';
     }
-    setUploadingAvatar(false);
-    e.target.value = '';
   };
 
   const handleDeleteProduct = async (producto: Producto, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm(`¿Eliminar "${producto.title}"? Esta acción no se puede deshacer.`)) return;
-    const ok = await deleteProduct(producto.id, session.access_token);
-    if (ok) setMisProductos(prev => prev.filter(p => p.id !== producto.id));
-    else alert('No se pudo eliminar el producto.');
+    const ok = await confirm({
+      title: `¿Eliminar "${producto.title}"?`,
+      message: 'Esta acción no se puede deshacer.',
+      confirmText: 'Eliminar',
+      variant: 'danger',
+    });
+    if (!ok) return;
+    const deleted = await deleteProduct(producto.id, session.access_token);
+    if (deleted) setMisProductos(prev => prev.filter(p => p.id !== producto.id));
+    else toast.error('No se pudo eliminar el producto.');
   };
 
   const renderProductCard = (producto: Producto, isOwn = false) => (
@@ -183,6 +213,7 @@ export default function Profile({ session }: { session: Session }) {
 
   return (
     <section className="my-profile">
+      {ModalComponent}
 
       {/* ── HERO ── */}
       <div className="my-profile-hero">

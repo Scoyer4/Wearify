@@ -85,6 +85,17 @@ export const checkoutRepository = {
     if (error) throw new Error(error.message);
   },
 
+  findOrderByProductAndBuyer: async (productId: string, buyerId: string): Promise<{ id: string } | null> => {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('id')
+      .eq('product_id', productId)
+      .eq('buyer_id', buyerId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return data;
+  },
+
   saveUserAddress: async (userId: string, address: ShippingAddress): Promise<void> => {
     const { error } = await supabase
       .from('users')

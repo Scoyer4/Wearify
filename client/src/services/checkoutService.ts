@@ -1,4 +1,4 @@
-import { CheckoutSummary, CreateCheckoutOrderDTO, OrderConfirmation } from '../types/checkout';
+import { CheckoutSummary, CreateCheckoutOrderDTO, OrderConfirmation, StripeSessionInfo } from '../types/checkout';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -28,6 +28,26 @@ export const confirmOrder = async (
   token: string,
 ): Promise<OrderConfirmation> => {
   return apiFetch<OrderConfirmation>(`${API_URL}/checkout`, {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify(dto),
+  });
+};
+
+export const getStripeSession = async (
+  sessionId: string,
+  token: string,
+): Promise<StripeSessionInfo> => {
+  return apiFetch<StripeSessionInfo>(`${API_URL}/checkout/session/${sessionId}`, {
+    headers: authHeaders(token),
+  });
+};
+
+export const createStripeSession = async (
+  dto: CreateCheckoutOrderDTO,
+  token: string,
+): Promise<{ url: string }> => {
+  return apiFetch<{ url: string }>(`${API_URL}/checkout/create-stripe-session`, {
     method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify(dto),

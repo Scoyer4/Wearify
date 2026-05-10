@@ -21,6 +21,7 @@ import notificationRoutes from "./routes/notificationRoutes";
 import reviewRoutes from "./routes/reviewRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import reportRoutes from "./routes/reportRoutes";
+import webhookRoutes from "./routes/webhookRoutes";
 
 const app = express();
 
@@ -34,9 +35,14 @@ const corsOptions: CorsOptions = {
       callback(new Error('Not allowed by CORS'));
     }
   }
-}; 
+};
 
 app.use(cors(corsOptions));
+
+// IMPORTANTE: el webhook de Stripe necesita el body en crudo (Buffer) para verificar la firma.
+// Debe registrarse ANTES de express.json(), que lo convertiría en objeto y rompería la verificación.
+app.use("/api/webhooks/stripe", webhookRoutes);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

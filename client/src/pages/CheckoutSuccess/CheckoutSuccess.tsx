@@ -1,28 +1,70 @@
-import { useLocation, useNavigate } from 'react-router-dom';
-import { CheckoutProduct, ShippingAddress, ShippingType } from '../../types/checkout';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Session } from '@supabase/supabase-js';
+import { supabase } from '../../lib/supabase';
+import { StripeSessionInfo } from '../../types/checkout';
+import { getStripeSession } from '../../services/checkoutService';
+import { toast } from '../../lib/toast';
 import './CheckoutSuccess.css';
 
-interface SuccessState {
-  orderId: string;
-  finalPrice: number;
-  shippingCost: number;
-  shippingType: ShippingType;
-  product: CheckoutProduct;
-  address: ShippingAddress;
+interface Props {
+  session: Session | null;
 }
 
-export default function CheckoutSuccess() {
-  const { state } = useLocation();
+export default function CheckoutSuccess({ session: sessionProp }: Props) {
   const navigate = useNavigate();
-  const s = state as SuccessState | null;
+  const [searchParams] = useSearchParams();
+  const sessionId = searchParams.get('session_id');
 
-  if (!s) {
-    navigate('/');
-    return null;
+  const [info, setInfo]       = useState<StripeSessionInfo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!sessionId) { navigate('/'); return; }
+
+    // Resuelve la sesión directamente desde Supabase para evitar el race condition
+    // entre el prop (session=null al montar) y la carga del token en App.tsx.
+    const run = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { navigate('/login'); return; }
+
+      getStripeSession(sessionId, session.access_token)
+        .then(data => { setInfo(data); toast.success('¡Compra realizada con éxito!'); })
+        .catch(err => setError(err instanceof Error ? err.message : 'Error al confirmar el pago'))
+        .finally(() => setLoading(false));
+    };
+
+    run();
+  }, [sessionId, navigate]);
+
+  if (loading) {
+    return (
+      <div className="success-page">
+        <div className="success-card">
+          <div className="success-loading">
+            <div className="success-spinner" />
+            <p>Confirmando tu compra…</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  const { orderId, finalPrice, shippingCost, shippingType, product, address } = s;
-  const productPrice = finalPrice - shippingCost;
+  if (error || !info) {
+    return (
+      <div className="success-page">
+        <div className="success-card">
+          <p className="success-error">{error ?? 'No se pudo confirmar el pago.'}</p>
+          <button className="btn-secondary" style={{ marginTop: '16px', width: '100%' }} onClick={() => navigate('/')}>
+            Volver al inicio
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const { orderId, productTitle, productImage, shippingAddress, shippingType, productPrice, shippingCost, totalAmount } = info;
 
   return (
     <div className="success-page">
@@ -35,15 +77,19 @@ export default function CheckoutSuccess() {
         </div>
 
         <h1 className="success-title">¡Pedido confirmado!</h1>
-        <p className="success-subtitle">Pedido <span className="success-order-id">#{orderId.slice(0, 8).toUpperCase()}</span></p>
+        {orderId && (
+          <p className="success-subtitle">
+            Pedido <span className="success-order-id">#{orderId.slice(0, 8).toUpperCase()}</span>
+          </p>
+        )}
 
         {/* ── Producto ── */}
         <div className="success-product">
-          {product.image_url
-            ? <img src={product.image_url} alt={product.title} className="success-product-img" />
+          {productImage
+            ? <img src={productImage} alt={productTitle} className="success-product-img" />
             : <div className="success-product-img success-product-img--placeholder" />
           }
-          <p className="success-product-name">{product.title}</p>
+          <p className="success-product-name">{productTitle}</p>
         </div>
 
         <div className="success-divider" />
@@ -62,7 +108,7 @@ export default function CheckoutSuccess() {
           </div>
           <div className="success-row success-row--total">
             <span>Total pagado</span>
-            <span>{finalPrice.toFixed(2)} €</span>
+            <span>{totalAmount.toFixed(2)} €</span>
           </div>
         </div>
 
@@ -71,14 +117,16 @@ export default function CheckoutSuccess() {
         {/* ── Dirección ── */}
         <div className="success-address">
           <p className="success-address-label">Dirección de entrega</p>
-          <p className="success-address-line">{address.name}</p>
-          <p className="success-address-line">{address.address}</p>
-          <p className="success-address-line">{address.postalCode} {address.city}, {address.country}</p>
+          <p className="success-address-line">{shippingAddress.name}</p>
+          <p className="success-address-line">{shippingAddress.address}</p>
+          <p className="success-address-line">
+            {shippingAddress.postalCode} {shippingAddress.city}, {shippingAddress.country}
+          </p>
         </div>
 
         {/* ── Acciones ── */}
         <div className="success-actions">
-          <button className="btn-primary" onClick={() => navigate('/perfil')}>
+          <button className="btn-primary" onClick={() => navigate('/pedidos')}>
             Ver mis pedidos
           </button>
           <button className="btn-secondary" onClick={() => navigate('/')}>

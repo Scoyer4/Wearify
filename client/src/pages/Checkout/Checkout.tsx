@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
 import { CheckoutSummary, ShippingAddress, ShippingType } from '../../types/checkout';
-import { getCheckoutSummary } from '../../services/checkoutService';
+import { getCheckoutSummary, createStripeSession } from '../../services/checkoutService';
+import { toast } from '../../lib/toast';
 import './Checkout.css';
 
 interface Props {
@@ -27,6 +28,8 @@ export default function Checkout({ session }: Props) {
   const [shippingType, setShipping]   = useState<ShippingType>('standard');
   const [saveAddress, setSaveAddress] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [submitting, setSubmitting]   = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
 
   // ── Carga inicial ───────────────────────────────────────────────────────────
@@ -51,7 +54,7 @@ export default function Checkout({ session }: Props) {
         setPageLoading(false);
       }
     })();
-  }, [productId, session]);
+  }, [productId, session, navigate]);
 
   // ── Cálculo de precios en tiempo real ───────────────────────────────────────
   const selectedOption  = summary?.shippingOptions.find(o => o.type === shippingType);
@@ -82,22 +85,32 @@ export default function Checkout({ session }: Props) {
     return Object.keys(errors).length === 0;
   };
 
-  // ── Confirmar compra ────────────────────────────────────────────────────────
-  const handleConfirm = () => {
+  // ── Confirmar compra → sesión Stripe ────────────────────────────────────────
+  const handleConfirm = async () => {
     if (!session || !summary || !productId) return;
     if (!validate()) return;
 
-    navigate('/checkout/payment', {
-      state: {
-        productId,
-        shippingAddress: form,
-        shippingType,
-        saveAddress,
-        product:      summary.product,
-        finalPrice:   total,
-        shippingCost,
-      },
+    setSubmitting(true);
+    setSubmitError(null);
+
+    const sessionPromise = createStripeSession(
+      { productId, shippingAddress: form, shippingType, saveAddress },
+      session.access_token,
+    );
+
+    toast.promise(sessionPromise, {
+      loading: 'Preparando el pago…',
+      success: 'Redirigiendo a Stripe…',
+      error: (e) => e instanceof Error ? e.message : 'Error al iniciar el pago',
     });
+
+    try {
+      const { url } = await sessionPromise;
+      window.location.href = url;
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Error al iniciar el pago');
+      setSubmitting(false);
+    }
   };
 
   // ── Estados de carga / error de página ──────────────────────────────────────
@@ -319,11 +332,16 @@ export default function Checkout({ session }: Props) {
             <button
               className="btn-primary checkout-confirm-btn"
               onClick={handleConfirm}
+              disabled={submitting}
             >
-              Confirmar compra
+              {submitting
+                ? <><span className="checkout-spinner" /> Redirigiendo a Stripe…</>
+                : 'Ir a pagar'}
             </button>
 
-            <p className="checkout-security-note">🔒 Pago 100% seguro y cifrado</p>
+            {submitError && <p className="checkout-submit-error">{submitError}</p>}
+
+            <p className="checkout-security-note">🔒 Pago seguro gestionado por Stripe</p>
           </div>
         </div>
 

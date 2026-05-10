@@ -3,6 +3,7 @@ import { checkoutRepository } from '../repositories/checkoutRepository';
 import { chatRepository } from '../repositories/chatRepository';
 import { notificationRepository } from '../repositories/notificationRepository';
 import { ShippingOption, CreateCheckoutOrderDTO, ShippingType } from '../models/checkout';
+import stripe from '../lib/stripe';
 
 const SHIPPING_OPTIONS: ShippingOption[] = [
   { type: 'standard', label: 'Envío estándar (5-7 días)', price: 0 },
@@ -43,6 +44,160 @@ export const checkoutController = {
     } catch (error: any) {
       console.error('Error en getCheckoutSummary:', error);
       return res.status(500).json({ error: 'Error al cargar el checkout' });
+    }
+  },
+
+  getStripeSession: async (req: Request, res: Response) => {
+    try {
+      const me = req.user!.id;
+      const { sessionId } = req.params;
+
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+      if (session.payment_status !== 'paid') {
+        return res.status(402).json({ error: 'El pago aún no se ha completado' });
+      }
+
+      const meta = session.metadata;
+      if (!meta?.buyerId) {
+        return res.status(404).json({ error: 'Sesión no encontrada' });
+      }
+      if (meta.buyerId !== me) {
+        return res.status(403).json({ error: 'No autorizado' });
+      }
+
+      const product = await checkoutRepository.findProductForCheckout(meta.productId);
+      const shippingAddress: import('../models/checkout').ShippingAddress = JSON.parse(meta.shippingAddress);
+      const productPrice = parseFloat(meta.productPrice);
+      const shippingCost = parseFloat(meta.shippingCost);
+
+      // Creación idempotente: si el producto aún no está marcado como vendido
+      // (el webhook no ha disparado o no está configurado), lo procesamos aquí.
+      if (!product?.is_sold) {
+        try {
+          await checkoutRepository.createOrder(
+            {
+              productId:       meta.productId,
+              shippingAddress,
+              shippingType:    meta.shippingType as import('../models/checkout').ShippingType,
+              saveAddress:     meta.saveAddress === 'true',
+            },
+            me,
+            meta.sellerId,
+            productPrice,
+            shippingCost,
+          );
+          await checkoutRepository.markProductSold(meta.productId);
+          if (meta.saveAddress === 'true') {
+            await checkoutRepository.saveUserAddress(me, shippingAddress);
+          }
+          const conv = await chatRepository.findOrCreateConversation(meta.productId, me, meta.sellerId);
+          await chatRepository.createMessage(
+            conv.id,
+            me,
+            `✅ Pago completado · ${(productPrice + shippingCost).toFixed(2)} € · Envío ${meta.shippingType === 'express' ? 'express' : 'estándar'}.`,
+          );
+          await notificationRepository.insert(meta.sellerId, 'new_sale', me, meta.productId);
+        } catch (processingErr) {
+          // Si el webhook ganó la carrera y ya procesó el pedido, ignoramos el error
+          console.warn('getStripeSession: pedido ya procesado por webhook', processingErr);
+        }
+      }
+
+      const order = await checkoutRepository.findOrderByProductAndBuyer(meta.productId, me);
+
+      return res.json({
+        orderId:         order?.id ?? null,
+        productTitle:    product?.title ?? 'Producto',
+        productImage:    product?.image_url ?? null,
+        shippingAddress,
+        shippingType:    meta.shippingType,
+        productPrice,
+        shippingCost,
+        totalAmount:     (session.amount_total ?? 0) / 100,
+      });
+    } catch (error: any) {
+      console.error('Error en getStripeSession:', error);
+      return res.status(500).json({ error: 'Error al recuperar la sesión de pago' });
+    }
+  },
+
+  createStripeSession: async (req: Request, res: Response) => {
+    try {
+      const me = req.user!.id;
+      const body = req.body as Partial<CreateCheckoutOrderDTO>;
+
+      if (!body.productId || typeof body.productId !== 'string') {
+        return res.status(400).json({ error: 'productId es obligatorio' });
+      }
+      if (!body.shippingType || !['standard', 'express'].includes(body.shippingType)) {
+        return res.status(400).json({ error: 'Tipo de envío no válido' });
+      }
+
+      const addr = body.shippingAddress;
+      if (!addr) {
+        return res.status(400).json({ error: 'La dirección de entrega es obligatoria' });
+      }
+      const missingFields = (['name', 'address', 'city', 'postalCode', 'country'] as const)
+        .filter(f => !addr[f]?.trim());
+      if (missingFields.length > 0) {
+        return res.status(400).json({ error: `Faltan campos de dirección: ${missingFields.join(', ')}` });
+      }
+
+      const product = await checkoutRepository.findProductForCheckout(body.productId);
+      if (!product) return res.status(404).json({ error: 'Producto no encontrado' });
+      if (product.is_sold) return res.status(400).json({ error: 'Lo sentimos, este producto acaba de ser vendido' });
+      if (product.seller_id === me) {
+        return res.status(400).json({ error: 'No puedes comprar tu propio producto' });
+      }
+
+      const shippingCost = SHIPPING_COSTS[body.shippingType];
+      const clientUrl = process.env.CLIENT_URL ?? 'http://localhost:5173';
+
+      const lineItems = [
+        {
+          price_data: {
+            currency: 'eur',
+            product_data: {
+              name: product.title,
+              ...(product.image_url ? { images: [product.image_url] } : {}),
+            },
+            unit_amount: Math.round(product.price * 100),
+          },
+          quantity: 1,
+        },
+        ...(shippingCost > 0 ? [{
+          price_data: {
+            currency: 'eur',
+            product_data: { name: 'Envío express (1-2 días)' },
+            unit_amount: Math.round(shippingCost * 100),
+          },
+          quantity: 1,
+        }] : []),
+      ];
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: lineItems,
+        mode: 'payment',
+        success_url: `${clientUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url:  `${clientUrl}/checkout/cancel`,
+        metadata: {
+          productId:       body.productId,
+          buyerId:         me,
+          sellerId:        product.seller_id,
+          shippingType:    body.shippingType,
+          shippingAddress: JSON.stringify(addr),
+          saveAddress:     String(body.saveAddress ?? false),
+          productPrice:    String(product.price),
+          shippingCost:    String(shippingCost),
+        },
+      });
+
+      return res.json({ url: session.url });
+    } catch (error: any) {
+      console.error('Error en createStripeSession:', error);
+      return res.status(500).json({ error: 'Error al crear la sesión de pago' });
     }
   },
 

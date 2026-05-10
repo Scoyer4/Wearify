@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/cartContext';
+import { toast } from '../lib/toast';
 
 export default function Cart() {
   const { carrito, eliminarDelCarrito } = useCart();
@@ -48,7 +49,7 @@ export default function Cart() {
                   <button 
                     className="btn-danger" 
                     style={{ marginTop: '0.5rem', padding: '4px 12px', fontSize: '0.85rem' }}
-                    onClick={() => eliminarDelCarrito(item.id)}
+                    onClick={() => { eliminarDelCarrito(item.id); toast.info('Producto eliminado del carrito'); }}
                   >
                     Eliminar
                   </button>
@@ -77,7 +78,7 @@ export default function Cart() {
 
             <button
               className="btn-pay"
-              onClick={() => alert('¡Simulación de compra completada!')}
+              onClick={() => toast.info('Simulación de compra completada')}
             >
               Proceder al pago seguro
             </button>

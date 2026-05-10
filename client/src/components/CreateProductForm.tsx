@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { createProduct, getCategories } from '../services/api';
+import { toast } from '../lib/toast';
 import './CreateProductForm.css';
 
 // ── Tipos ──────────────────────────────────────────────────────────────────────
@@ -37,7 +38,6 @@ export const CreateProductForm = ({ onProductCreated }: { onProductCreated: () =
   const [categories, setCategories]   = useState<Category[]>([]);
   const [images, setImages]           = useState<ImageEntry[]>([]);
   const [uploading, setUploading]     = useState(false);
-  const [estadoMensaje, setEstadoMensaje] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -74,54 +74,56 @@ export const CreateProductForm = ({ onProductCreated }: { onProductCreated: () =
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setEstadoMensaje('Subiendo producto...');
     setUploading(true);
 
-    const { data: { session } } = await supabase.auth.getSession();
-    const token  = session?.access_token;
-    const userId = session?.user?.id;
-    if (!token || !userId) {
-      setEstadoMensaje('Error: No estás autenticado.');
-      setUploading(false);
-      return;
-    }
+    const doPublish = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token  = session?.access_token;
+      const userId = session?.user?.id;
+      if (!token || !userId) throw new Error('No estás autenticado. Inicia sesión e inténtalo de nuevo.');
 
-    const imageUrls: string[] = [];
-    for (let i = 0; i < images.length; i++) {
-      const { file } = images[i];
-      const ext  = file.name.split('.').pop();
-      const path = `${userId}/${Date.now()}_${i}.${ext}`;
-      const { error } = await supabase.storage.from('products').upload(path, file, { upsert: true });
-      if (error) {
-        setEstadoMensaje(`Error al subir imagen ${i + 1}: ${error.message}`);
-        setUploading(false);
-        return;
+      const imageUrls: string[] = [];
+      for (let i = 0; i < images.length; i++) {
+        const { file } = images[i];
+        const ext  = file.name.split('.').pop();
+        const path = `${userId}/${Date.now()}_${i}.${ext}`;
+        const { error } = await supabase.storage.from('products').upload(path, file, { upsert: true });
+        if (error) throw new Error(`Error al subir imagen ${i + 1}: ${error.message}`);
+        const { data: urlData } = supabase.storage.from('products').getPublicUrl(path);
+        imageUrls.push(urlData.publicUrl);
       }
-      const { data: urlData } = supabase.storage.from('products').getPublicUrl(path);
-      imageUrls.push(urlData.publicUrl);
-    }
 
-    const resultado = await createProduct({
-      title, description,
-      price:       parseFloat(price),
-      brand, size, condition,
-      gender:      gender || null,
-      status:      'Disponible',
-      image_urls:  imageUrls,
-      category_id: parseInt(categoryId),
-    }, token);
+      const resultado = await createProduct({
+        title, description,
+        price:       parseFloat(price),
+        brand, size, condition,
+        gender:      gender || null,
+        status:      'Disponible',
+        image_urls:  imageUrls,
+        category_id: parseInt(categoryId),
+      }, token);
 
-    setUploading(false);
+      if (!resultado) throw new Error('Hubo un error al publicar la prenda. Inténtalo de nuevo.');
+    };
 
-    if (resultado) {
-      setEstadoMensaje('¡Producto subido con éxito!');
+    const p = doPublish();
+    toast.promise(p, {
+      loading: 'Publicando tu prenda…',
+      success: '✓ Prenda publicada con éxito',
+      error:   (err) => err instanceof Error ? err.message : 'Error al publicar la prenda',
+    });
+
+    try {
+      await p;
       setTitle(''); setDescription(''); setPrice(''); setBrand('');
       setSize(''); setCondition(''); setGender(''); setCategoryId('');
       images.forEach(img => URL.revokeObjectURL(img.preview));
       setImages([]);
       onProductCreated();
-    } else {
-      setEstadoMensaje('Hubo un error al subir el producto.');
+    } catch {
+      // el error ya lo muestra toast.promise
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -266,11 +268,6 @@ export const CreateProductForm = ({ onProductCreated }: { onProductCreated: () =
         </button>
       </form>
 
-      {estadoMensaje && (
-        <p className={`cpf-message ${estadoMensaje.includes('éxito') ? 'cpf-message--ok' : 'cpf-message--err'}`}>
-          {estadoMensaje}
-        </p>
-      )}
     </div>
   );
 };

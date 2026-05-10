@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
+import { toast } from '../../lib/toast';
+import { useConfirmModal } from '../../hooks/useConfirmModal';
 import { OrderWithDetails } from '../../types/order';
 import { getBuyingOrders, getSellingOrders, receiveOrder, completeOrder, cancelExpiredOrder, sellerCancelOrder } from '../../services/orderService';
 import OrderCard from '../../components/OrderCard/OrderCard';
@@ -15,6 +17,7 @@ type Tab = 'buying' | 'selling';
 
 export default function Orders({ session }: Props) {
   const navigate = useNavigate();
+  const { confirm, ModalComponent } = useConfirmModal();
 
   const [tab,            setTab]           = useState<Tab>('buying');
   const [buying,         setBuying]        = useState<OrderWithDetails[]>([]);
@@ -54,7 +57,7 @@ export default function Orders({ session }: Props) {
       await receiveOrder(orderId, session.access_token);
       await load();
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Error al confirmar recepción');
+      toast.error(e instanceof Error ? e.message : 'Error al confirmar recepción');
     } finally {
       setActionLoading(null);
     }
@@ -62,13 +65,19 @@ export default function Orders({ session }: Props) {
 
   async function handleComplete(orderId: string) {
     if (!session) return;
-    if (!confirm('¿Confirmar que el pedido está completado?')) return;
+    const ok = await confirm({
+      title: '¿Confirmar pedido completado?',
+      message: 'Confirma que has recibido el pedido correctamente. Esta acción no se puede deshacer.',
+      confirmText: 'Confirmar',
+      variant: 'default',
+    });
+    if (!ok) return;
     setActionLoading(orderId);
     try {
       await completeOrder(orderId, session.access_token);
       await load();
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Error al completar el pedido');
+      toast.error(e instanceof Error ? e.message : 'Error al completar el pedido');
     } finally {
       setActionLoading(null);
     }
@@ -80,7 +89,7 @@ export default function Orders({ session }: Props) {
       await sellerCancelOrder(orderId, session.access_token);
       await load();
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Error al cancelar la venta');
+      toast.error(e instanceof Error ? e.message : 'Error al cancelar la venta');
     }
   }
 
@@ -90,7 +99,7 @@ export default function Orders({ session }: Props) {
       await cancelExpiredOrder(orderId, session.access_token);
       await load();
     } catch (e) {
-      console.error('Error al cancelar pedido expirado:', e);
+      toast.error('Error al cancelar el pedido expirado.');
       await load();
     }
   }
@@ -104,6 +113,7 @@ export default function Orders({ session }: Props) {
 
   return (
     <div className="orders-page">
+      {ModalComponent}
 
       <div className="orders-header">
         <h1 className="orders-title">Mis pedidos</h1>

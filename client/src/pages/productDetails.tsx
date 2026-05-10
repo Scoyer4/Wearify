@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { toast } from '../lib/toast';
+import { useConfirmModal } from '../hooks/useConfirmModal';
 import { Session } from '@supabase/supabase-js';
 import { getProductById, getUserById, deleteProduct, getProductsBySeller, addFavorite, removeFavorite, getMyFavorites } from '../services/api';
 import { makeDirectOffer, makeDirectSwap } from '../services/chatService';
@@ -14,6 +16,7 @@ export default function ProductDetail({ session }: { session: Session | null }) 
   const { id } = useParams();
   const navigate = useNavigate();
   const { añadirAlCarrito } = useCart();
+  const { confirm, ModalComponent } = useConfirmModal();
 
   const [producto, setProducto]               = useState<Producto | null>(null);
   const [sellerAvatarUrl, setSellerAvatarUrl]   = useState<string | null>(null);
@@ -173,7 +176,8 @@ export default function ProductDetail({ session }: { session: Session | null }) 
     const token = session.access_token;
     const nuevoSet = new Set(favoritos);
     const adding = !nuevoSet.has(prodId);
-    if (adding) nuevoSet.add(prodId); else nuevoSet.delete(prodId);
+    if (adding) { nuevoSet.add(prodId); toast.success('Añadido a favoritos'); }
+    else { nuevoSet.delete(prodId); toast.info('Eliminado de favoritos'); }
     setFavoritos(nuevoSet);
     setProducto(prev => prev && prev.id === prodId
       ? { ...prev, favorites_count: Math.max(0, (prev.favorites_count ?? 0) + (adding ? 1 : -1)) }
@@ -190,21 +194,27 @@ export default function ProductDetail({ session }: { session: Session | null }) 
 
   const handleAñadirAlCarrito = (prod: Producto) => {
     if (!session) {
-      alert('¡Hola! Para añadir prendas al carrito necesitas iniciar sesión o crear una cuenta.');
+      toast.warning('Necesitas iniciar sesión para añadir prendas al carrito.');
       navigate('/login');
       return;
     }
     añadirAlCarrito(prod);
-    alert('¡Añadido al carrito!');
+    toast.success('¡Añadido al carrito!');
   };
 
   const handleDelete = async () => {
     if (!session || !producto) return;
-    if (!window.confirm(`¿Eliminar "${producto.title}"? Esta acción no se puede deshacer.`)) return;
+    const ok = await confirm({
+      title: `¿Eliminar "${producto.title}"?`,
+      message: 'Esta acción no se puede deshacer.',
+      confirmText: 'Eliminar',
+      variant: 'danger',
+    });
+    if (!ok) return;
     setDeleting(true);
-    const ok = await deleteProduct(producto.id, session.access_token);
-    if (ok) navigate('/perfil');
-    else { setDeleting(false); alert('No se pudo eliminar el producto.'); }
+    const deleted = await deleteProduct(producto.id, session.access_token);
+    if (deleted) navigate('/perfil');
+    else { setDeleting(false); toast.error('No se pudo eliminar el producto.'); }
   };
 
   const handleComprarYa = () => {
@@ -347,6 +357,7 @@ export default function ProductDetail({ session }: { session: Session | null }) 
   // ── Render ────────────────────────────────────────────
   return (
     <section className="pd-page">
+      {ModalComponent}
 
       {/* ── Layout dos columnas ── */}
       <div className="pd-layout">

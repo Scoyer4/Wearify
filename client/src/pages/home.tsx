@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from '../lib/toast';
 import { getProducts, addFavorite, removeFavorite, getMyFavorites } from '../services/api';
 import { CreateProductForm } from '../components/CreateProductForm';
 import Marquee from '../components/Marquee';
@@ -115,7 +116,7 @@ export default function Home({ session }: { session: Session | null }) {
   const toggleFavorito = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (!session) {
-      alert('Inicia sesión para guardar favoritos.');
+      toast.warning('Inicia sesión para guardar favoritos.');
       navigate('/login');
       return;
     }
@@ -124,8 +125,10 @@ export default function Home({ session }: { session: Session | null }) {
     const adding = !nuevoSet.has(id);
     if (adding) {
       nuevoSet.add(id);
+      toast.success('Añadido a favoritos');
     } else {
       nuevoSet.delete(id);
+      toast.info('Eliminado de favoritos');
     }
     setFavoritos(nuevoSet);
     setProductos(prev => prev.map(p =>

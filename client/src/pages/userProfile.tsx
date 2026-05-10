@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
+import { useConfirmModal } from '../hooks/useConfirmModal';
+import { toast } from '../lib/toast';
 import { getPublicProfile, getProductsBySeller } from '../services/api';
 import { getUserReviews, ReviewWithReviewer } from '../services/reviewService';
 import { useFollow } from '../hooks/useFollow';
@@ -18,6 +20,7 @@ export default function UserProfile({ session }: { session: Session | null }) {
   const [hovered, setHovered] = useState(false);
 
   const { iFollow, counts, follow, unfollow, loading: followLoading } = useFollow(id ?? '', session);
+  const { confirm, ModalComponent } = useConfirmModal();
 
   const esMiPerfil = session?.user?.id === id;
   const perfilPrivado = perfil?.is_private && !esMiPerfil && iFollow !== 'accepted';
@@ -46,13 +49,21 @@ export default function UserProfile({ session }: { session: Session | null }) {
 
   const handleFollowClick = async () => {
     if (!session) { navigate('/login'); return; }
+    const name = perfil?.username ?? 'este usuario';
     if (iFollow === 'none') {
       await follow();
+      toast.success(`Ahora sigues a ${name}`);
     } else {
-      const msg = iFollow === 'pending'
-        ? '¿Cancelar la solicitud de seguimiento?'
-        : '¿Dejar de seguir a este usuario?';
-      if (window.confirm(msg)) await unfollow();
+      const isPending = iFollow === 'pending';
+      const ok = await confirm({
+        title: isPending ? '¿Cancelar solicitud?' : '¿Dejar de seguir?',
+        message: isPending
+          ? '¿Cancelar la solicitud de seguimiento?'
+          : `¿Dejar de seguir a ${name}?`,
+        confirmText: isPending ? 'Cancelar solicitud' : 'Dejar de seguir',
+        variant: 'warning',
+      });
+      if (ok) { await unfollow(); toast.info(`Dejaste de seguir a ${name}`); }
     }
   };
 
@@ -80,6 +91,7 @@ export default function UserProfile({ session }: { session: Session | null }) {
 
   return (
     <section className="profile-section">
+      {ModalComponent}
       <button onClick={() => navigate(-1)} className="back-btn" style={{ marginBottom: '1rem', borderRadius: '16px' }}>
         ←
       </button>

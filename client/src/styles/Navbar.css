@@ -391,6 +391,7 @@
 
 .nav-top .logo-title {
   justify-content: flex-start;
+  margin-left: 2rem;
 }
 
 .nav-top .logo-title img {

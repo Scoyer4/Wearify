@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Session } from '@supabase/supabase-js';
+import { toast } from '../../lib/toast';
 import { Link, useNavigate } from 'react-router-dom';
 import { useChat } from '../../hooks/useChat';
 import { MessageWithSender } from '../../types/chat';
@@ -269,6 +270,7 @@ export default function ChatWindow({ conversationId, session }: Props) {
     try {
       await createReview(reviewStatus.orderId, reviewRating, reviewComment, session.access_token);
       setReviewStatus(prev => prev ? { ...prev, canReview: false, hasReviewed: true, existing: { id: '', rating: reviewRating, comment: reviewComment } } : prev);
+      toast.success('✓ Reseña publicada');
     } catch (e) {
       setReviewError(e instanceof Error ? e.message : 'No se pudo enviar la reseña');
     } finally {
@@ -320,27 +322,47 @@ export default function ChatWindow({ conversationId, session }: Props) {
       return;
     }
 
-    setActionLoading(true);
-    const err = offerModal.mode === 'make'
-      ? await makeOffer(price)
-      : await counterOffer(offerModal.messageId!, price);
-    setActionLoading(false);
+    const doSend = async () => {
+      const err = offerModal.mode === 'make'
+        ? await makeOffer(price)
+        : await counterOffer(offerModal.messageId!, price);
+      if (err) throw new Error(err);
+    };
 
-    if (err) { setOfferError(err); return; }
-    closeOfferModal();
+    setActionLoading(true);
+    const p = doSend();
+    toast.promise(p, {
+      loading: 'Enviando oferta…',
+      success: 'Oferta enviada al vendedor',
+      error:   (err) => err instanceof Error ? err.message : 'Error al enviar la oferta',
+    });
+
+    try {
+      await p;
+      closeOfferModal();
+    } catch (err) {
+      setOfferError(err instanceof Error ? err.message : 'Error al enviar la oferta');
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleAccept = async (messageId: string) => {
     setActionLoading(true);
     const result = await acceptOffer(messageId);
     setActionLoading(false);
-    if (typeof result === 'string') console.error('Error al aceptar:', result);
+    if (typeof result === 'string') {
+      toast.error('No se pudo aceptar la oferta');
+    } else {
+      toast.success('¡Oferta aceptada!');
+    }
   };
 
   const handleReject = async (messageId: string) => {
     setActionLoading(true);
     await rejectOffer(messageId);
     setActionLoading(false);
+    toast.error('Oferta rechazada');
   };
 
   // ── Render burbuja ─────────────────────────────────────────────────────────
