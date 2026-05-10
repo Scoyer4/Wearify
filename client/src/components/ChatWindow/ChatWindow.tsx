@@ -136,13 +136,13 @@ function SwapCard({ msg, isMine, conversationProductTitle, conversationProductIm
 
         {/* Lado derecho: producto del chat */}
         <div className="swap-card-product">
+          <span className="swap-card-product-tag">A cambio de</span>
           <div className="swap-card-product-img">
             {conversationProductImage
               ? <img src={conversationProductImage} alt={conversationProductTitle} />
               : <span>📦</span>}
           </div>
           <div className="swap-card-product-info">
-            <span className="swap-card-product-tag">A cambio de</span>
             <span className="swap-card-product-name">{conversationProductTitle}</span>
             {conversationProductPrice != null && (
               <span className="swap-card-product-price">{conversationProductPrice} €</span>

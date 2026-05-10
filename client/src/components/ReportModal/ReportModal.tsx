@@ -36,6 +36,7 @@ export default function ReportModal({ token, productId, userId, targetName, onCl
   return (
     <div className="rm-overlay" onClick={onClose}>
       <div className="rm-modal" onClick={e => e.stopPropagation()}>
+        <div className="rm-handle" />
 
         {done ? (
           <div className="rm-done">

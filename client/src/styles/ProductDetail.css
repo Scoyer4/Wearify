@@ -7,7 +7,6 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1.5rem 0;
-  animation: fadeInUp 0.3s ease;
 }
 
 .pd-page .section-block {
@@ -43,25 +42,28 @@
 ═══════════════════════════════════════════════════════ */
 .pd-layout {
   display: grid;
-  grid-template-columns: 55% 1fr;
+  grid-template-columns: 44% 1fr;
   gap: 2rem;
   align-items: start;
 }
 
 /* ═══════════════════════════════════════════════════════
-   COLUMNA IZQUIERDA — imagen sticky
+   COLUMNA IZQUIERDA — imagen sticky (handled via JS)
 ═══════════════════════════════════════════════════════ */
 .pd-left {
-  position: sticky;
-  top: 155px;
+  align-self: start;
+}
+
+.pd-left-inner {
+  /* inner wrapper that gets position:fixed via JS scroll listener */
 }
 
 /* Contenedor imagen principal */
 .pd-img-main-wrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 5;
-  max-height: calc(100vh - 200px);
+  aspect-ratio: 3 / 4;
+  max-height: 420px;
   background: var(--ink-800);
   border-radius: 1rem;
   overflow: hidden;
@@ -73,7 +75,7 @@
 .pd-img-main {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   animation: pdFadeIn 0.18s ease;
   display: block;
 }
@@ -470,6 +472,9 @@
   line-height: 1.65;
 }
 
+/* Favorito imagen principal — dueño del producto */
+.pd-fav-own { cursor: default; }
+
 /* ── Botón reportar ── */
 .pd-report-btn {
   background: none;
@@ -493,14 +498,14 @@
 ═══════════════════════════════════════════════════════ */
 .pd-skel-layout {
   display: grid;
-  grid-template-columns: 55% 1fr;
+  grid-template-columns: 44% 1fr;
   gap: 2rem;
   align-items: start;
   margin-top: 0.5rem;
 }
 .pd-skel-img {
-  aspect-ratio: 4 / 5;
-  max-height: calc(100vh - 200px);
+  aspect-ratio: 3 / 4;
+  max-height: 540px;
   border-radius: 1rem;
 }
 .pd-skel-thumbs {

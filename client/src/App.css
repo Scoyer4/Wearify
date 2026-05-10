@@ -54,7 +54,6 @@ body {
 .main-content {
   margin: 0 auto;
   width: 100%;
-  display: flow-root;
 }
 
 /* =========================================
@@ -324,7 +323,7 @@ body {
 /* ── Own Product Toast ── */
 .own-product-toast {
   position: fixed;
-  top: 120px;
+  top: 155px;
   right: 15px;
   z-index: 9999;
   background: var(--bg-card);

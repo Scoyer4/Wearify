@@ -55,6 +55,11 @@ export default function ProductDetail({ session }: { session: Session | null }) 
   const [ownToast, setOwnToast]                     = useState(false);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // JS-based sticky for left column
+  const layoutRef    = useRef<HTMLDivElement>(null);
+  const leftRef      = useRef<HTMLDivElement>(null);
+  const leftInnerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
@@ -98,6 +103,60 @@ export default function ProductDetail({ session }: { session: Session | null }) 
     });
   }, [session]);
 
+  // JS sticky: fix left column within the bounds of the grid container
+  useEffect(() => {
+    const layout = layoutRef.current;
+    const outer  = leftRef.current;
+    const inner  = leftInnerRef.current;
+    if (!layout || !outer || !inner) return;
+
+    const navHeight = parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue('--nav-height')
+    ) || 112;
+    const stickyTop = navHeight + 16;
+
+    // Cache left position from offset (stable — unaffected by scrollbar appearing)
+    const getFixedLeft = () => {
+      let left = 0;
+      let el: HTMLElement | null = outer;
+      while (el) { left += el.offsetLeft; el = el.offsetParent as HTMLElement | null; }
+      return left;
+    };
+
+    const reset = () => { inner.style.cssText = ''; };
+
+    const apply = () => {
+      // Mobile: single column, no sticky
+      if (window.innerWidth <= 768) { reset(); return; }
+
+      const innerH     = inner.offsetHeight;
+      const layoutRect = layout.getBoundingClientRect();
+      const fixedLeft  = getFixedLeft();
+      const fixedWidth = outer.offsetWidth;
+
+      if (layoutRect.top > stickyTop) {
+        // Above sticky zone — normal flow
+        reset();
+      } else if (layoutRect.bottom <= stickyTop + innerH) {
+        // Below sticky zone — slide up with grid bottom so it never overlaps content below
+        inner.style.cssText = `position:fixed;top:${Math.max(stickyTop - (innerH - layoutRect.bottom + stickyTop), 0)}px;left:${fixedLeft}px;width:${fixedWidth}px;`;
+      } else {
+        // In sticky zone — pin to top
+        inner.style.cssText = `position:fixed;top:${stickyTop}px;left:${fixedLeft}px;width:${fixedWidth}px;`;
+      }
+    };
+
+    window.addEventListener('scroll', apply, { passive: true });
+    window.addEventListener('resize', apply);
+    apply();
+
+    return () => {
+      window.removeEventListener('scroll', apply);
+      window.removeEventListener('resize', apply);
+      reset();
+    };
+  }, [producto, activeImage]);
+
   const showOwnProductToast = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
@@ -116,6 +175,10 @@ export default function ProductDetail({ session }: { session: Session | null }) 
     const adding = !nuevoSet.has(prodId);
     if (adding) nuevoSet.add(prodId); else nuevoSet.delete(prodId);
     setFavoritos(nuevoSet);
+    setProducto(prev => prev && prev.id === prodId
+      ? { ...prev, favorites_count: Math.max(0, (prev.favorites_count ?? 0) + (adding ? 1 : -1)) }
+      : prev
+    );
     setSellerProducts(prev => prev.map(p =>
       p.id === prodId
         ? { ...p, favorites_count: Math.max(0, (p.favorites_count ?? 0) + (adding ? 1 : -1)) }
@@ -289,7 +352,8 @@ export default function ProductDetail({ session }: { session: Session | null }) 
       <div className="pd-layout">
 
         {/* ══ COLUMNA IZQUIERDA ══════════════════════════ */}
-        <div className="pd-left">
+        <div className="pd-left" ref={leftRef}>
+          <div className="pd-left-inner" ref={leftInnerRef}>
           <div className="pd-img-main-wrap">
             {activeImage ? (
               <img
@@ -306,6 +370,23 @@ export default function ProductDetail({ session }: { session: Session | null }) 
                 <span className="pd-sold-overlay-text">VENDIDO</span>
               </div>
             )}
+            {isOwner ? (
+              <button
+                className={`favorite-btn pd-fav-own${(producto.favorites_count ?? 0) > 0 ? ' favorite-btn--has-count' : ''}`}
+                onClick={showOwnProductToast}
+              >
+                <span className="fav-heart">🤍</span>
+                {(producto.favorites_count ?? 0) > 0 && <span className="fav-count">{producto.favorites_count}</span>}
+              </button>
+            ) : (
+              <button
+                className={`favorite-btn${favoritos.has(producto.id) ? ' liked' : ''}${(producto.favorites_count ?? 0) > 0 ? ' favorite-btn--has-count' : ''}`}
+                onClick={e => toggleFavorito(e, producto.id)}
+              >
+                <span className="fav-heart">{favoritos.has(producto.id) ? '❤️' : '🤍'}</span>
+                {(producto.favorites_count ?? 0) > 0 && <span className="fav-count">{producto.favorites_count}</span>}
+              </button>
+            )}
           </div>
 
           {(producto.images?.length ?? 0) > 1 && (
@@ -321,6 +402,7 @@ export default function ProductDetail({ session }: { session: Session | null }) 
               ))}
             </div>
           )}
+          </div>{/* pd-left-inner */}
         </div>
 
         {/* ══ COLUMNA DERECHA ════════════════════════════ */}
@@ -340,6 +422,31 @@ export default function ProductDetail({ session }: { session: Session | null }) 
           <p className={`pd-price${isSold ? ' pd-price--sold' : ''}`}>
             {producto.price ? `${producto.price} €` : 'Consultar precio'}
           </p>
+
+          {/* Descripción */}
+          <div className="pd-desc">
+            <p className="pd-desc-label">Descripción</p>
+            <p className="pd-desc-text">
+              {!isLongDesc || descExpanded
+                ? (producto.description || 'El vendedor no ha añadido una descripción.')
+                : producto.description!.slice(0, 200) + '...'}
+            </p>
+            {isLongDesc && (
+              <button className="pd-desc-toggle" onClick={() => setDescExpanded(p => !p)}>
+                {descExpanded ? 'Leer menos ↑' : 'Leer más ↓'}
+              </button>
+            )}
+          </div>
+
+          {/* Chips */}
+          {(producto.brand || producto.size || producto.condition || producto.gender) && (
+            <div className="pd-chips">
+              {producto.gender    && <span className="pd-chip">Para: {producto.gender}</span>}
+              {producto.brand     && <span className="pd-chip">Marca: {producto.brand}</span>}
+              {producto.size      && <span className="pd-chip">Talla: {producto.size}</span>}
+              {producto.condition && <span className="pd-chip">Estado: {producto.condition}</span>}
+            </div>
+          )}
 
           {/* Tarjeta vendedor */}
           <div className="pd-seller">
@@ -361,30 +468,6 @@ export default function ProductDetail({ session }: { session: Session | null }) 
             <Link to={`/usuario/${producto.seller_id}`} className="pd-seller-profile-btn">
               Ver perfil
             </Link>
-          </div>
-
-          {/* Chips */}
-          {(producto.brand || producto.size || producto.condition) && (
-            <div className="pd-chips">
-              {producto.brand     && <span className="pd-chip">Marca: {producto.brand}</span>}
-              {producto.size      && <span className="pd-chip">Talla: {producto.size}</span>}
-              {producto.condition && <span className="pd-chip">Estado: {producto.condition}</span>}
-            </div>
-          )}
-
-          {/* Descripción */}
-          <div className="pd-desc">
-            <p className="pd-desc-label">Descripción</p>
-            <p className="pd-desc-text">
-              {!isLongDesc || descExpanded
-                ? (producto.description || 'El vendedor no ha añadido una descripción.')
-                : producto.description!.slice(0, 200) + '...'}
-            </p>
-            {isLongDesc && (
-              <button className="pd-desc-toggle" onClick={() => setDescExpanded(p => !p)}>
-                {descExpanded ? 'Leer menos ↑' : 'Leer más ↓'}
-              </button>
-            )}
           </div>
 
           {/* ── Acciones ── */}

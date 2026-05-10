@@ -13,7 +13,7 @@ export default function ChatWindowPage({ session }: Props) {
   if (!conversationId) return <Navigate to="/chats" />;
 
   return (
-    <div style={{ padding: '1rem 0.75rem', marginBottom: '-5rem' }}>
+    <div style={{ padding: '2rem 0.75rem 2rem' }}>
       <ChatWindow conversationId={conversationId} session={session} />
     </div>
   );

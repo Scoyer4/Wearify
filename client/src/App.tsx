@@ -23,6 +23,7 @@ import Orders from './pages/Orders/Orders';
 
 // Componentes globales
 import Navbar from './components/navbar';
+import Footer from './components/Footer/Footer';
 import BannedScreen from './components/BannedScreen/BannedScreen';
 import { checkIsAdmin } from './services/adminService';
 import './App.css';
@@ -69,9 +70,9 @@ function App() {
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Home session={session} />} />
-            
+
             <Route path="/producto/:id" element={<ProductDetail session={session} />} />
-            
+
             <Route path="/usuario/:id" element={<UserProfile session={session} />} />
             <Route path="/usuario/:id/seguidores" element={<FollowListPage session={session} mode="followers" />} />
             <Route path="/usuario/:id/siguiendo" element={<FollowListPage session={session} mode="following" />} />
@@ -82,14 +83,14 @@ function App() {
             <Route path="/checkout/success"   element={<CheckoutSuccess />} />
             <Route path="/checkout/payment"   element={<PaymentProcessing />} />
             <Route path="/checkout/:productId" element={<Checkout session={session} />} />
-            
+
             <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
 
-            <Route 
-              path="/perfil" 
-              element={session ? <Profile session={session} /> : <Navigate to="/login" />} 
+            <Route
+              path="/perfil"
+              element={session ? <Profile session={session} /> : <Navigate to="/login" />}
             />
-            
+
             <Route
               path="/notifications"
               element={session ? <Notifications session={session} /> : <Navigate to="/login" />}
@@ -113,6 +114,7 @@ function App() {
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </main>
+        <Footer />
       </div>
     </Router>
   );

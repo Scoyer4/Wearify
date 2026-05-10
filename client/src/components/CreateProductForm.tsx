@@ -32,6 +32,7 @@ export const CreateProductForm = ({ onProductCreated }: { onProductCreated: () =
   const [brand, setBrand]             = useState('');
   const [size, setSize]               = useState('');
   const [condition, setCondition]     = useState('');
+  const [gender, setGender]           = useState('');
   const [categoryId, setCategoryId]   = useState('');
   const [categories, setCategories]   = useState<Category[]>([]);
   const [images, setImages]           = useState<ImageEntry[]>([]);
@@ -104,6 +105,7 @@ export const CreateProductForm = ({ onProductCreated }: { onProductCreated: () =
       title, description,
       price:       parseFloat(price),
       brand, size, condition,
+      gender:      gender || null,
       status:      'Disponible',
       image_urls:  imageUrls,
       category_id: parseInt(categoryId),
@@ -114,7 +116,7 @@ export const CreateProductForm = ({ onProductCreated }: { onProductCreated: () =
     if (resultado) {
       setEstadoMensaje('¡Producto subido con éxito!');
       setTitle(''); setDescription(''); setPrice(''); setBrand('');
-      setSize(''); setCondition(''); setCategoryId('');
+      setSize(''); setCondition(''); setGender(''); setCategoryId('');
       images.forEach(img => URL.revokeObjectURL(img.preview));
       setImages([]);
       onProductCreated();
@@ -231,13 +233,22 @@ export const CreateProductForm = ({ onProductCreated }: { onProductCreated: () =
           </select>
         </div>
 
-        {/* ── Condición ───────────────────────────────────── */}
-        <select value={condition} onChange={e => setCondition(e.target.value)} required className="cpf-input">
-          <option value="" disabled>Condición de la prenda...</option>
-          {['Sin usar', 'Como nuevo', 'Excelente', 'Buen estado', 'Usado'].map(c => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
+        {/* ── Condición | Género ──────────────────────────── */}
+        <div className="cpf-row">
+          <select value={condition} onChange={e => setCondition(e.target.value)} required className="cpf-input">
+            <option value="" disabled>Condición de la prenda...</option>
+            {['Sin usar', 'Como nuevo', 'Excelente', 'Buen estado', 'Usado'].map(c => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+
+          <select value={gender} onChange={e => setGender(e.target.value)} required className="cpf-input">
+            <option value="" disabled>Para quién es...</option>
+            {['Mujer', 'Hombre', 'Niños', 'Unisex'].map(g => (
+              <option key={g} value={g}>{g}</option>
+            ))}
+          </select>
+        </div>
 
         {/* ── Descripción ─────────────────────────────────── */}
         <textarea

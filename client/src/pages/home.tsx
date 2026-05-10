@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { getProducts, addFavorite, removeFavorite, getMyFavorites, getCategories } from '../services/api';
+import { getProducts, addFavorite, removeFavorite, getMyFavorites } from '../services/api';
 import { CreateProductForm } from '../components/CreateProductForm';
 import Marquee from '../components/Marquee';
-import { Producto, Favorito, Categoria } from '../types';
+import { Producto, Favorito } from '../types';
 import { Session } from '@supabase/supabase-js';
 
 function ProductImage({ src, alt }: { src: string | null | undefined; alt: string }) {
@@ -42,8 +42,6 @@ export default function Home({ session }: { session: Session | null }) {
   const [cargando, setCargando] = useState(true);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [favoritos, setFavoritos] = useState<Set<string>>(new Set());
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [categoriaSel, setCategoriaSel] = useState<number | null>(null);
   const [filtroBusqueda, setFiltroBusqueda] = useState('');
   const [filtroTalla, setFiltroTalla] = useState('');
   const [filtroCondicion, setFiltroCondicion] = useState('');
@@ -53,6 +51,7 @@ export default function Home({ session }: { session: Session | null }) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const categoriaActiva = searchParams.get('categoria');
+  const catIdActivo     = searchParams.get('catId');
   const ordenActivo     = searchParams.get('orden')    ?? '';
   const searchActivo    = searchParams.get('search')   ?? '';
 
@@ -66,19 +65,20 @@ export default function Home({ session }: { session: Session | null }) {
   const productosDisponibles = productos.filter(p => !p.status || p.status === 'Disponible');
   const productosRecientes = productos.slice(0, 6);
 
-  const hayFiltrosActivos = !!(categoriaActiva || categoriaSel !== null || filtroBusqueda || filtroTalla || filtroCondicion || filtroOrden);
+  const hayFiltrosActivos = !!(categoriaActiva || catIdActivo || filtroBusqueda || filtroTalla || filtroCondicion || filtroOrden);
 
   const productosFiltrados = productos
     .filter(p => {
       if (categoriaActiva) {
         const q = categoriaActiva.toLowerCase();
         if (
+          p.gender?.toLowerCase() !== q &&
           p.brand?.toLowerCase() !== q &&
           p.size?.toLowerCase() !== q &&
           p.condition?.toLowerCase() !== q
         ) return false;
       }
-      if (categoriaSel !== null && p.category_id !== categoriaSel) return false;
+      if (catIdActivo && p.category_id !== parseInt(catIdActivo)) return false;
       if (filtroBusqueda) {
         const q = filtroBusqueda.toLowerCase();
         if (!p.title.toLowerCase().includes(q) && !p.brand?.toLowerCase().includes(q)) return false;
@@ -95,7 +95,6 @@ export default function Home({ session }: { session: Session | null }) {
     });
 
   const limpiarFiltros = () => {
-    setCategoriaSel(null);
     setFiltroBusqueda('');
     setFiltroTalla('');
     setFiltroCondicion('');
@@ -160,7 +159,6 @@ export default function Home({ session }: { session: Session | null }) {
 
   useEffect(() => {
     fetchDatos();
-    getCategories().then(data => { if (data) setCategorias(data); });
   }, []);
 
   const renderCard = (producto: Producto) => {
@@ -261,27 +259,6 @@ export default function Home({ session }: { session: Session | null }) {
       </div>
 
       <Marquee />
-
-      {/* ── CATEGORY PILLS ── */}
-      {categorias.length > 0 && (
-        <div className="category-pills-row">
-          <button
-            className={`category-pill ${categoriaSel === null && !categoriaActiva ? 'active' : ''}`}
-            onClick={() => { setCategoriaSel(null); if (categoriaActiva) navigate('/'); }}
-          >
-            Todo
-          </button>
-          {categorias.map(cat => (
-            <button
-              key={cat.id}
-              className={`category-pill ${categoriaSel === cat.id ? 'active' : ''}`}
-              onClick={() => setCategoriaSel(categoriaSel === cat.id ? null : cat.id)}
-            >
-              {cat.name}
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* ── FAB + OVERLAY SUBIR PRODUCTO ── */}
       {session && (
@@ -408,6 +385,7 @@ export default function Home({ session }: { session: Session | null }) {
           <div className="own-product-toast__bar" />
         </div>
       )}
+
 
     </section>
   );

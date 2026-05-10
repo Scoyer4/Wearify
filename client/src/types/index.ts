@@ -10,6 +10,7 @@ export interface Producto {
   created_at?: string;
   brand?: string;
   condition?: string;
+  gender?: string | null;
   status?: string;
   is_sold?: boolean;
   favorites_count?: number;
@@ -29,6 +30,7 @@ export type NuevoProducto = {
   category_id: number;
   brand: string;
   condition: string;
+  gender?: string | null;
   status?: string;
 };
 

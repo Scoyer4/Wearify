@@ -1,0 +1,120 @@
+.footer {
+  margin-top: 5rem;
+  border-top: 1px solid var(--ink-700);
+  background: var(--ink-800);
+}
+
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+/* ── Marca ── */
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.footer-logo {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--bone);
+  letter-spacing: -0.02em;
+}
+
+.footer-tagline {
+  font-size: 0.82rem;
+  color: rgba(245, 245, 240, 0.38);
+  margin: 0;
+  font-family: var(--font-body);
+}
+
+/* ── Redes sociales ── */
+.footer-socials {
+  display: flex;
+  gap: 8px;
+  margin-top: 0.5rem;
+}
+
+.footer-social {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--ink-700);
+  color: rgba(245, 245, 240, 0.5);
+  text-decoration: none;
+  transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+.footer-social:hover {
+  background: var(--brand);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+/* ── Columnas ── */
+.footer-cols {
+  display: flex;
+  gap: 3rem;
+  flex-wrap: wrap;
+}
+
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.footer-col-title {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: rgba(245, 245, 240, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0 0 0.25rem;
+}
+
+.footer-link {
+  font-size: 0.82rem;
+  color: rgba(245, 245, 240, 0.5);
+  text-decoration: none;
+  font-family: var(--font-body);
+  transition: color var(--transition-fast);
+}
+
+.footer-link:hover {
+  color: var(--brand);
+}
+
+/* ── Bottom bar ── */
+.footer-bottom {
+  border-top: 1px solid var(--ink-700);
+  padding: 1rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer-copy {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: rgba(245, 245, 240, 0.22);
+  margin: 0;
+}
+
+@media (max-width: 520px) {
+  .footer-inner { flex-direction: column; padding: 2rem 1.25rem; }
+  .footer-cols  { gap: 2rem; }
+  .footer-bottom { padding: 1rem 1.25rem; }
+}

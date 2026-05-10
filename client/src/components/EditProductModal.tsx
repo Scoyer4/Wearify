@@ -34,6 +34,7 @@ export default function EditProductModal({ producto, token, onClose, onSaved }: 
   const [brand,       setBrand]       = useState(producto.brand ?? '');
   const [size,        setSize]        = useState(producto.size);
   const [condition,   setCondition]   = useState(producto.condition);
+  const [gender,      setGender]      = useState(producto.gender ?? '');
   const [categoryId,  setCategoryId]  = useState(String(producto.category_id ?? ''));
   const [categories,  setCategories]  = useState<Category[]>([]);
 
@@ -113,7 +114,8 @@ export default function EditProductModal({ producto, token, onClose, onSaved }: 
 
     const updated = await updateProduct(producto.id, {
       title, description: description || null, price: parseFloat(price),
-      brand, size, condition, category_id: parseInt(categoryId),
+      brand, size, condition, gender: gender || null,
+      category_id: parseInt(categoryId),
       image_urls: finalUrls,
     }, token);
 
@@ -243,13 +245,22 @@ export default function EditProductModal({ producto, token, onClose, onSaved }: 
               </select>
             </div>
 
-            {/* ── Condición ────────────────────────── */}
-            <select value={condition} onChange={e => setCondition(e.target.value as Producto['condition'])} required className="cpf-input">
-              <option value="" disabled>Condición de la prenda...</option>
-              {['Sin usar', 'Como nuevo', 'Excelente', 'Buen estado', 'Usado'].map(c => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
+            {/* ── Condición | Género ───────────────── */}
+            <div className="cpf-row">
+              <select value={condition} onChange={e => setCondition(e.target.value as Producto['condition'])} required className="cpf-input">
+                <option value="" disabled>Condición de la prenda...</option>
+                {['Sin usar', 'Como nuevo', 'Excelente', 'Buen estado', 'Usado'].map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+
+              <select value={gender} onChange={e => setGender(e.target.value)} required className="cpf-input">
+                <option value="" disabled>Para quién es...</option>
+                {['Mujer', 'Hombre', 'Niños', 'Unisex'].map(g => (
+                  <option key={g} value={g}>{g}</option>
+                ))}
+              </select>
+            </div>
 
             {/* ── Descripción ──────────────────────── */}
             <textarea

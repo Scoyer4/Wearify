@@ -2,6 +2,7 @@
 
 export type ProductStatus = 'Disponible' | 'Reservado' | 'Vendido';
 export type ClothingCondition = 'Sin usar' | 'Usado' | 'Buen estado' | 'Excelente' | 'Como nuevo';
+export type ClothingGender = 'Mujer' | 'Hombre' | 'Niños' | 'Unisex';
 
 export interface Product {
   id: string;
@@ -13,6 +14,7 @@ export interface Product {
   brand: string;
   size: string;
   condition: ClothingCondition;
+  gender?: ClothingGender | null;
   status: ProductStatus;
   image_url?: string | null;
   images?: string[];
@@ -30,9 +32,10 @@ export type ProductInsert = {
   brand: string;
   size: string;
   condition: ClothingCondition;
+  gender?: ClothingGender | null;
   status?: ProductStatus;
   id?: never;
-  created_at?: never; 
+  created_at?: never;
   updated_at?: never;
 };
 
@@ -44,6 +47,7 @@ export type ProductUpdate = {
   brand?: string;
   size?: string;
   condition?: ClothingCondition;
+  gender?: ClothingGender | null;
   status?: ProductStatus;
   image_url?: string | null;
   image_urls?: string[];

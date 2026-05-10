@@ -6,18 +6,83 @@ import { supabase } from '../lib/supabase';
 import { getPending } from '../services/followerService';
 import { useUnreadCount } from '../hooks/useUnreadCount';
 import { useNotifications } from '../hooks/useNotifications';
+import { getCategories } from '../services/api';
+import { Categoria } from '../types';
 import NotificationsPanel from './NotificationsPanel/NotificationsPanel';
 import logoImage from '../assets/logoWearify2_nombre.png';
 import '../styles/Navbar.css';
 
+function getCategoryIcon(name: string) {
+  const n = name.toLowerCase();
+  const props = { viewBox: "0 0 24 24", width: 15, height: 15, fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+
+  if (n.includes('camiseta')) return (
+    <svg {...props}>
+      <path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57h1.14v13h16v-13h1.14l.58-3.57a2 2 0 0 0-1.34-2.23z"/>
+    </svg>
+  );
+  if (n.includes('sudadera')) return (
+    <svg {...props}>
+      <path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57h1.14v13h16v-13h1.14l.58-3.57a2 2 0 0 0-1.34-2.23z"/>
+      <line x1="9" y1="14" x2="15" y2="14"/>
+    </svg>
+  );
+  if (n.includes('abrigo')) return (
+    <svg {...props}>
+      <path d="M16 2c0 2.2-1.8 4-4 4S8 4.2 8 2L3 5.5V22h6v-9h6v9h6V5.5L16 2z"/>
+    </svg>
+  );
+  if (n.includes('pantalon')) return (
+    <svg {...props}>
+      <path d="M5 3h14v9l-4 10H9L5 12V3z"/>
+      <line x1="12" y1="12" x2="12" y2="22"/>
+    </svg>
+  );
+  if (n.includes('zapatilla')) return (
+    <svg {...props}>
+      <path d="M3 17h18v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-2z"/>
+      <path d="M3 17l3-7h4l1 3h4l3-3h2l1 7"/>
+    </svg>
+  );
+  if (n.includes('calzado')) return (
+    <svg {...props}>
+      <path d="M7 4v10h10v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3h4V4z"/>
+      <path d="M7 4h4"/>
+    </svg>
+  );
+  if (n.includes('accesorio')) return (
+    <svg {...props}>
+      <circle cx="12" cy="13" r="6"/>
+      <polyline points="12 10 12 13 13.5 14.5"/>
+      <path d="M15.4 17.9l-.3 3.3a2 2 0 0 1-2 1.8H10.9a2 2 0 0 1-2-1.8l-.3-3.3m.1-9.8l.3-3.3A2 2 0 0 1 10.9 3h2.2a2 2 0 0 1 2 1.8l.3 3.3"/>
+    </svg>
+  );
+  if (n.includes('interior')) return (
+    <svg {...props}>
+      <path d="M4 7h16l-3 5-3-2v1H9V12l-3 2-3-5z"/>
+      <path d="M7 12l-3 9h16l-3-9"/>
+    </svg>
+  );
+  if (n.includes('traje')) return (
+    <svg {...props}>
+      <path d="M8 3L4 7v14h16V7l-4-4"/>
+      <path d="M8 3l4 4 4-4"/>
+      <path d="M12 7l1.5 5-1.5 1.5L10.5 12 12 7z"/>
+    </svg>
+  );
+  return (
+    <svg {...props}>
+      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+      <line x1="7" y1="7" x2="7.01" y2="7"/>
+    </svg>
+  );
+}
+
 const CAT_LINKS = [
-  { label: 'Hombre',        href: '/?categoria=Hombre'    },
-  { label: 'Mujer',         href: '/?categoria=Mujer'     },
-  { label: 'Zapatillas',    href: '/?categoria=Calzado'   },
-  { label: 'Marcas',        href: '/?categoria=Marcas'    },
-  { label: 'Nuevo',         href: '/?categoria=Sin%20usar'},
-  { label: 'Ofertas',       href: '/?orden=precio-asc'    },
-  { label: 'Recién subido', href: '/?orden=reciente'      },
+  { label: 'Hombre', href: '/?categoria=Hombre' },
+  { label: 'Mujer',  href: '/?categoria=Mujer'  },
+  { label: 'Unisex', href: '/?categoria=Unisex' },
+  { label: 'Niños',  href: '/?categoria=Niños'  },
 ];
 
 export default function Navbar({ session, isAdmin }: { session: Session | null; isAdmin?: boolean }) {
@@ -28,6 +93,10 @@ export default function Navbar({ session, isAdmin }: { session: Session | null; 
 
   const [pendingCount, setPendingCount] = useState(0);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [categories,   setCategories]   = useState<Categoria[]>([]);
+  const [activeCat,    setActiveCat]    = useState<string | null>(null);
+  const [catDropPos,   setCatDropPos]   = useState({ top: 0, left: 0, width: 0 });
+  const catCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [searchValue,  setSearchValue]  = useState(searchParams.get('search') ?? '');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -48,6 +117,10 @@ export default function Navbar({ session, isAdmin }: { session: Session | null; 
       if (data) setPendingCount(data.total);
     });
   }, [session]);
+
+  useEffect(() => {
+    getCategories().then(data => { if (data) setCategories(data); });
+  }, []);
 
   useEffect(() => {
     if (!dropdownOpen) return;
@@ -242,14 +315,6 @@ export default function Navbar({ session, isAdmin }: { session: Session | null; 
                         Panel administración
                       </Link>
                     )}
-                    <Link to="/ajustes" className="nav-dropdown-item" onClick={closeDropdown}>
-                      <span className="nav-dropdown-icon">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                        </svg>
-                      </span>
-                      Ajustes
-                    </Link>
                     <div className="nav-dropdown-divider" />
                     <button className="nav-dropdown-item nav-dropdown-item--danger" onClick={handleSignOut}>
                       <span className="nav-dropdown-icon">
@@ -274,6 +339,8 @@ export default function Navbar({ session, isAdmin }: { session: Session | null; 
 
       {/* ── FILA 2 ──────────────────────────────────────────── */}
       {!isLoginPage && <nav className="nav-cats">
+
+        {/* Todo — sin dropdown */}
         <button
           className={`nav-cat-item${isHome ? ' nav-cat-item--active' : ''}`}
           onClick={() => navigate('/')}
@@ -286,16 +353,71 @@ export default function Navbar({ session, isAdmin }: { session: Session | null; 
           Todo
         </button>
 
+        {/* Género — con dropdown de categorías */}
         {CAT_LINKS.map(item => (
-          <button
+          <div
             key={item.label}
-            className={`nav-cat-item${isCatActive(item.href) ? ' nav-cat-item--active' : ''}`}
-            onClick={() => navigate(item.href)}
+            className="nav-cat-dropdown-wrapper"
+            onMouseEnter={e => {
+              if (catCloseTimer.current) clearTimeout(catCloseTimer.current);
+              const rect = e.currentTarget.getBoundingClientRect();
+              setCatDropPos({ top: rect.bottom, left: rect.left, width: rect.width });
+              setActiveCat(item.label);
+            }}
+            onMouseLeave={() => {
+              catCloseTimer.current = setTimeout(() => setActiveCat(null), 120);
+            }}
           >
-            {item.label}
-          </button>
+            <button
+              className={`nav-cat-item${isCatActive(item.href) || activeCat === item.label ? ' nav-cat-item--active' : ''}`}
+              onClick={() => { setActiveCat(null); navigate(item.href); }}
+            >
+              {item.label}
+              <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={`nav-cat-chevron${activeCat === item.label ? ' nav-cat-chevron--open' : ''}`}>
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+          </div>
         ))}
       </nav>}
+
+      {/* ── Dropdown de categorías (fixed, fuera del overflow) ── */}
+      {activeCat && categories.length > 0 && (
+        <div
+          className="nav-cat-dropdown"
+          style={{ top: catDropPos.top, left: catDropPos.left }}
+          onMouseEnter={() => { if (catCloseTimer.current) clearTimeout(catCloseTimer.current); }}
+          onMouseLeave={() => { catCloseTimer.current = setTimeout(() => setActiveCat(null), 120); }}
+        >
+          {(() => {
+            const item = CAT_LINKS.find(c => c.label === activeCat)!;
+            return (
+              <>
+                <button
+                  className="nav-cat-dropdown-item nav-cat-dropdown-item--all"
+                  onClick={() => { setActiveCat(null); navigate(item.href); }}
+                >
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                    <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+                  </svg>
+                  Todos
+                </button>
+                {categories.filter(cat => !['Electrónica', 'Ropa'].includes(cat.name)).map(cat => (
+                  <button
+                    key={cat.id}
+                    className="nav-cat-dropdown-item"
+                    onClick={() => { setActiveCat(null); navigate(`${item.href}&catId=${cat.id}`); }}
+                  >
+                    {getCategoryIcon(cat.name)}
+                    {cat.name}
+                  </button>
+                ))}
+              </>
+            );
+          })()}
+        </div>
+      )}
 
     </header>
   );
