@@ -1,17 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Session } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabase';
 import { StripeSessionInfo } from '../../types/checkout';
 import { getStripeSession } from '../../services/checkoutService';
 import { toast } from '../../lib/toast';
 import './CheckoutSuccess.css';
 
-interface Props {
-  session: Session | null;
-}
-
-export default function CheckoutSuccess({ session: sessionProp }: Props) {
+export default function CheckoutSuccess() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');

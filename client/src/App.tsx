@@ -110,7 +110,7 @@ function App() {
             <Route path="/chats" element={<ChatsPage session={session} />} />
             <Route path="/chats/:conversationId" element={<ChatWindowPage session={session} />} />
 
-            <Route path="/checkout/success"    element={<CheckoutSuccess session={session} />} />
+            <Route path="/checkout/success"    element={<CheckoutSuccess />} />
             <Route path="/checkout/cancel"     element={<CheckoutCancel />} />
             <Route path="/checkout/payment"    element={<PaymentProcessing />} />
             <Route path="/checkout/:productId" element={<Checkout session={session} />} />
