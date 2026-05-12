@@ -6,7 +6,6 @@ import { Session } from '@supabase/supabase-js';
 import { getProductById, getUserById, deleteProduct, getProductsBySeller, addFavorite, removeFavorite, getMyFavorites } from '../services/api';
 import { makeDirectOffer, makeDirectSwap } from '../services/chatService';
 import { Producto, Favorito } from '../types';
-import { useCart } from '../context/cartContext';
 import ContactSellerButton from '../components/ContactSellerButton/ContactSellerButton';
 import EditProductModal from '../components/EditProductModal';
 import ReportModal from '../components/ReportModal/ReportModal';
@@ -15,7 +14,6 @@ import '../styles/ProductDetail.css';
 export default function ProductDetail({ session }: { session: Session | null }) {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { añadirAlCarrito } = useCart();
   const { confirm, ModalComponent } = useConfirmModal();
 
   const [producto, setProducto]               = useState<Producto | null>(null);
@@ -55,8 +53,6 @@ export default function ProductDetail({ session }: { session: Session | null }) 
   const [sellerProducts, setSellerProducts]         = useState<Producto[]>([]);
   const [sellerProductsLoading, setSellerProductsLoading] = useState(false);
   const [favoritos, setFavoritos]                   = useState<Set<string>>(new Set());
-  const [ownToast, setOwnToast]                     = useState(false);
-  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // JS-based sticky for left column
   const layoutRef    = useRef<HTMLDivElement>(null);
@@ -162,12 +158,7 @@ export default function ProductDetail({ session }: { session: Session | null }) 
 
   const showOwnProductToast = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    setOwnToast(false);
-    requestAnimationFrame(() => {
-      setOwnToast(true);
-      toastTimerRef.current = setTimeout(() => setOwnToast(false), 5000);
-    });
+    toast.warning('No puedes añadir tu propio producto a favoritos');
   };
 
   const toggleFavorito = async (e: React.MouseEvent, prodId: string) => {
@@ -190,16 +181,6 @@ export default function ProductDetail({ session }: { session: Session | null }) 
     ));
     if (adding) await addFavorite(prodId, token);
     else await removeFavorite(prodId, token);
-  };
-
-  const handleAñadirAlCarrito = (prod: Producto) => {
-    if (!session) {
-      toast.warning('Necesitas iniciar sesión para añadir prendas al carrito.');
-      navigate('/login');
-      return;
-    }
-    añadirAlCarrito(prod);
-    toast.success('¡Añadido al carrito!');
   };
 
   const handleDelete = async () => {
@@ -503,9 +484,6 @@ export default function ProductDetail({ session }: { session: Session | null }) 
             ) : (
               <>
                 <div className="pd-actions-row">
-                  <button className="pd-btn pd-btn--cart" onClick={() => handleAñadirAlCarrito(producto)}>
-                    Añadir al carrito
-                  </button>
                   <button className="pd-btn pd-btn--buy" onClick={handleComprarYa}>
                     Comprar ya
                   </button>
@@ -813,15 +791,6 @@ export default function ProductDetail({ session }: { session: Session | null }) 
         </div>
       )}
 
-      {ownToast && (
-        <div className="own-product-toast" key={String(ownToast)}>
-          <div className="own-product-toast__body">
-            <span className="own-product-toast__icon">🤍</span>
-            <p className="own-product-toast__text">No puedes añadir tu propio producto a favoritos</p>
-          </div>
-          <div className="own-product-toast__bar" />
-        </div>
-      )}
 
     </section>
   );

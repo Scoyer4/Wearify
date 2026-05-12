@@ -1,11 +1,33 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from '../lib/toast';
-import { getProducts, addFavorite, removeFavorite, getMyFavorites } from '../services/api';
+import { getProducts, addFavorite, removeFavorite, getMyFavorites, getCategories } from '../services/api';
 import { CreateProductForm } from '../components/CreateProductForm';
 import Marquee from '../components/Marquee';
-import { Producto, Favorito } from '../types';
+import { Producto, Favorito, Categoria } from '../types';
 import { Session } from '@supabase/supabase-js';
+
+const SHOE_KEYWORDS   = ['zapato', 'zapatilla', 'calzado', 'bota', 'sandalia', 'sneaker'];
+const ACCESS_KEYWORDS = ['accesorio', 'bolso', 'bolsa', 'gorra', 'cinturón', 'cinturon',
+                         'sombrero', 'joya', 'bisutería', 'bisuteria', 'complemento', 'gorro'];
+const SUIT_KEYWORDS   = ['traje'];
+
+function getSizeOptions(cat: Categoria | undefined): string[] {
+  if (!cat) return ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  const text = `${cat.name} ${cat.slug ?? ''}`.toLowerCase();
+  if (SHOE_KEYWORDS.some(k => text.includes(k)))   return ['35','36','37','38','39','40','41','42','43','44','45','46'];
+  if (ACCESS_KEYWORDS.some(k => text.includes(k))) return ['Única'];
+  if (SUIT_KEYWORDS.some(k => text.includes(k)))   return ['36','38','40','42','44','46','48','50'];
+  return ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+}
+
+function getSizeOptionsFromSearch(search: string): string[] {
+  const text = search.toLowerCase();
+  if (SHOE_KEYWORDS.some(k => text.includes(k)))   return ['35','36','37','38','39','40','41','42','43','44','45','46'];
+  if (ACCESS_KEYWORDS.some(k => text.includes(k))) return ['Única'];
+  if (SUIT_KEYWORDS.some(k => text.includes(k)))   return ['36','38','40','42','44','46','48','50'];
+  return ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+}
 
 function ProductImage({ src, alt }: { src: string | null | undefined; alt: string }) {
   const [error, setError] = useState(false);
@@ -47,8 +69,11 @@ export default function Home({ session }: { session: Session | null }) {
   const [filtroTalla, setFiltroTalla] = useState('');
   const [filtroCondicion, setFiltroCondicion] = useState('');
   const [filtroOrden, setFiltroOrden] = useState('');
-  const [ownToast, setOwnToast] = useState(false);
-  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [filtroPrecioMin, setFiltroPrecioMin] = useState('');
+  const [filtroPrecioMax, setFiltroPrecioMax] = useState('');
+  const [filtroGenero, setFiltroGenero] = useState('');
+  const [filtroMarca, setFiltroMarca] = useState('');
+  const [categories, setCategories] = useState<Categoria[]>([]);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const categoriaActiva = searchParams.get('categoria');
@@ -56,17 +81,45 @@ export default function Home({ session }: { session: Session | null }) {
   const ordenActivo     = searchParams.get('orden')    ?? '';
   const searchActivo    = searchParams.get('search')   ?? '';
 
+  const selectedCategory = catIdActivo
+    ? categories.find(c => c.id === parseInt(catIdActivo))
+    : undefined;
+
+  const sizeOptions = useMemo(
+    () => selectedCategory ? getSizeOptions(selectedCategory) : getSizeOptionsFromSearch(filtroBusqueda),
+    [selectedCategory, filtroBusqueda]
+  );
+
   useEffect(() => {
     setFiltroOrden(ordenActivo);
     setFiltroBusqueda(searchActivo);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ordenActivo, searchActivo]);
 
-  const marcasUnicas = new Set(productos.map(p => p.brand).filter(Boolean));
-  const productosDisponibles = productos.filter(p => !p.status || p.status === 'Disponible');
-  const productosRecientes = productos.slice(0, 6);
+  useEffect(() => {
+    setFiltroTalla('');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [catIdActivo]);
 
-  const hayFiltrosActivos = !!(categoriaActiva || catIdActivo || filtroBusqueda || filtroTalla || filtroCondicion || filtroOrden);
+  useEffect(() => {
+    if (filtroTalla && !sizeOptions.includes(filtroTalla)) setFiltroTalla('');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sizeOptions]);
+
+  const marcasUnicas = useMemo(
+    () => [...new Set(productos.map(p => p.brand).filter(Boolean) as string[])].sort(),
+    [productos]
+  );
+  const productosDisponibles = productos.filter(p => !p.status || p.status === 'Disponible');
+
+  const CINCO_DIAS = 5 * 24 * 60 * 60 * 1000;
+  const esNuevo = (p: Producto) =>
+    !(p.is_sold || p.status === 'Vendido') &&
+    Date.now() - new Date(p.created_at ?? 0).getTime() < CINCO_DIAS;
+
+  const productosRecientes = productos.filter(esNuevo).slice(0, 6);
+
+  const hayFiltrosActivos = !!(categoriaActiva || catIdActivo || filtroBusqueda || filtroTalla || filtroCondicion || filtroOrden || filtroPrecioMin || filtroPrecioMax || filtroGenero || filtroMarca);
 
   const productosFiltrados = productos
     .filter(p => {
@@ -84,8 +137,12 @@ export default function Home({ session }: { session: Session | null }) {
         const q = filtroBusqueda.toLowerCase();
         if (!p.title.toLowerCase().includes(q) && !p.brand?.toLowerCase().includes(q)) return false;
       }
+      if (filtroGenero && p.gender?.toLowerCase() !== filtroGenero.toLowerCase()) return false;
+      if (filtroMarca && p.brand !== filtroMarca) return false;
       if (filtroTalla && p.size !== filtroTalla) return false;
       if (filtroCondicion && p.condition !== filtroCondicion) return false;
+      if (filtroPrecioMin !== '' && p.price < parseFloat(filtroPrecioMin)) return false;
+      if (filtroPrecioMax !== '' && p.price > parseFloat(filtroPrecioMax)) return false;
       return true;
     })
     .sort((a, b) => {
@@ -100,17 +157,16 @@ export default function Home({ session }: { session: Session | null }) {
     setFiltroTalla('');
     setFiltroCondicion('');
     setFiltroOrden('');
+    setFiltroPrecioMin('');
+    setFiltroPrecioMax('');
+    setFiltroGenero('');
+    setFiltroMarca('');
     if (categoriaActiva) navigate('/');
   };
 
   const showOwnProductToast = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    setOwnToast(false);
-    requestAnimationFrame(() => {
-      setOwnToast(true);
-      toastTimerRef.current = setTimeout(() => setOwnToast(false), 5000);
-    });
+    toast.warning('No puedes añadir tu propio producto a favoritos');
   };
 
   const toggleFavorito = async (e: React.MouseEvent, id: string) => {
@@ -149,6 +205,10 @@ export default function Home({ session }: { session: Session | null }) {
     if (data) setProductos(data);
     setCargando(false);
   };
+
+  useEffect(() => {
+    getCategories().then(data => { if (data) setCategories(data); });
+  }, []);
 
   useEffect(() => {
     const cargarFavoritos = async () => {
@@ -195,7 +255,7 @@ export default function Home({ session }: { session: Session | null }) {
             {count > 0 && <span className="fav-count">{count}</span>}
           </button>
         )}
-        {!vendido && producto.condition === 'Sin usar' && (
+        {!vendido && esNuevo(producto) && (
           <span className="card-badge badge-new">Nuevo</span>
         )}
         {vendido && (
@@ -230,7 +290,7 @@ export default function Home({ session }: { session: Session | null }) {
         <div className="hero-glow" />
         <div className="hero-grid-pattern" />
 
-        <span className="hero-live-badge">● Catálogo en vivo · Drop diario</span>
+        <span className="hero-live-badge"><span className="hero-live-dot">●</span> Catálogo en vivo · Drop diario</span>
 
         <h1 className="hero-title">
           {session
@@ -249,7 +309,7 @@ export default function Home({ session }: { session: Session | null }) {
             </div>
             <div className="hero-stat-divider" />
             <div className="hero-stat">
-              <span className="hero-stat-num">{marcasUnicas.size}</span>
+              <span className="hero-stat-num">{marcasUnicas.length}</span>
               <span className="hero-stat-label">marcas</span>
             </div>
             <div className="hero-stat-divider" />
@@ -292,7 +352,7 @@ export default function Home({ session }: { session: Session | null }) {
       {/* ── RECIÉN AÑADIDO (solo cuando no hay filtros activos) ── */}
       {!cargando && !hayFiltrosActivos && productosRecientes.length > 0 && (
         <div className="section-block">
-          <h3 className="section-block-title">⚡ Recién añadido</h3>
+          <h3 className="section-block-title">Recién añadido</h3>
           <div className="products-scroll">
             {productosRecientes.map(renderCard)}
           </div>
@@ -311,18 +371,31 @@ export default function Home({ session }: { session: Session | null }) {
         </div>
         <div className="filter-bar">
           <select
+            value={filtroGenero}
+            onChange={e => setFiltroGenero(e.target.value)}
+            className="filter-select"
+          >
+            <option value="">Género</option>
+            <option value="Hombre">Hombre</option>
+            <option value="Mujer">Mujer</option>
+            <option value="Unisex">Unisex</option>
+            <option value="Niños">Niños</option>
+          </select>
+          <select
+            value={filtroMarca}
+            onChange={e => setFiltroMarca(e.target.value)}
+            className="filter-select"
+          >
+            <option value="">Marca</option>
+            {marcasUnicas.map(m => <option key={m} value={m}>{m}</option>)}
+          </select>
+          <select
             value={filtroTalla}
             onChange={e => setFiltroTalla(e.target.value)}
             className="filter-select"
           >
             <option value="">Talla</option>
-            <option value="XS">XS</option>
-            <option value="S">S</option>
-            <option value="M">M</option>
-            <option value="L">L</option>
-            <option value="XL">XL</option>
-            <option value="XXL">XXL</option>
-            <option value="Única">Única</option>
+            {sizeOptions.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           <select
             value={filtroCondicion}
@@ -336,15 +409,36 @@ export default function Home({ session }: { session: Session | null }) {
             <option value="Buen estado">Buen estado</option>
             <option value="Usado">Usado</option>
           </select>
-          <select
-            value={filtroOrden}
-            onChange={e => setFiltroOrden(e.target.value)}
-            className="filter-select"
-          >
-            <option value="">Más recientes</option>
-            <option value="precio-asc">Precio ↑</option>
-            <option value="precio-desc">Precio ↓</option>
-          </select>
+          <div className="filter-price-range">
+            <input
+              type="number"
+              min="0"
+              placeholder="Min €"
+              value={filtroPrecioMin}
+              onChange={e => setFiltroPrecioMin(e.target.value)}
+              className="filter-price-input"
+            />
+            <span className="filter-price-sep">–</span>
+            <input
+              type="number"
+              min="0"
+              placeholder="Max €"
+              value={filtroPrecioMax}
+              onChange={e => setFiltroPrecioMax(e.target.value)}
+              className="filter-price-input"
+            />
+            <span className="filter-price-sep">|</span>
+            <button
+              className={`filter-price-sort-btn${filtroOrden === 'precio-asc' ? ' active' : ''}`}
+              onClick={() => setFiltroOrden(prev => prev === 'precio-asc' ? '' : 'precio-asc')}
+              title="Precio ascendente"
+            >↑</button>
+            <button
+              className={`filter-price-sort-btn${filtroOrden === 'precio-desc' ? ' active' : ''}`}
+              onClick={() => setFiltroOrden(prev => prev === 'precio-desc' ? '' : 'precio-desc')}
+              title="Precio descendente"
+            >↓</button>
+          </div>
           {hayFiltrosActivos && (
             <button className="filter-clear-btn" onClick={limpiarFiltros}>
               Limpiar ✕
@@ -379,15 +473,6 @@ export default function Home({ session }: { session: Session | null }) {
         </div>
       )}
 
-      {ownToast && (
-        <div className="own-product-toast" key={String(ownToast)}>
-          <div className="own-product-toast__body">
-            <span className="own-product-toast__icon">🤍</span>
-            <p className="own-product-toast__text">No puedes añadir tu propio producto a favoritos</p>
-          </div>
-          <div className="own-product-toast__bar" />
-        </div>
-      )}
 
 
     </section>

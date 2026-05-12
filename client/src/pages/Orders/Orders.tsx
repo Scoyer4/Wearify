@@ -151,7 +151,6 @@ export default function Orders({ session }: Props) {
         </div>
       ) : orders.length === 0 ? (
         <div className="orders-empty">
-          <p className="orders-empty-icon">{tab === 'buying' ? '🛍️' : '📦'}</p>
           <p className="orders-empty-title">
             {tab === 'buying' ? 'No tienes compras todavía' : 'No tienes ventas todavía'}
           </p>

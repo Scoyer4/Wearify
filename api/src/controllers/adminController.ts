@@ -58,7 +58,7 @@ export const adminController = {
 
       return res.json({ ok: true });
     } catch (e: any) {
-      return res.status(500).json({ error: 'Error al eliminar producto' });
+      return res.status(500).json({ error: e.message ?? 'Error al eliminar producto' });
     }
   },
 

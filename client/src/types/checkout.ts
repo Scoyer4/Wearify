@@ -32,6 +32,7 @@ export interface CreateCheckoutOrderDTO {
   shippingAddress: ShippingAddress;
   shippingType: ShippingType;
   saveAddress: boolean;
+  offerPrice?: number;
 }
 
 export interface OrderConfirmation {

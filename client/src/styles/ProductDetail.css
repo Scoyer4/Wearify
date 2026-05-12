@@ -365,12 +365,6 @@
 .pd-btn:hover:not(:disabled) { transform: translateY(-1px); }
 .pd-btn:disabled { opacity: 0.42; cursor: not-allowed; transform: none; }
 
-.pd-btn--cart {
-  background: transparent;
-  border-color: var(--brand);
-  color: var(--brand);
-}
-.pd-btn--cart:hover:not(:disabled) { background: rgba(124, 95, 255, 0.1); }
 
 .pd-btn--buy {
   background: var(--brand);

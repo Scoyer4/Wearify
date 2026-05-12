@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
+import { toast } from '../../lib/toast';
 import {
   getAdminStats, getAdminProducts, adminDeleteProduct,
   getAdminUsers, adminBanUser, adminUnbanUser,
@@ -223,24 +224,39 @@ export default function AdminPanel({ session }: Props) {
 
   async function confirmDeleteProduct(reason: string) {
     if (!deleteTarget) return;
-    await adminDeleteProduct(token, deleteTarget.id, reason);
-    setDeleteTarget(null);
-    loadProducts();
-    getAdminStats(token).then(setStats);
+    try {
+      await adminDeleteProduct(token, deleteTarget.id, reason);
+      setDeleteTarget(null);
+      toast.success('Producto eliminado correctamente');
+      loadProducts();
+      getAdminStats(token).then(setStats);
+    } catch (e: any) {
+      toast.error(e.message ?? 'Error al eliminar el producto');
+    }
   }
 
   async function handleBan(user: AdminUser) { setBanTarget(user); }
 
   async function confirmBan(reason: string) {
     if (!banTarget) return;
-    await adminBanUser(token, banTarget.id, reason);
-    setBanTarget(null);
-    loadUsers();
+    try {
+      await adminBanUser(token, banTarget.id, reason);
+      setBanTarget(null);
+      toast.success('Usuario baneado correctamente');
+      loadUsers();
+    } catch (e: any) {
+      toast.error(e.message ?? 'Error al banear el usuario');
+    }
   }
 
   async function handleUnban(userId: string) {
-    await adminUnbanUser(token, userId);
-    loadUsers();
+    try {
+      await adminUnbanUser(token, userId);
+      toast.success('Usuario desbaneado correctamente');
+      loadUsers();
+    } catch (e: any) {
+      toast.error(e.message ?? 'Error al desbanear el usuario');
+    }
   }
 
   async function confirmResolve(action: 'delete_product' | 'ban_user' | 'none', banReason?: string, deleteReason?: string) {

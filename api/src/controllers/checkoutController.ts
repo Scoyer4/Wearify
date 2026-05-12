@@ -48,6 +48,7 @@ export const checkoutController = {
   },
 
   getStripeSession: async (req: Request, res: Response) => {
+    if (!stripe) return res.status(503).json({ error: 'Pasarela de pago no configurada' });
     try {
       const me = req.user!.id;
       const { sessionId } = req.params;
@@ -123,9 +124,10 @@ export const checkoutController = {
   },
 
   createStripeSession: async (req: Request, res: Response) => {
+    if (!stripe) return res.status(503).json({ error: 'Pasarela de pago no configurada' });
     try {
       const me = req.user!.id;
-      const body = req.body as Partial<CreateCheckoutOrderDTO>;
+      const body = req.body as Partial<CreateCheckoutOrderDTO> & { offerPrice?: number };
 
       if (!body.productId || typeof body.productId !== 'string') {
         return res.status(400).json({ error: 'productId es obligatorio' });
@@ -151,6 +153,18 @@ export const checkoutController = {
         return res.status(400).json({ error: 'No puedes comprar tu propio producto' });
       }
 
+      // Precio efectivo: oferta negociada o precio original
+      let effectivePrice = product.price;
+      if (body.offerPrice !== undefined) {
+        if (typeof body.offerPrice !== 'number' || body.offerPrice <= 0) {
+          return res.status(400).json({ error: 'El precio de la oferta no es válido' });
+        }
+        if (body.offerPrice >= product.price) {
+          return res.status(400).json({ error: 'El precio de la oferta debe ser menor que el precio original' });
+        }
+        effectivePrice = body.offerPrice;
+      }
+
       const shippingCost = SHIPPING_COSTS[body.shippingType];
       const clientUrl = process.env.CLIENT_URL ?? 'http://localhost:5173';
 
@@ -162,7 +176,7 @@ export const checkoutController = {
               name: product.title,
               ...(product.image_url ? { images: [product.image_url] } : {}),
             },
-            unit_amount: Math.round(product.price * 100),
+            unit_amount: Math.round(effectivePrice * 100),
           },
           quantity: 1,
         },
@@ -189,7 +203,7 @@ export const checkoutController = {
           shippingType:    body.shippingType,
           shippingAddress: JSON.stringify(addr),
           saveAddress:     String(body.saveAddress ?? false),
-          productPrice:    String(product.price),
+          productPrice:    String(effectivePrice),
           shippingCost:    String(shippingCost),
         },
       });

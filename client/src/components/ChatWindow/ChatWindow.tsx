@@ -34,9 +34,11 @@ interface OfferCardProps {
   onReject: () => void;
   onCounter: () => void;
   actionLoading: boolean;
+  showPayButton?: boolean;
+  onPayNow?: () => void;
 }
 
-function OfferCard({ msg, isMine, onAccept, onReject, onCounter, actionLoading }: OfferCardProps) {
+function OfferCard({ msg, isMine, onAccept, onReject, onCounter, actionLoading, showPayButton, onPayNow }: OfferCardProps) {
   const isRecipient = !isMine;
   const canAct      = isRecipient && msg.offer_status === 'pending';
 
@@ -66,6 +68,12 @@ function OfferCard({ msg, isMine, onAccept, onReject, onCounter, actionLoading }
             Rechazar
           </button>
         </div>
+      )}
+
+      {showPayButton && (
+        <button className="offer-pay-btn" onClick={onPayNow}>
+          💳 Pagar ahora
+        </button>
       )}
     </div>
   );
@@ -203,6 +211,7 @@ export default function ChatWindow({ conversationId, session }: Props) {
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewError, setReviewError]   = useState('');
 
+  const messagesRef = useRef<HTMLDivElement>(null);
   const bottomRef   = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const myId = session.user.id;
@@ -252,7 +261,8 @@ export default function ChatWindow({ conversationId, session }: Props) {
   };
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const el = messagesRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [messages]);
 
   // Cargar estado de reseña cuando el producto esté vendido y sea el comprador
@@ -400,6 +410,7 @@ export default function ChatWindow({ conversationId, session }: Props) {
     }
 
     if (msg.message_type === 'offer') {
+      const showPayButton = msg.offer_status === 'accepted' && isBuyer && !isSold;
       return (
         <div key={msg.id} className={`chat-bubble-row${isMine ? ' chat-bubble-row--mine' : ''}`}>
           {!isMine && (
@@ -417,6 +428,8 @@ export default function ChatWindow({ conversationId, session }: Props) {
             onReject={() => handleReject(msg.id)}
             onCounter={() => openOfferModal('counter', msg.id)}
             actionLoading={actionLoading}
+            showPayButton={showPayButton}
+            onPayNow={() => navigate(`/checkout/${conversation!.product_id}?offerPrice=${msg.offer_price}`)}
           />
         </div>
       );
@@ -541,7 +554,7 @@ export default function ChatWindow({ conversationId, session }: Props) {
       )}
 
       {/* ── Mensajes ── */}
-      <div className="chat-window-messages">
+      <div className="chat-window-messages" ref={messagesRef}>
         {messages.length === 0 && (
           <p className="chat-window-empty">Escribe un mensaje para iniciar la conversación.</p>
         )}

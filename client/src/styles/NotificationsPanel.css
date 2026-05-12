@@ -128,6 +128,7 @@
 .notif-avatar--brand   { background: rgba(124, 95, 255, 0.15); color: var(--brand);   }
 .notif-avatar--warning { background: rgba(255, 184, 77, 0.15); color: var(--warning); }
 .notif-avatar--teal    { background: rgba(0, 212, 170, 0.10);  color: var(--accent-2);}
+.notif-avatar--danger  { background: rgba(255, 80, 80, 0.15);  color: var(--danger, #ff5050); }
 
 /* ── Body ───────────────────────────────────────────────────────────────── */
 

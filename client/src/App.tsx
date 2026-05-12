@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { supabase } from './lib/supabase';
 import { Session } from '@supabase/supabase-js';
@@ -9,7 +9,6 @@ import Home from './pages/home';
 import UserProfile from './pages/userProfile';
 import ProductDetail from './pages/productDetails';
 import Profile from './pages/profiles';
-import Cart from './pages/cart';
 import Login from './pages/login';
 import RequestsPage from './pages/RequestsPage';
 import Notifications from './pages/Notifications/Notifications';
@@ -31,6 +30,71 @@ import { checkIsAdmin } from './services/adminService';
 import './App.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
+
+function ScrollToTopButton() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 320);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const scrollUp = useCallback(() => window.scrollTo({ top: 0, behavior: 'smooth' }), []);
+
+  return (
+    <button
+      className={`scroll-top-btn${visible ? ' scroll-top-btn--visible' : ''}`}
+      onClick={scrollUp}
+      aria-label="Volver arriba"
+    >
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="18 15 12 9 6 15" />
+      </svg>
+    </button>
+  );
+}
+
+function AppLayout({ session, isAdmin }: { session: Session | null; isAdmin: boolean }) {
+  const location = useLocation();
+  const hideFooter = location.pathname === '/login';
+
+  return (
+    <div className="app-container">
+      <Navbar session={session} isAdmin={isAdmin} />
+      <main className="main-content">
+        <Routes>
+          <Route path="/" element={<Home session={session} />} />
+
+          <Route path="/producto/:id" element={<ProductDetail session={session} />} />
+
+          <Route path="/usuario/:id" element={<UserProfile session={session} />} />
+          <Route path="/usuario/:id/seguidores" element={<FollowListPage session={session} mode="followers" />} />
+          <Route path="/usuario/:id/siguiendo" element={<FollowListPage session={session} mode="following" />} />
+          <Route path="/solicitudes" element={<RequestsPage session={session} />} />
+          <Route path="/chats" element={<ChatsPage session={session} />} />
+          <Route path="/chats/:conversationId" element={<ChatWindowPage session={session} />} />
+
+          <Route path="/checkout/success"    element={<CheckoutSuccess />} />
+          <Route path="/checkout/cancel"     element={<CheckoutCancel />} />
+          <Route path="/checkout/payment"    element={<PaymentProcessing />} />
+          <Route path="/checkout/:productId" element={<Checkout session={session} />} />
+
+          <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
+
+          <Route path="/perfil" element={session ? <Profile session={session} /> : <Navigate to="/login" />} />
+          <Route path="/notifications" element={session ? <Notifications session={session} /> : <Navigate to="/login" />} />
+          <Route path="/pedidos" element={session ? <Orders session={session} /> : <Navigate to="/login" />} />
+          <Route path="/admin" element={isAdmin ? <AdminPanel session={session} /> : <Navigate to="/" />} />
+
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </main>
+      {!hideFooter && <Footer />}
+      <ScrollToTopButton />
+    </div>
+  );
+}
 
 function App() {
   const [session,   setSession]   = useState<Session | null>(null);
@@ -94,59 +158,7 @@ function App() {
         richColors
         closeButton
       />
-      <div className="app-container">
-        <Navbar session={session} isAdmin={isAdmin} /> 
-        
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Home session={session} />} />
-
-            <Route path="/producto/:id" element={<ProductDetail session={session} />} />
-
-            <Route path="/usuario/:id" element={<UserProfile session={session} />} />
-            <Route path="/usuario/:id/seguidores" element={<FollowListPage session={session} mode="followers" />} />
-            <Route path="/usuario/:id/siguiendo" element={<FollowListPage session={session} mode="following" />} />
-            <Route path="/solicitudes" element={<RequestsPage session={session} />} />
-            <Route path="/chats" element={<ChatsPage session={session} />} />
-            <Route path="/chats/:conversationId" element={<ChatWindowPage session={session} />} />
-
-            <Route path="/checkout/success"    element={<CheckoutSuccess />} />
-            <Route path="/checkout/cancel"     element={<CheckoutCancel />} />
-            <Route path="/checkout/payment"    element={<PaymentProcessing />} />
-            <Route path="/checkout/:productId" element={<Checkout session={session} />} />
-
-            <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
-
-            <Route
-              path="/perfil"
-              element={session ? <Profile session={session} /> : <Navigate to="/login" />}
-            />
-
-            <Route
-              path="/notifications"
-              element={session ? <Notifications session={session} /> : <Navigate to="/login" />}
-            />
-
-            <Route
-              path="/pedidos"
-              element={session ? <Orders session={session} /> : <Navigate to="/login" />}
-            />
-
-            <Route
-              path="/carrito"
-              element={session ? <Cart /> : <Navigate to="/login" />}
-            />
-
-            <Route
-              path="/admin"
-              element={isAdmin ? <AdminPanel session={session} /> : <Navigate to="/" />}
-            />
-
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
+      <AppLayout session={session} isAdmin={isAdmin} />
     </Router>
   );
 }

@@ -33,6 +33,86 @@ function notifText(n: Notification): string {
   }
 }
 
+// Tooltip descriptivo que aparece al pasar el ratón sobre el icono
+const NOTIF_TOOLTIP: Partial<Record<Notification['type'], string>> = {
+  follow:          'Nuevo seguidor',
+  follow_request:  'Solicitud de seguimiento',
+  follow_accepted: 'Solicitud aceptada',
+  new_product:     'Nuevo producto publicado',
+  price_drop:      'Bajada de precio en favoritos',
+  new_sale:        'Nueva venta',
+  order_shipped:   'Pedido enviado',
+  order_received:  'Recepción confirmada',
+  product_deleted: 'Moderación — Producto eliminado',
+};
+
+function PanelNotifAvatar({ n }: { n: Notification }) {
+  const tooltip = NOTIF_TOOLTIP[n.type] ?? 'Notificación';
+
+  if (n.type === 'new_sale' || n.type === 'order_received') {
+    return (
+      <div className="notif-avatar notif-avatar--icon notif-avatar--success" title={tooltip}>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      </div>
+    );
+  }
+  if (n.type === 'order_shipped') {
+    return (
+      <div className="notif-avatar notif-avatar--icon notif-avatar--brand" title={tooltip}>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="21 8 21 21 3 21 3 8" />
+          <rect x="1" y="3" width="22" height="5" />
+          <line x1="10" y1="12" x2="14" y2="12" />
+        </svg>
+      </div>
+    );
+  }
+  if (n.type === 'price_drop') {
+    return (
+      <div className="notif-avatar notif-avatar--icon notif-avatar--warning" title={tooltip}>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <polyline points="19 12 12 19 5 12" />
+        </svg>
+      </div>
+    );
+  }
+  if (n.type === 'new_product') {
+    return (
+      <div className="notif-avatar notif-avatar--icon notif-avatar--teal" title={tooltip}>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <path d="M16 10a4 4 0 0 1-8 0" />
+        </svg>
+      </div>
+    );
+  }
+  if (n.type === 'product_deleted') {
+    return (
+      <div className="notif-avatar notif-avatar--icon notif-avatar--danger" title={tooltip}>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+      </div>
+    );
+  }
+
+  // Notificaciones de usuario (follow, follow_request, follow_accepted)
+  return (
+    <div className="notif-avatar" title={n.from_user?.username ? `@${n.from_user.username} · ${tooltip}` : tooltip}>
+      {n.from_user?.avatar_url
+        ? <img src={n.from_user.avatar_url} alt={n.from_user.username ?? ''} />
+        : <span>{(n.from_user?.username ?? '?')[0].toUpperCase()}</span>
+      }
+    </div>
+  );
+}
+
 
 interface Props {
   notifications: Notification[];
@@ -79,12 +159,7 @@ export default function NotificationsPanel({ notifications, loading, onClose, pa
               className={`notif-item${!n.is_read ? ' notif-item--unread' : ''}`}
               onClick={handleClick}
             >
-              <div className="notif-avatar">
-                {n.from_user?.avatar_url
-                  ? <img src={n.from_user.avatar_url} alt={n.from_user.username ?? ''} />
-                  : <span>{(n.from_user?.username ?? '?')[0].toUpperCase()}</span>
-                }
-              </div>
+              <PanelNotifAvatar n={n} />
               <div className="notif-body">
                 <p className="notif-text">{notifText(n)}</p>
                 <span className="notif-time">{timeAgo(n.created_at)}</span>

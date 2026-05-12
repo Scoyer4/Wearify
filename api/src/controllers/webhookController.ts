@@ -8,6 +8,8 @@ import { ShippingAddress, ShippingType } from '../models/checkout';
 export const webhookController = {
 
   handleStripeWebhook: async (req: Request, res: Response) => {
+    if (!stripeClient) return res.status(503).json({ error: 'Pasarela de pago no configurada' });
+
     const sig = req.headers['stripe-signature'];
     const secret = process.env.STRIPE_WEBHOOK_SECRET;
 

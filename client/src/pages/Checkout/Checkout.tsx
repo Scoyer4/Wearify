@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
 import { CheckoutSummary, ShippingAddress, ShippingType } from '../../types/checkout';
 import { getCheckoutSummary, createStripeSession } from '../../services/checkoutService';
@@ -19,6 +19,11 @@ type FieldErrors = Partial<Record<keyof ShippingAddress, string>>;
 export default function Checkout({ session }: Props) {
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const offerPrice = (() => {
+    const v = parseFloat(searchParams.get('offerPrice') ?? '');
+    return isNaN(v) || v <= 0 ? null : v;
+  })();
 
   const [summary, setSummary]         = useState<CheckoutSummary | null>(null);
   const [pageLoading, setPageLoading] = useState(true);
@@ -59,7 +64,8 @@ export default function Checkout({ session }: Props) {
   // ── Cálculo de precios en tiempo real ───────────────────────────────────────
   const selectedOption  = summary?.shippingOptions.find(o => o.type === shippingType);
   const shippingCost    = selectedOption?.price ?? 0;
-  const productPrice    = summary?.product.price ?? 0;
+  const productPrice    = offerPrice ?? (summary?.product.price ?? 0);
+  const originalPrice   = summary?.product.price ?? 0;
   const total           = productPrice + shippingCost;
 
   // ── Actualizar campo del formulario ─────────────────────────────────────────
@@ -94,7 +100,7 @@ export default function Checkout({ session }: Props) {
     setSubmitError(null);
 
     const sessionPromise = createStripeSession(
-      { productId, shippingAddress: form, shippingType, saveAddress },
+      { productId, shippingAddress: form, shippingType, saveAddress, ...(offerPrice ? { offerPrice } : {}) },
       session.access_token,
     );
 
@@ -179,7 +185,15 @@ export default function Checkout({ session }: Props) {
               }
               <div className="checkout-product-info">
                 <p className="checkout-product-name">{product.title}</p>
-                <p className="checkout-product-price">{product.price.toFixed(2)} €</p>
+                {offerPrice ? (
+                  <div className="checkout-offer-price-row">
+                    <span className="checkout-product-price checkout-product-price--offer">{offerPrice.toFixed(2)} €</span>
+                    <span className="checkout-product-price--original">{originalPrice.toFixed(2)} €</span>
+                    <span className="checkout-offer-badge">Precio negociado</span>
+                  </div>
+                ) : (
+                  <p className="checkout-product-price">{product.price.toFixed(2)} €</p>
+                )}
               </div>
             </div>
           </div>
@@ -310,7 +324,7 @@ export default function Checkout({ session }: Props) {
             {/* Desglose */}
             <div className="order-summary-rows">
               <div className="order-summary-row">
-                <span>Producto</span>
+                <span>{offerPrice ? 'Precio negociado' : 'Producto'}</span>
                 <span>{productPrice.toFixed(2)} €</span>
               </div>
               <div className="order-summary-row">

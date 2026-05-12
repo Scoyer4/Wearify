@@ -43,7 +43,17 @@ export const adminRepository = {
   },
 
   deleteProduct: async (productId: string) => {
-    const { error } = await supabase.from('products').delete().eq('id', productId);
+    const db = supabase as any;
+
+    // Swap messages can't have swap_product_id nullified (check constraint requires it non-null
+    // when message_type='swap'), so we delete them outright.
+    const { error: swapErr } = await db
+      .from('messages')
+      .delete()
+      .eq('swap_product_id', productId);
+    if (swapErr) throw new Error('Error limpiando mensajes swap: ' + swapErr.message);
+
+    const { error } = await db.from('products').delete().eq('id', productId);
     if (error) throw new Error(error.message);
   },
 

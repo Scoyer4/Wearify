@@ -272,26 +272,14 @@ export const chatController = {
       // 1. Marcar oferta como aceptada
       await chatRepository.updateOfferStatus(messageId, 'accepted');
 
-      // 2. Crear pedido con el precio negociado
-      const order = await orderRepository.createOrder({
-        buyer_id:          conv.buyer_id,
-        seller_id:         conv.seller_id,
-        product_id:        conv.product_id,
-        price_at_purchase: offerMsg.offer_price!,
-        status:            'completado',
-      });
-
-      // 3. Marcar producto como vendido
-      await orderRepository.markProductSold(conv.product_id);
-
-      // 4. Mensaje informativo en el chat
-      await chatRepository.createMessage(
+      // 2. Mensaje informativo — el comprador verá el botón de pago en la tarjeta de oferta
+      await chatRepository.createSystemMessage(
         conversationId,
         me,
-        '✅ Oferta aceptada. El producto ha sido reservado para ti.',
+        '✅ Oferta aceptada. El comprador puede proceder al pago para completar la compra.',
       );
 
-      return res.json({ ok: true, orderId: order.id });
+      return res.json({ ok: true });
     } catch (error: any) {
       console.error('Error en acceptOffer:', error);
       return res.status(500).json({ error: 'Error al aceptar la oferta' });
