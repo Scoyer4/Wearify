@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from '../lib/toast';
 import { getProducts, addFavorite, removeFavorite, getMyFavorites, getCategories } from '../services/api';
@@ -93,18 +93,15 @@ export default function Home({ session }: { session: Session | null }) {
   useEffect(() => {
     setFiltroOrden(ordenActivo);
     setFiltroBusqueda(searchActivo);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ordenActivo, searchActivo]);
 
   useEffect(() => {
     setFiltroTalla('');
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [catIdActivo]);
 
   useEffect(() => {
     if (filtroTalla && !sizeOptions.includes(filtroTalla)) setFiltroTalla('');
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sizeOptions]);
+  }, [sizeOptions, filtroTalla]);
 
   const marcasUnicas = useMemo(
     () => [...new Set(productos.map(p => p.brand).filter(Boolean) as string[])].sort(),
@@ -149,6 +146,7 @@ export default function Home({ session }: { session: Session | null }) {
       if (filtroOrden === 'precio-asc')  return a.price - b.price;
       if (filtroOrden === 'precio-desc') return b.price - a.price;
       if (filtroOrden === 'reciente')    return new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime();
+      if (filtroOrden === 'favoritos')   return (b.favorites_count ?? 0) - (a.favorites_count ?? 0);
       return 0;
     });
 
@@ -161,7 +159,7 @@ export default function Home({ session }: { session: Session | null }) {
     setFiltroPrecioMax('');
     setFiltroGenero('');
     setFiltroMarca('');
-    if (categoriaActiva) navigate('/');
+    if (categoriaActiva || catIdActivo || ordenActivo || searchActivo) navigate('/');
   };
 
   const showOwnProductToast = (e: React.MouseEvent) => {
@@ -199,12 +197,12 @@ export default function Home({ session }: { session: Session | null }) {
     }
   };
 
-  const fetchDatos = async () => {
+  const fetchDatos = useCallback(async () => {
     setCargando(true);
     const data = await getProducts();
     if (data) setProductos(data);
     setCargando(false);
-  };
+  }, []);
 
   useEffect(() => {
     getCategories().then(data => { if (data) setCategories(data); });
@@ -222,7 +220,7 @@ export default function Home({ session }: { session: Session | null }) {
 
   useEffect(() => {
     fetchDatos();
-  }, []);
+  }, [fetchDatos]);
 
   const renderCard = (producto: Producto) => {
     const vendido = producto.is_sold || producto.status === 'Vendido';
@@ -290,12 +288,12 @@ export default function Home({ session }: { session: Session | null }) {
         <div className="hero-glow" />
         <div className="hero-grid-pattern" />
 
-        <span className="hero-live-badge"><span className="hero-live-dot">●</span> Catálogo en vivo · Drop diario</span>
+        <span className="hero-live-badge"><span className="hero-live-dot">●</span> Catálogo en vivo </span>
 
         <h1 className="hero-title">
           {session
             ? <>¡Hola, <span className="hero-title-accent">{session.user.user_metadata?.username || 'Coleccionista'}</span>!</>
-            : <>TU DRIP, <span className="hero-title-accent">TU JUEGO.</span></>}
+            : <>VISTE DIFERENTE.<br /><span className="hero-title-accent">VENDE DIFERENTE.</span></>}
         </h1>
         <p className="hero-subtitle">
           Marketplace curado por coleccionistas. Lo que llevas dice quién eres.
@@ -319,6 +317,13 @@ export default function Home({ session }: { session: Session | null }) {
             </div>
           </div>
         )}
+
+        <button
+          className="hero-cta"
+          onClick={() => document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' })}
+        >
+          Explorar catálogo →
+        </button>
       </div>
 
       <Marquee />
@@ -360,7 +365,7 @@ export default function Home({ session }: { session: Session | null }) {
       )}
 
       {/* ── CATÁLOGO ── */}
-      <div className="catalog-header">
+      <div className="catalog-header" id="catalogo">
         <div>
           <span className="catalog-title">
             {hayFiltrosActivos ? 'Resultados' : 'Todo el catálogo'}
@@ -472,9 +477,6 @@ export default function Home({ session }: { session: Session | null }) {
           </button>
         </div>
       )}
-
-
-
     </section>
   );
 }

@@ -1187,8 +1187,8 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
    ========================================= */
 .hero-section {
   position: relative;
-  height: 450px;
-  padding: 4.5rem 0;
+  min-height: 630px;
+  padding: 5rem 0 4rem;
   text-align: center;
   overflow: hidden;
   background-image: url('/background-home.jpg');
@@ -1262,27 +1262,50 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .hero-title {
   position: relative;
   font-family: var(--font-display);
-  font-size: clamp(2rem, 6vw, 4rem);
+  font-size: clamp(3rem, 7vw, 5.5rem);
   font-weight: 700;
   color: var(--bone);
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
   text-transform: uppercase;
-  margin-bottom: 0.8rem;
+  margin-bottom: 1.2rem;
   z-index: 1;
 }
 .hero-title-accent { color: var(--brand); }
 
 .hero-subtitle {
   position: relative;
-  color: var(--text-secondary);
-  font-size: 1rem;
+  color: rgba(245, 245, 240, 0.8);
+  font-size: 1.1rem;
   margin-bottom: 2rem;
   max-width: 550px;
   margin-left: auto;
   margin-right: auto;
   line-height: 1.6;
   z-index: 1;
+}
+
+.hero-cta {
+  display: inline-block;
+  background: transparent;
+  border: 2px solid rgba(245, 245, 240, 0.4);
+  color: var(--bone);
+  padding: 0.75rem 2rem;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  position: relative;
+  z-index: 1;
+  margin-top: 1.5rem;
+}
+.hero-cta:hover {
+  border-color: var(--bone);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .hero-search-wrapper {
@@ -1529,7 +1552,7 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
   font-family: var(--font-body);
   padding: 8px 0;
   outline: none;
-  -moz-appearance: textfield;
+  -moz--appearance: textfield;
 }
 .filter-price-input::-webkit-outer-spin-button,
 .filter-price-input::-webkit-inner-spin-button {

@@ -187,7 +187,7 @@ export default function AdminPanel({ session }: Props) {
   useEffect(() => {
     if (!session) { navigate('/login'); return; }
     getAdminStats(token).then(setStats).catch(() => navigate('/'));
-  }, [session]);
+  }, [session, token, navigate]);
 
   // ── Load data ────────────────────────────────────────────────────────────────
 
@@ -230,8 +230,8 @@ export default function AdminPanel({ session }: Props) {
       toast.success('Producto eliminado correctamente');
       loadProducts();
       getAdminStats(token).then(setStats);
-    } catch (e: any) {
-      toast.error(e.message ?? 'Error al eliminar el producto');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Error al eliminar el producto');
     }
   }
 
@@ -244,8 +244,8 @@ export default function AdminPanel({ session }: Props) {
       setBanTarget(null);
       toast.success('Usuario baneado correctamente');
       loadUsers();
-    } catch (e: any) {
-      toast.error(e.message ?? 'Error al banear el usuario');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Error al banear el usuario');
     }
   }
 
@@ -254,8 +254,8 @@ export default function AdminPanel({ session }: Props) {
       await adminUnbanUser(token, userId);
       toast.success('Usuario desbaneado correctamente');
       loadUsers();
-    } catch (e: any) {
-      toast.error(e.message ?? 'Error al desbanear el usuario');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Error al desbanear el usuario');
     }
   }
 

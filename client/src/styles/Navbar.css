@@ -366,6 +366,7 @@
   justify-content: center;
   align-items: center;
   padding: 0;
+  margin: 0;
   height: 75px;
   grid-template-columns: unset;
 }
@@ -390,8 +391,8 @@
 }
 
 .nav-top .logo-title {
-  justify-content: flex-start;
-  margin-left: 2rem;
+  justify-content: center;
+  margin-right: 3rem;
 }
 
 .nav-top .logo-title img {
@@ -401,7 +402,7 @@
 /* ── Barra de búsqueda ── */
 .nav-search {
   width: 100%;
-  max-width: 620px;
+  max-width: 420px;
   margin: 0 auto;
   position: relative;
   display: flex;
@@ -492,6 +493,15 @@
   color: var(--bone);
   border-bottom-color: var(--brand);
   font-weight: 600;
+}
+
+.nav-cat-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--ink-700);
+  flex-shrink: 0;
+  margin: 0 6px;
+  align-self: center;
 }
 
 .nav-cat-chevron {

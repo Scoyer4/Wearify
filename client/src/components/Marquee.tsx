@@ -1,6 +1,6 @@
 import './Marquee.css';
 
-const TEXTO = 'NEW DROPS · STREETWEAR CURADO · LIMITED EDITION · COLLECTORS ONLY · ';
+const TEXTO = 'TENDENCES · STREETWEAR CURADO · LIMITED EDITION · COLLECTORS ONLY · ';
 
 export default function Marquee() {
   return (

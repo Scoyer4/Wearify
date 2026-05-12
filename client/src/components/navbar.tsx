@@ -156,18 +156,24 @@ export default function Navbar({ session, isAdmin }: { session: Session | null; 
     ?? '?'
   )[0].toUpperCase();
 
-  const catParam   = searchParams.get('categoria');
-  const ordenParam = searchParams.get('orden');
+  const catParam    = searchParams.get('categoria');
+  const catIdParam  = searchParams.get('catId');
+  const ordenParam  = searchParams.get('orden');
   const searchParam = searchParams.get('search');
 
   function isCatActive(href: string) {
     const u   = new URL(href, window.location.origin);
     const cat = u.searchParams.get('categoria');
     const ord = u.searchParams.get('orden');
+    const cid = u.searchParams.get('catId');
+    if (cid) return catIdParam === cid;
     if (cat) return catParam === cat;
     if (ord) return ordenParam === ord;
     return false;
   }
+
+  const zapatillasId = categories.find(c => c.name.toLowerCase().includes('zapatilla'))?.id;
+  const accesoriosId = categories.find(c => c.name.toLowerCase().includes('accesorio'))?.id;
 
   const isHome      = location.pathname === '/' && !catParam && !ordenParam && !searchParam;
   const isLoginPage = location.pathname === '/login';
@@ -366,6 +372,45 @@ export default function Navbar({ session, isAdmin }: { session: Session | null; 
             </button>
           </div>
         ))}
+
+        {/* Separador */}
+        <span className="nav-cat-sep" />
+
+        {/* Atajos de descubrimiento */}
+        <button
+          className={`nav-cat-item${isCatActive('/?orden=reciente') ? ' nav-cat-item--active' : ''}`}
+          onClick={() => navigate('/?orden=reciente')}
+        >
+          Nuevo
+        </button>
+        <button
+          className={`nav-cat-item${isCatActive('/?orden=favoritos') ? ' nav-cat-item--active' : ''}`}
+          onClick={() => navigate('/?orden=favoritos')}
+        >
+          En Tendencia
+        </button>
+        {zapatillasId != null && (
+          <button
+            className={`nav-cat-item${isCatActive(`/?catId=${zapatillasId}`) ? ' nav-cat-item--active' : ''}`}
+            onClick={() => navigate(`/?catId=${zapatillasId}`)}
+          >
+            Zapatillas
+          </button>
+        )}
+        {accesoriosId != null && (
+          <button
+            className={`nav-cat-item${isCatActive(`/?catId=${accesoriosId}`) ? ' nav-cat-item--active' : ''}`}
+            onClick={() => navigate(`/?catId=${accesoriosId}`)}
+          >
+            Accesorios
+          </button>
+        )}
+        <button
+          className={`nav-cat-item${isCatActive('/?orden=precio-asc') ? ' nav-cat-item--active' : ''}`}
+          onClick={() => navigate('/?orden=precio-asc')}
+        >
+          Ofertas
+        </button>
       </nav>}
 
       {/* ── Dropdown de categorías (fixed, fuera del overflow) ── */}
