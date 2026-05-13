@@ -54,10 +54,6 @@
   align-self: start;
 }
 
-.pd-left-inner {
-  /* inner wrapper that gets position:fixed via JS scroll listener */
-}
-
 /* Contenedor imagen principal */
 .pd-img-main-wrap {
   position: relative;
@@ -332,7 +328,7 @@
   background: var(--ink-800);
   border-radius: 1rem;
   padding: 1.25rem;
-  margin-top: 1.25rem;
+  margin: 1.25rem 0;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -413,7 +409,7 @@
    ACORDEONES
 ═══════════════════════════════════════════════════════ */
 .pd-accordions {
-  margin-top: 1.25rem;
+  margin: 1.25rem 0 4.5rem;
   border-radius: 0.75rem;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.06);

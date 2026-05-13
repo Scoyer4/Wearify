@@ -238,9 +238,10 @@ body {
 
 .product-card {
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--ink-700, #2a2a2a);
   padding: 0;
   border-radius: var(--radius-md);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   transition: transform var(--transition-smooth), box-shadow var(--transition-smooth), border-color var(--transition-smooth), background var(--transition-smooth);
   overflow: hidden;
 }
@@ -249,17 +250,17 @@ body {
   height: auto;
 }
 .product-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 36px rgba(108, 99, 255, 0.12), 0 4px 12px rgba(0,0,0,0.3);
-  border-color: rgba(108, 99, 255, 0.2);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   background: var(--bg-card-hover);
 }
 
 .product-image-wrapper {
   position: relative;
   width: 100%;
-  height: 210px;
-  background: var(--bg-secondary);
+  aspect-ratio: 4 / 5;
+  height: auto;
+  background: var(--ink-700, #2a2a2a);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -399,6 +400,7 @@ body {
   font-weight: 700;
   font-size: 0.95rem;
   margin: 4px 0;
+  white-space: nowrap;
 }
 
 /* ── Chips ── */
@@ -1134,7 +1136,6 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     margin: 0.5rem 0.75rem 0;
   }
   .product-card           { margin: 0; }   /* elimina el antiguo margin: 20px que desbordaba */
-  .product-image-wrapper  { height: 170px; }
 
   /* Detalle de producto — columnas en vertical */
   .detail-container    { padding: 1rem; gap: 1rem; flex-direction: column; }
@@ -1165,7 +1166,6 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 
   /* Grid — gap más pequeño */
   .product-grid       { gap: 6px; margin: 0.5rem 0.5rem 0; }
-  .product-image-wrapper { height: 148px; }
 
   /* Info de tarjeta */
   .product-info  { padding: 10px 11px 12px; }

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { createProduct, getCategories } from '../services/api';
 import { toast } from '../lib/toast';
+import { CustomSelect } from './CustomSelect/CustomSelect';
 import './CreateProductForm.css';
 
 // ── Tipos ──────────────────────────────────────────────────────────────────────
@@ -49,8 +50,8 @@ export const CreateProductForm = ({ onProductCreated }: { onProductCreated: () =
   const sizeOptions      = getSizeOptions(selectedCategory);
 
   // ── Manejadores ────────────────────────────────────────────────────────────
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setCategoryId(e.target.value);
+  const handleCategoryChange = (value: string) => {
+    setCategoryId(value);
     setSize('');
   };
 
@@ -77,6 +78,11 @@ export const CreateProductForm = ({ onProductCreated }: { onProductCreated: () =
     setUploading(true);
 
     const doPublish = async () => {
+      if (!categoryId) throw new Error('Selecciona una categoría.');
+      if (!size)       throw new Error('Selecciona una talla.');
+      if (!condition)  throw new Error('Selecciona la condición de la prenda.');
+      if (!gender)     throw new Error('Selecciona el género.');
+
       const { data: { session } } = await supabase.auth.getSession();
       const token  = session?.access_token;
       const userId = session?.user?.id;
@@ -216,40 +222,37 @@ export const CreateProductForm = ({ onProductCreated }: { onProductCreated: () =
 
         {/* ── Categoría | Talla ───────────────────────────── */}
         <div className="cpf-row">
-          <select value={categoryId} onChange={handleCategoryChange} required className="cpf-input">
-            <option value="" disabled>Categoría...</option>
-            {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
-          </select>
+          <CustomSelect
+            options={categories.map(cat => ({ value: String(cat.id), label: cat.name }))}
+            value={categoryId}
+            onChange={handleCategoryChange}
+            placeholder="Categoría..."
+          />
 
-          <select
+          <CustomSelect
+            options={sizeOptions.map(s => ({ value: s, label: s }))}
             value={size}
-            onChange={e => setSize(e.target.value)}
-            required
+            onChange={setSize}
+            placeholder={categoryId ? 'Talla...' : 'Selecciona primero una categoría'}
             disabled={!categoryId}
-            className="cpf-input"
-          >
-            <option value="" disabled>
-              {categoryId ? 'Talla...' : 'Selecciona primero una categoría'}
-            </option>
-            {sizeOptions.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
+          />
         </div>
 
         {/* ── Condición | Género ──────────────────────────── */}
         <div className="cpf-row">
-          <select value={condition} onChange={e => setCondition(e.target.value)} required className="cpf-input">
-            <option value="" disabled>Condición de la prenda...</option>
-            {['Sin usar', 'Como nuevo', 'Excelente', 'Buen estado', 'Usado'].map(c => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
+          <CustomSelect
+            options={['Sin usar', 'Como nuevo', 'Excelente', 'Buen estado', 'Usado'].map(c => ({ value: c, label: c }))}
+            value={condition}
+            onChange={setCondition}
+            placeholder="Condición de la prenda..."
+          />
 
-          <select value={gender} onChange={e => setGender(e.target.value)} required className="cpf-input">
-            <option value="" disabled>Para quién es...</option>
-            {['Mujer', 'Hombre', 'Niños', 'Unisex'].map(g => (
-              <option key={g} value={g}>{g}</option>
-            ))}
-          </select>
+          <CustomSelect
+            options={['Mujer', 'Hombre', 'Niños', 'Unisex'].map(g => ({ value: g, label: g }))}
+            value={gender}
+            onChange={setGender}
+            placeholder="Para quién es..."
+          />
         </div>
 
         {/* ── Descripción ─────────────────────────────────── */}

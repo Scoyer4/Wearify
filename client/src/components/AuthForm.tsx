@@ -8,9 +8,12 @@ interface SupabaseAuthError {
   status?: number;
 }
 
-export const AuthForm: React.FC = () => {
-  const [isRegister, setIsRegister] = useState<boolean>(false);
+interface AuthFormProps {
+  isRegister: boolean;
+  setIsRegister: (v: boolean) => void;
+}
 
+export const AuthForm: React.FC<AuthFormProps> = ({ isRegister, setIsRegister }) => {
   const [identificador, setIdentificador] = useState<string>("");
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");

@@ -70,7 +70,9 @@
   max-width: 360px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
+  padding: 3rem 2rem;
 }
 
 .login-logo-img {

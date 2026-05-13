@@ -324,7 +324,7 @@ export default function Navbar({ session, isAdmin }: { session: Session | null; 
           ) : (
             <div className="nav-auth-btns">
               <Link to="/login" className="btn-secondary nav-auth-btn">Iniciar sesión</Link>
-              <Link to="/login" className="btn-primary  nav-auth-btn">Registrarse</Link>
+              <Link to="/login?register=true" className="btn-primary  nav-auth-btn">Registrarse</Link>
             </div>
           )}
         </div>}
