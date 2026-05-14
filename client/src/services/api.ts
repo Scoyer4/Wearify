@@ -245,8 +245,9 @@ export const getCategories = async (): Promise<Categoria[] | null> => {
       throw new Error(`Error HTTP: ${response.status}`);
     }
 
-    const data = await response.json();
-    return data as Categoria[];
+    const data = await response.json() as Categoria[];
+    const EXCLUDED = ['Ropa interior', 'Electrónica', 'Ropa'];
+    return data.filter(c => !EXCLUDED.includes(c.name));
   } catch (error) {
     console.error("Error al obtener categorías:", error);
     return null;

@@ -30,7 +30,7 @@ export default function FollowButton({ userId, session }: Props) {
           ? '¿Cancelar la solicitud de seguimiento?'
           : '¿Dejar de seguir a este usuario?',
         confirmText: isPending ? 'Cancelar solicitud' : 'Dejar de seguir',
-        variant: 'warning',
+        variant: 'danger',
       });
       if (ok) { await unfollow(); toast.info('Dejaste de seguir a este usuario'); }
     }

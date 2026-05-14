@@ -35,6 +35,7 @@ router.patch("/me/privacy", verifyAuth, userController.updatePrivacy);
 
 router.get("/public/:id", userController.getPublicProfile);
 router.get("/email/:username", userController.getEmailByUsername);
+router.get("/check-email", userController.checkEmailExists);
 router.get("/is-following/:followerId/:followingId", userController.checkIsFollowing);
 
 router.post("/follow", verifyAuth, userController.followUser);

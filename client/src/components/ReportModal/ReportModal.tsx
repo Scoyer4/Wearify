@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { createReport, REPORT_REASONS_PRODUCT, REPORT_REASONS_USER } from '../../services/reportService';
 import './ReportModal.css';
 
@@ -33,14 +34,19 @@ export default function ReportModal({ token, productId, userId, targetName, onCl
     }
   }
 
-  return (
+  return createPortal(
     <div className="rm-overlay" onClick={onClose}>
       <div className="rm-modal" onClick={e => e.stopPropagation()}>
         <div className="rm-handle" />
 
         {done ? (
           <div className="rm-done">
-            <span className="rm-done-icon">✅</span>
+            <span className="rm-done-icon">
+              <svg viewBox="0 0 48 48" width="52" height="52" fill="none">
+                <circle cx="24" cy="24" r="23" stroke="var(--brand)" strokeWidth="2" fill="rgba(124,95,255,0.1)"/>
+                <polyline points="14,25 21,32 34,17" stroke="var(--brand)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </span>
             <h3 className="rm-done-title">Reporte enviado</h3>
             <p className="rm-done-body">Gracias por ayudarnos a mantener la comunidad segura. Revisaremos tu reporte lo antes posible.</p>
             <button className="btn-primary rm-done-btn" onClick={onClose}>Cerrar</button>
@@ -99,6 +105,7 @@ export default function ReportModal({ token, productId, userId, targetName, onCl
         )}
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

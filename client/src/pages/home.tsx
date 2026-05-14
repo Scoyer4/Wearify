@@ -223,7 +223,8 @@ export default function Home({ session }: { session: Session | null }) {
   }, [fetchDatos]);
 
   const renderCard = (producto: Producto) => {
-    const vendido = producto.is_sold || producto.status === 'Vendido';
+    const vendido    = producto.is_sold || producto.status === 'Vendido';
+    const reservado  = !vendido && !!producto.is_reserved;
     const isOwn = !!session && producto.seller_id === session.user.id;
     const liked = favoritos.has(producto.id);
     const count = producto.favorites_count ?? 0;
@@ -253,8 +254,11 @@ export default function Home({ session }: { session: Session | null }) {
             {count > 0 && <span className="fav-count">{count}</span>}
           </button>
         )}
-        {!vendido && esNuevo(producto) && (
+        {!vendido && !reservado && esNuevo(producto) && (
           <span className="card-badge badge-new">Nuevo</span>
+        )}
+        {reservado && (
+          <span className="card-badge badge-reserved">Reservado</span>
         )}
         {vendido && (
           <span className="card-badge badge-sold">Vendido</span>
@@ -296,7 +300,7 @@ export default function Home({ session }: { session: Session | null }) {
             : <>VISTE DIFERENTE.<br /><span className="hero-title-accent">VENDE DIFERENTE.</span></>}
         </h1>
         <p className="hero-subtitle">
-          Marketplace curado por coleccionistas. Lo que llevas dice quién eres.
+          El marketplace de moda donde cada prenda tiene una segunda oportunidad.
         </p>
 
         {!cargando && (

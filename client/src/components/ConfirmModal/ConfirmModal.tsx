@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import './ConfirmModal.css';
 
 export interface ConfirmModalProps {
@@ -57,7 +58,7 @@ export default function ConfirmModal({
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div className="confirm-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
       <div className="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
         <div className={`confirm-modal__icon confirm-modal__icon--${variant}`}>
@@ -85,6 +86,7 @@ export default function ConfirmModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

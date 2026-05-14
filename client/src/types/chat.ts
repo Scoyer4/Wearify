@@ -17,6 +17,7 @@ export interface SwapProduct {
   price: number;
   image_url: string | null;
   is_sold: boolean;
+  is_reserved?: boolean;
 }
 
 export interface MessageRow {
@@ -44,6 +45,7 @@ export interface ConversationProduct {
   price: number;
   image_url: string | null;
   is_sold: boolean;
+  is_reserved?: boolean;
 }
 
 export interface ConversationParticipant {

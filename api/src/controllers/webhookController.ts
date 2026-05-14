@@ -39,36 +39,41 @@ export const webhookController = {
         const productPrice = parseFloat(meta.productPrice);
         const shippingCost = parseFloat(meta.shippingCost);
 
-        await checkoutRepository.createOrder(
-          {
-            productId:       meta.productId,
-            shippingAddress,
-            shippingType:    meta.shippingType as ShippingType,
-            saveAddress:     meta.saveAddress === 'true',
-          },
-          meta.buyerId,
-          meta.sellerId,
-          productPrice,
-          shippingCost,
-        );
+        const existingOrder = await checkoutRepository.findOrderByProductAndBuyer(meta.productId, meta.buyerId);
 
-        await checkoutRepository.markProductSold(meta.productId);
-
-        if (meta.saveAddress === 'true') {
-          await checkoutRepository.saveUserAddress(meta.buyerId, shippingAddress);
-        }
-
-        try {
-          const conv = await chatRepository.findOrCreateConversation(meta.productId, meta.buyerId, meta.sellerId);
-          await chatRepository.createMessage(
-            conv.id,
+        if (!existingOrder) {
+          await checkoutRepository.createOrder(
+            {
+              productId:       meta.productId,
+              shippingAddress,
+              shippingType:    meta.shippingType as ShippingType,
+              saveAddress:     meta.saveAddress === 'true',
+            },
             meta.buyerId,
-            `✅ Pago completado · ${(productPrice + shippingCost).toFixed(2)} € · Envío ${meta.shippingType === 'express' ? 'express' : 'estándar'}.`,
+            meta.sellerId,
+            productPrice,
+            shippingCost,
           );
-          await notificationRepository.insert(meta.sellerId, 'new_sale', meta.buyerId, meta.productId);
-        } catch (chatErr) {
-          console.error('Error al registrar mensaje de compra en el chat:', chatErr);
+
+          if (meta.saveAddress === 'true') {
+            await checkoutRepository.saveUserAddress(meta.buyerId, shippingAddress);
+          }
+
+          try {
+            const conv = await chatRepository.findOrCreateConversation(meta.productId, meta.buyerId, meta.sellerId);
+            await chatRepository.createSystemMessage(
+              conv.id,
+              meta.buyerId,
+              `✅ Pago completado · ${(productPrice + shippingCost).toFixed(2)} € · Envío ${meta.shippingType === 'express' ? 'express' : 'estándar'}.`,
+            );
+            await notificationRepository.insert(meta.sellerId, 'new_sale', meta.buyerId, meta.productId);
+          } catch (chatErr) {
+            console.error('Error al registrar mensaje de compra en el chat:', chatErr);
+          }
         }
+
+        // Always mark reserved (even on retry) so product state is consistent
+        await checkoutRepository.markProductReserved(meta.productId);
 
       } catch (err: any) {
         console.error('Error procesando checkout.session.completed:', err);

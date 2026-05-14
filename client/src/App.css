@@ -1188,7 +1188,11 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .hero-section {
   position: relative;
   min-height: 630px;
-  padding: 5rem 0 4rem;
+  padding: 4rem 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   text-align: center;
   overflow: hidden;
   background-image: url('/background-home.jpg');
@@ -1643,6 +1647,15 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 .badge-sold {
   background: rgba(255, 77, 106, 0.85);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.badge-reserved {
+  background: rgba(124, 95, 255, 0.85);
   color: #fff;
   font-family: var(--font-mono);
   font-weight: 700;

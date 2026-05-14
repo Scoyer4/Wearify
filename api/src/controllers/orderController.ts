@@ -38,7 +38,7 @@ export const orderController = {
 
       const product = await orderRepository.findProductForOrder(productId);
       if (!product) return res.status(404).json({ error: 'Producto no encontrado' });
-      if (product.is_sold) return res.status(400).json({ error: 'Este producto ya ha sido vendido' });
+      if (product.is_sold || product.is_reserved) return res.status(400).json({ error: 'Este producto ya no está disponible' });
       if (product.seller_id === me) {
         return res.status(400).json({ error: 'No puedes comprar tu propio producto' });
       }
@@ -51,7 +51,7 @@ export const orderController = {
         status:            'completado',
       });
 
-      await orderRepository.markProductSold(productId);
+      await orderRepository.markProductReserved(productId);
 
       let conversationId: string | null = null;
       try {
@@ -134,7 +134,7 @@ export const orderController = {
         return res.status(400).json({ error: `El pedido está en estado '${order.order_status}', no puede marcarse como enviado` });
       }
 
-      await orderLifecycleRepository.shipOrder(orderId, trackingNumber.trim());
+      await orderLifecycleRepository.shipOrder(orderId, trackingNumber.trim(), order.product_id);
 
       // Notificación + mensaje en chat al comprador (best-effort)
       try {
@@ -295,6 +295,20 @@ export const orderController = {
       }
 
       await orderLifecycleRepository.completeOrder(orderId);
+
+      try {
+        const conv = await chatRepository.findConversation(order.product_id, order.buyer_id, order.seller_id!);
+        if (conv) {
+          await chatRepository.createSystemMessage(
+            conv.id,
+            req.user!.id,
+            '🎉 Pedido completado · ¡Gracias por tu compra!',
+          );
+        }
+      } catch (chatErr) {
+        console.error('Error al registrar mensaje de completado:', chatErr);
+      }
+
       return res.json({ ok: true });
     } catch (error: any) {
       console.error('Error en completeOrder:', error);

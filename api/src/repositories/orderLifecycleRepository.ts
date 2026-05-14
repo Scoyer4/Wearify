@@ -86,7 +86,7 @@ export const orderLifecycleRepository = {
     return orders.map(o => ({ ...o, conversation_id: convMap[o.product_id] ?? null }));
   },
 
-  shipOrder: async (orderId: string, trackingNumber: string): Promise<void> => {
+  shipOrder: async (orderId: string, trackingNumber: string, productId: string): Promise<void> => {
     const { error } = await supabase
       .from('orders')
       .update({
@@ -96,6 +96,11 @@ export const orderLifecycleRepository = {
       })
       .eq('id', orderId);
     if (error) throw new Error(error.message);
+
+    const { error: productErr } = await (supabase.from('products') as any)
+      .update({ is_sold: true, is_reserved: false })
+      .eq('id', productId);
+    if (productErr) throw new Error(productErr.message);
   },
 
   receiveOrder: async (orderId: string): Promise<void> => {
@@ -127,9 +132,8 @@ export const orderLifecycleRepository = {
       .eq('id', orderId);
     if (orderErr) throw new Error(orderErr.message);
 
-    const { error: productErr } = await supabase
-      .from('products')
-      .update({ status: 'Disponible', is_sold: false })
+    const { error: productErr } = await (supabase.from('products') as any)
+      .update({ status: 'Disponible', is_sold: false, is_reserved: false })
       .eq('id', productId);
     if (productErr) throw new Error(productErr.message);
   },
@@ -152,9 +156,8 @@ export const orderLifecycleRepository = {
         .eq('id', sibling.id);
       if (orderErr) throw new Error(orderErr.message);
 
-      const { error: productErr } = await supabase
-        .from('products')
-        .update({ status: 'Disponible', is_sold: false })
+      const { error: productErr } = await (supabase.from('products') as any)
+        .update({ status: 'Disponible', is_sold: false, is_reserved: false })
         .eq('id', sibling.product_id);
       if (productErr) throw new Error(productErr.message);
     }

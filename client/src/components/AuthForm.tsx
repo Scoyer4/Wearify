@@ -43,17 +43,20 @@ export const AuthForm: React.FC<AuthFormProps> = ({ isRegister, setIsRegister })
         // 1. Registramos al usuario en Supabase Auth
         const authRes = await signUp(identificador, password, username);
 
-        // 2. Si ha ido bien, guardamos sus datos en nuestra propia base de datos
-        if (authRes.data?.user) {
-          const profileRes = await createUserProfile({
-            id: authRes.data.user.id,
-            username: username,
-            email: identificador,
-          });
+        // Supabase devuelve un usuario con identities vacías cuando el correo ya está registrado
+        if (!authRes.data?.user || (authRes.data.user.identities?.length ?? 0) === 0) {
+          throw new Error("Este correo electrónico ya está registrado.");
+        }
 
-          if (!profileRes) {
-            throw new Error("La cuenta se creó, pero hubo un error al guardar tu nombre de usuario. Contacta con soporte.");
-          }
+        // 2. Si ha ido bien, guardamos sus datos en nuestra propia base de datos
+        const profileRes = await createUserProfile({
+          id: authRes.data.user.id,
+          username: username,
+          email: identificador,
+        });
+
+        if (!profileRes) {
+          throw new Error("La cuenta se creó, pero hubo un error al guardar tu nombre de usuario. Contacta con soporte.");
         }
 
         setStatus({
@@ -67,18 +70,11 @@ export const AuthForm: React.FC<AuthFormProps> = ({ isRegister, setIsRegister })
         let emailParaLogin = identificador;
 
         if (!identificador.includes("@")) {
-          const apiUrl =
-            import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-          const response = await fetch(
-            `${apiUrl}/users/email/${identificador}`,
-          );
-
+          const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+          const response = await fetch(`${apiUrl}/users/email/${identificador}`);
           if (!response.ok) {
-            throw new Error(
-              "No se ha encontrado ninguna cuenta con ese nombre de usuario.",
-            );
+            throw new Error("No se ha encontrado ninguna cuenta con ese nombre de usuario.");
           }
-
           const data = await response.json();
           emailParaLogin = data.email;
         }
@@ -114,7 +110,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ isRegister, setIsRegister })
           <input
             id="identificador"
             className="auth-input"
-            placeholder="Correo electrónico o usuario"
+            placeholder={isRegister ? "Correo electrónico" : "Correo electrónico o usuario"}
             type={isRegister ? "email" : "text"}
             value={identificador}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>

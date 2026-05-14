@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Session } from '@supabase/supabase-js';
 import * as followerService from '../services/followerService';
 import { FollowRelationStatus, FollowCountsResponse } from '../types';
@@ -14,6 +14,12 @@ export function useFollow(userId: string, session: Session | null) {
 
   const myId = session?.user.id ?? null;
   const token = session?.access_token ?? null;
+
+  // Refs para leer el valor actual sin capturarlo en el closure
+  const iFollowRef = useRef(iFollow);
+  const countsRef  = useRef(counts);
+  useEffect(() => { iFollowRef.current = iFollow; }, [iFollow]);
+  useEffect(() => { countsRef.current  = counts;  }, [counts]);
 
   const refetch = useCallback(async () => {
     setLoading(true);
@@ -46,8 +52,8 @@ export function useFollow(userId: string, session: Session | null) {
 
   const follow = useCallback(async () => {
     if (!token) return;
-    const prev = iFollow;
-    const prevCounts = counts;
+    const prev = iFollowRef.current;
+    const prevCounts = countsRef.current;
     setIFollow('pending');
     const res = await followerService.follow(userId, token);
     if (res) {
@@ -59,12 +65,12 @@ export function useFollow(userId: string, session: Session | null) {
       setIFollow(prev);
       setCounts(prevCounts);
     }
-  }, [userId, token, iFollow, counts]);
+  }, [userId, token]);
 
   const unfollow = useCallback(async () => {
     if (!token) return;
-    const prev = iFollow;
-    const prevCounts = counts;
+    const prev = iFollowRef.current;
+    const prevCounts = countsRef.current;
     setIFollow('none');
     if (prev === 'accepted') {
       setCounts(c => ({ ...c, followers: Math.max(0, c.followers - 1) }));
@@ -74,7 +80,7 @@ export function useFollow(userId: string, session: Session | null) {
       setIFollow(prev);
       setCounts(prevCounts);
     }
-  }, [userId, token, iFollow, counts]);
+  }, [userId, token]);
 
   const accept = useCallback(async () => {
     if (!token) return;

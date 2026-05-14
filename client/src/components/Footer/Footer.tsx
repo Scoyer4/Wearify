@@ -7,7 +7,7 @@ export default function Footer() {
 
         <div className="footer-brand">
           <span className="footer-logo">Wearify</span>
-          <p className="footer-tagline">Lo que llevas dice quién eres.</p>
+          <p className="footer-tagline">El marketplace de moda donde cada prenda tiene una segunda oportunidad.</p>
           <div className="footer-socials">
             <a href="#" className="footer-social" aria-label="Instagram">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">

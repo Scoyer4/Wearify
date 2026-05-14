@@ -20,9 +20,11 @@ function formatBubbleTime(dateStr: string): string {
 
 const SYSTEM_PREFIXES = [
   '✅ Compra completada',
+  '✅ Pago completado',
   '📦 Tu pedido está en camino',
   '❌ Pedido cancelado',
   '❌ Venta cancelada',
+  '🎉 Pedido completado',
 ];
 
 // ── Tarjeta de oferta ──────────────────────────────────────────────────────────
@@ -195,6 +197,7 @@ export default function ChatWindow({ conversationId, session }: Props) {
   const [offerModal, setOfferModal]     = useState<{ open: boolean; mode: 'make' | 'counter'; messageId?: string }>({ open: false, mode: 'make' });
   const [offerInput, setOfferInput]     = useState('');
   const [offerError, setOfferError]     = useState('');
+  const [offerMode, setOfferMode]       = useState<'10' | '20' | 'custom'>('custom');
 
   // Modal de swap
   const [swapModal, setSwapModal]             = useState(false);
@@ -217,6 +220,8 @@ export default function ChatWindow({ conversationId, session }: Props) {
   const myId = session.user.id;
 
   const isSold          = conversation?.product.is_sold ?? false;
+  const isReserved      = conversation?.product.is_reserved ?? false;
+  const isUnavailable   = isSold || isReserved;
   const hasPendingOffer = messages.some(m => (m.message_type === 'offer' || m.message_type === 'swap') && m.offer_status === 'pending');
 
   const openSwapModal = async () => {
@@ -225,7 +230,7 @@ export default function ChatWindow({ conversationId, session }: Props) {
     setSwapError('');
     setMyProductsLoading(true);
     const data = await getProductsBySeller(session.user.id);
-    const available = (data ?? []).filter(p => !p.is_sold && p.status !== 'Vendido' && p.id !== conversation?.product_id);
+    const available = (data ?? []).filter(p => !p.is_sold && !p.is_reserved && p.status !== 'Vendido' && p.id !== conversation?.product_id);
     setMyProducts(available);
     setMyProductsLoading(false);
   };
@@ -265,13 +270,18 @@ export default function ChatWindow({ conversationId, session }: Props) {
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages]);
 
-  // Cargar estado de reseña cuando el producto esté vendido y sea el comprador
+  // Limpiar estado al cambiar de conversación para evitar que se muestre estado antiguo
   useEffect(() => {
-    if (!isSold || !isBuyer || !session?.access_token) return;
+    setReviewStatus(null);
+  }, [conversationId]);
+
+  // Cargar estado de reseña; re-verificar cuando lleguen nuevos mensajes por si el pedido acaba de completarse
+  useEffect(() => {
+    if (!isBuyer || !session?.access_token) return;
     getReviewStatus(conversationId, session.access_token)
       .then(setReviewStatus)
       .catch(() => {});
-  }, [isSold, isBuyer, conversationId, session?.access_token]);
+  }, [messages, isBuyer, conversationId, session?.access_token]);
 
   const handleSubmitReview = async () => {
     if (!reviewStatus?.orderId || reviewRating === 0) return;
@@ -319,7 +329,15 @@ export default function ChatWindow({ conversationId, session }: Props) {
     setOfferModal({ open: true, mode, messageId });
   };
 
-  const closeOfferModal = () => setOfferModal({ open: false, mode: 'make' });
+  const closeOfferModal = () => { setOfferModal({ open: false, mode: 'make' }); setOfferMode('custom'); };
+
+  const selectPreset = (mode: '10' | '20' | 'custom') => {
+    setOfferMode(mode);
+    if (mode !== 'custom' && conversation) {
+      setOfferInput((conversation.product.price * (1 - Number(mode) / 100)).toFixed(2));
+    }
+    setOfferError('');
+  };
 
   const handleSubmitOffer = async () => {
     const price = parseFloat(offerInput.replace(',', '.'));
@@ -525,8 +543,8 @@ export default function ChatWindow({ conversationId, session }: Props) {
               }
               <div className="chat-window-product-info">
                 <span className="chat-window-product-title">{conversation.product.title}</span>
-                <span className={`chat-window-product-price${isSold ? ' chat-window-product-price--sold' : ''}`}>
-                  {isSold ? 'Vendido' : `${conversation.product.price} €`}
+                <span className={`chat-window-product-price${isUnavailable ? ' chat-window-product-price--sold' : ''}`}>
+                  {isSold ? 'Vendido' : isReserved ? 'Reservado' : `${conversation.product.price} €`}
                 </span>
               </div>
             </Link>
@@ -546,7 +564,12 @@ export default function ChatWindow({ conversationId, session }: Props) {
         )}
       </div>
 
-      {/* ── Banner vendido ── */}
+      {/* ── Banner estado producto ── */}
+      {isReserved && !isSold && (
+        <div className="chat-sold-banner chat-sold-banner--reserved">
+          🔒 Este producto está reservado pendiente de envío
+        </div>
+      )}
       {isSold && (
         <div className="chat-sold-banner">
           🏷️ Este producto ya ha sido vendido
@@ -562,8 +585,8 @@ export default function ChatWindow({ conversationId, session }: Props) {
         <div ref={bottomRef} />
       </div>
 
-      {/* ── Panel de reseña (comprador, producto vendido) ── */}
-      {isSold && isBuyer && reviewStatus && (
+      {/* ── Panel de reseña (comprador, pedido completado) ── */}
+      {isBuyer && reviewStatus && (reviewStatus.canReview || reviewStatus.hasReviewed) && (
         <div className="chat-review-panel">
           {reviewStatus.hasReviewed ? (
             <div className="chat-review-done">
@@ -615,8 +638,8 @@ export default function ChatWindow({ conversationId, session }: Props) {
       )}
 
       {/* ── Input ── */}
-      <div className={`chat-window-input-area${isSold ? ' chat-window-input-area--disabled' : ''}`}>
-        {isBuyer && !isSold && (
+      <div className={`chat-window-input-area${isUnavailable ? ' chat-window-input-area--disabled' : ''}`}>
+        {isBuyer && !isUnavailable && (
           <>
             <button
               className="offer-trigger-btn"
@@ -665,16 +688,36 @@ export default function ChatWindow({ conversationId, session }: Props) {
 
       {/* ── Modal de intercambio ── */}
       {swapModal && (
-        <div className="offer-modal-overlay" onClick={() => setSwapModal(false)}>
-          <div className="offer-modal swap-select-modal" onClick={e => e.stopPropagation()}>
+        <div className="offer-modal-backdrop" onClick={() => setSwapModal(false)}>
+          <div className="offer-modal-card swap-select-modal" onClick={e => e.stopPropagation()}>
             <div className="offer-modal-header">
-              <span>🔄 Proponer intercambio</span>
-              <button className="offer-modal-close" onClick={() => setSwapModal(false)} aria-label="Cerrar">✕</button>
+              <h3 className="offer-modal-title">🔄 Proponer intercambio</h3>
+              <button className="offer-modal-close-btn" onClick={() => setSwapModal(false)} aria-label="Cerrar">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
             </div>
-            <p className="offer-modal-ref">
-              Selecciona hasta 4 prendas para ofrecer a cambio
+            {conversation && (
+              <>
+                <div className="offer-modal-product">
+                  {conversation.product.image_url && (
+                    <img src={conversation.product.image_url} alt={conversation.product.title} className="offer-modal-product-img" />
+                  )}
+                  <div>
+                    <p className="offer-modal-product-title">A cambio de: <strong>{conversation.product.title}</strong></p>
+                    <p className="offer-modal-product-price">Precio: <strong>{conversation.product.price} €</strong></p>
+                  </div>
+                </div>
+                <div className="offer-modal-divider" />
+              </>
+            )}
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
+              Selecciona hasta 4 prendas para ofrecer
               {selectedSwapIds.length > 0 && (
-                <span className="swap-select-count"> — {selectedSwapIds.length}/4 seleccionada{selectedSwapIds.length > 1 ? 's' : ''}</span>
+                <span style={{ color: 'var(--accent)', fontWeight: 600 }}>
+                  {' '}— {selectedSwapIds.length}/4 seleccionada{selectedSwapIds.length > 1 ? 's' : ''}
+                </span>
               )}:
             </p>
 
@@ -696,9 +739,7 @@ export default function ChatWindow({ conversationId, session }: Props) {
                       onClick={() => toggleSwapProduct(p.id)}
                     >
                       <div className="swap-product-item-img">
-                        {p.image_url
-                          ? <img src={p.image_url} alt={p.title} />
-                          : <span>📦</span>}
+                        {p.image_url ? <img src={p.image_url} alt={p.title} /> : <span>📦</span>}
                       </div>
                       <div className="swap-product-item-info">
                         <span className="swap-product-item-name">{p.title}</span>
@@ -711,64 +752,91 @@ export default function ChatWindow({ conversationId, session }: Props) {
               </div>
             )}
 
-            {swapError && <p className="offer-modal-error">{swapError}</p>}
-
-            <div className="offer-modal-footer">
-              <button className="offer-modal-cancel" onClick={() => setSwapModal(false)}>Cancelar</button>
-              <button
-                className="offer-modal-submit"
-                onClick={handleSubmitSwap}
-                disabled={selectedSwapIds.length === 0 || actionLoading || myProductsLoading}
-              >
-                {actionLoading ? 'Enviando…' : 'Proponer intercambio'}
-              </button>
-            </div>
+            {swapError && <p className="offer-modal-error">⚠ {swapError}</p>}
+            <button
+              className="btn-primary full-width-btn offer-submit-btn"
+              onClick={handleSubmitSwap}
+              disabled={selectedSwapIds.length === 0 || actionLoading || myProductsLoading}
+            >
+              {actionLoading ? 'Enviando…' : 'Proponer intercambio'}
+            </button>
+            <p className="offer-modal-hint">El vendedor recibirá tu propuesta y podrá aceptarla o rechazarla.</p>
           </div>
         </div>
       )}
 
       {/* ── Modal de oferta ── */}
       {offerModal.open && (
-        <div className="offer-modal-overlay" onClick={closeOfferModal}>
-          <div className="offer-modal" onClick={e => e.stopPropagation()}>
+        <div className="offer-modal-backdrop" onClick={closeOfferModal}>
+          <div className="offer-modal-card" onClick={e => e.stopPropagation()}>
             <div className="offer-modal-header">
-              <span>{offerModal.mode === 'make' ? '💰 Hacer una oferta' : '🔄 Contraoferta'}</span>
-              <button className="offer-modal-close" onClick={closeOfferModal} aria-label="Cerrar">✕</button>
+              <h3 className="offer-modal-title">
+                {offerModal.mode === 'make' ? 'Hacer una oferta' : '🔄 Contraoferta'}
+              </h3>
+              <button className="offer-modal-close-btn" onClick={closeOfferModal} aria-label="Cerrar">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
             </div>
-
             {conversation && (
-              <p className="offer-modal-ref">
-                Precio original: <strong>{conversation.product.price} €</strong>
-              </p>
+              <>
+                <div className="offer-modal-product">
+                  {conversation.product.image_url && (
+                    <img src={conversation.product.image_url} alt={conversation.product.title} className="offer-modal-product-img" />
+                  )}
+                  <div>
+                    <p className="offer-modal-product-title">{conversation.product.title}</p>
+                    <p className="offer-modal-product-price">
+                      Precio actual: <strong>{conversation.product.price.toFixed(2)} €</strong>
+                    </p>
+                  </div>
+                </div>
+                <div className="offer-modal-divider" />
+                <div className="offer-presets">
+                  {(['10', '20'] as const).map(pct => {
+                    const discounted = conversation.product.price * (1 - Number(pct) / 100);
+                    const active = offerMode === pct;
+                    return (
+                      <button key={pct} className={`offer-preset-btn${active ? ' offer-preset-btn--active' : ''}`} onClick={() => selectPreset(pct)}>
+                        <span className="offer-preset-price">{discounted.toFixed(2)} €</span>
+                        <span className="offer-preset-label">{pct}% descuento</span>
+                      </button>
+                    );
+                  })}
+                  <button
+                    className={`offer-preset-btn${offerMode === 'custom' ? ' offer-preset-btn--active' : ''}`}
+                    onClick={() => selectPreset('custom')}
+                  >
+                    <span className="offer-preset-price offer-preset-price--custom">Personalizar</span>
+                    <span className="offer-preset-label">Ponle un precio</span>
+                  </button>
+                </div>
+              </>
             )}
-
-            <div className="offer-modal-input-row">
+            <div className="offer-input-wrap">
               <input
                 type="number"
-                className="offer-modal-input"
-                placeholder="Tu precio (€)"
+                className={`offer-input${offerError ? ' offer-input--error' : offerInput ? ' offer-input--filled' : ''}`}
+                placeholder="0.00"
                 value={offerInput}
-                onChange={e => { setOfferInput(e.target.value); setOfferError(''); }}
+                onChange={e => { setOfferInput(e.target.value); setOfferMode('custom'); setOfferError(''); }}
                 min={0.01}
                 step={0.01}
                 autoFocus
                 onKeyDown={e => { if (e.key === 'Enter') handleSubmitOffer(); }}
               />
-              <span className="offer-modal-currency">€</span>
+              <span className="offer-input-suffix">€</span>
             </div>
-
-            {offerError && <p className="offer-modal-error">{offerError}</p>}
-
-            <div className="offer-modal-footer">
-              <button className="offer-modal-cancel" onClick={closeOfferModal}>Cancelar</button>
-              <button
-                className="offer-modal-submit"
-                onClick={handleSubmitOffer}
-                disabled={!offerInput || actionLoading}
-              >
-                {actionLoading ? 'Enviando…' : 'Enviar oferta'}
-              </button>
-            </div>
+            {offerError && <p className="offer-modal-error">⚠ {offerError}</p>}
+            <button
+              className="btn-primary full-width-btn offer-submit-btn"
+              onClick={handleSubmitOffer}
+              disabled={!offerInput || actionLoading}
+            >
+              {actionLoading ? 'Enviando…' : offerModal.mode === 'make' ? 'Ofrecer' : 'Enviar contraoferta'}
+            </button>
+            <p className="offer-modal-hint">El vendedor recibirá tu oferta y podrá aceptarla, rechazarla o contraofertar.</p>
           </div>
         </div>
       )}

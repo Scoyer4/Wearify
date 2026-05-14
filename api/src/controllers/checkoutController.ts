@@ -24,7 +24,7 @@ export const checkoutController = {
 
       const product = await checkoutRepository.findProductForCheckout(productId);
       if (!product) return res.status(404).json({ error: 'Producto no encontrado' });
-      if (product.is_sold) return res.status(400).json({ error: 'Este producto ya ha sido vendido' });
+      if (product.is_sold || product.is_reserved) return res.status(400).json({ error: 'Este producto ya no está disponible' });
       if (product.seller_id === me) {
         return res.status(400).json({ error: 'No puedes comprar tu propio producto' });
       }
@@ -72,9 +72,9 @@ export const checkoutController = {
       const productPrice = parseFloat(meta.productPrice);
       const shippingCost = parseFloat(meta.shippingCost);
 
-      // Creación idempotente: si el producto aún no está marcado como vendido
-      // (el webhook no ha disparado o no está configurado), lo procesamos aquí.
-      if (!product?.is_sold) {
+      // Creación idempotente: procesar solo si no existe ya una orden para este comprador+producto
+      const existingOrder = await checkoutRepository.findOrderByProductAndBuyer(meta.productId, me);
+      if (!existingOrder) {
         try {
           await checkoutRepository.createOrder(
             {
@@ -88,12 +88,12 @@ export const checkoutController = {
             productPrice,
             shippingCost,
           );
-          await checkoutRepository.markProductSold(meta.productId);
+          await checkoutRepository.markProductReserved(meta.productId);
           if (meta.saveAddress === 'true') {
             await checkoutRepository.saveUserAddress(me, shippingAddress);
           }
           const conv = await chatRepository.findOrCreateConversation(meta.productId, me, meta.sellerId);
-          await chatRepository.createMessage(
+          await chatRepository.createSystemMessage(
             conv.id,
             me,
             `✅ Pago completado · ${(productPrice + shippingCost).toFixed(2)} € · Envío ${meta.shippingType === 'express' ? 'express' : 'estándar'}.`,
@@ -148,7 +148,7 @@ export const checkoutController = {
 
       const product = await checkoutRepository.findProductForCheckout(body.productId);
       if (!product) return res.status(404).json({ error: 'Producto no encontrado' });
-      if (product.is_sold) return res.status(400).json({ error: 'Lo sentimos, este producto acaba de ser vendido' });
+      if (product.is_sold || product.is_reserved) return res.status(400).json({ error: 'Lo sentimos, este producto ya no está disponible' });
       if (product.seller_id === me) {
         return res.status(400).json({ error: 'No puedes comprar tu propio producto' });
       }
@@ -244,7 +244,7 @@ export const checkoutController = {
       // ── Verificar producto ───────────────────────────────────────────────────
       const product = await checkoutRepository.findProductForCheckout(body.productId);
       if (!product) return res.status(404).json({ error: 'Producto no encontrado' });
-      if (product.is_sold) return res.status(400).json({ error: 'Lo sentimos, este producto acaba de ser vendido' });
+      if (product.is_sold || product.is_reserved) return res.status(400).json({ error: 'Lo sentimos, este producto ya no está disponible' });
       if (product.seller_id === me) {
         return res.status(400).json({ error: 'No puedes comprar tu propio producto' });
       }
@@ -268,8 +268,8 @@ export const checkoutController = {
         shippingCost,
       );
 
-      // ── Marcar producto como vendido ─────────────────────────────────────────
-      await checkoutRepository.markProductSold(body.productId);
+      // ── Marcar producto como reservado ──────────────────────────────────────
+      await checkoutRepository.markProductReserved(body.productId);
 
       // ── Guardar dirección si se solicitó ─────────────────────────────────────
       if (body.saveAddress) {
@@ -279,7 +279,7 @@ export const checkoutController = {
       // ── Notificar en el chat + notificación al vendedor (best-effort) ──────────
       try {
         const conv = await chatRepository.findOrCreateConversation(body.productId, me, product.seller_id);
-        await chatRepository.createMessage(
+        await chatRepository.createSystemMessage(
           conv.id,
           me,
           `✅ Compra completada · ${confirmation.finalPrice.toFixed(2)} € · Envío ${body.shippingType === 'express' ? 'express' : 'estándar'}.`,

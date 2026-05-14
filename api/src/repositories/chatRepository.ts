@@ -19,15 +19,15 @@ export const chatRepository = {
     return data as { seller_id: string } | null;
   },
 
-  findProductDetails: async (productId: string): Promise<{ seller_id: string; price: number; is_sold: boolean } | null> => {
-    const { data, error } = await supabase
-      .from('products')
-      .select('seller_id, price, is_sold')
+  findProductDetails: async (productId: string): Promise<{ seller_id: string; price: number; is_sold: boolean; is_reserved: boolean } | null> => {
+    const { data, error } = await (supabase
+      .from('products') as any)
+      .select('seller_id, price, is_sold, is_reserved')
       .eq('id', productId)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!data) return null;
-    return { seller_id: data.seller_id, price: data.price, is_sold: data.is_sold ?? false };
+    return { seller_id: data.seller_id, price: data.price, is_sold: data.is_sold ?? false, is_reserved: data.is_reserved ?? false };
   },
 
   findConversation: async (productId: string, buyerId: string, sellerId: string): Promise<ConversationRow | null> => {
@@ -180,7 +180,7 @@ export const chatRepository = {
       .from('conversations')
       .select(`
         *,
-        product:products(title, price, is_sold, productImages(image_url)),
+        product:products(title, price, is_sold, is_reserved, productImages(image_url)),
         buyer:users!buyer_id(id, username, avatar_url),
         seller:users!seller_id(id, username, avatar_url)
       `, { count: 'exact' })
@@ -237,10 +237,11 @@ export const chatRepository = {
         created_at:      c.created_at,
         last_message_at: c.last_message_at,
         product:  {
-          title:    c.product?.title    ?? '',
-          price:    c.product?.price    ?? 0,
-          image_url: imgUrl,
-          is_sold:  c.product?.is_sold  ?? false,
+          title:       c.product?.title       ?? '',
+          price:       c.product?.price       ?? 0,
+          image_url:   imgUrl,
+          is_sold:     c.product?.is_sold     ?? false,
+          is_reserved: c.product?.is_reserved ?? false,
         },
         otherUser:   { id: other?.id ?? '', username: other?.username ?? null, avatar_url: other?.avatar_url ?? null },
         lastMessage: lastMsgMap[c.id] ?? null,
@@ -256,7 +257,7 @@ export const chatRepository = {
       .from('conversations')
       .select(`
         *,
-        product:products(title, price, is_sold, productImages(image_url)),
+        product:products(title, price, is_sold, is_reserved, productImages(image_url)),
         buyer:users!buyer_id(id, username, avatar_url),
         seller:users!seller_id(id, username, avatar_url)
       `)
@@ -287,10 +288,11 @@ export const chatRepository = {
       created_at:      c.created_at,
       last_message_at: c.last_message_at,
       product:  {
-        title:    c.product?.title   ?? '',
-        price:    c.product?.price   ?? 0,
-        image_url: imgUrl,
-        is_sold:  c.product?.is_sold ?? false,
+        title:       c.product?.title       ?? '',
+        price:       c.product?.price       ?? 0,
+        image_url:   imgUrl,
+        is_sold:     c.product?.is_sold     ?? false,
+        is_reserved: c.product?.is_reserved ?? false,
       },
       otherUser:   { id: other?.id ?? '', username: other?.username ?? null, avatar_url: other?.avatar_url ?? null },
       lastMessage: lastMsg ?? null,

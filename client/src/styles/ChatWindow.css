@@ -172,6 +172,12 @@
   flex-shrink: 0;
 }
 
+.chat-sold-banner--reserved {
+  background: rgba(124, 95, 255, 0.1);
+  border-bottom-color: rgba(124, 95, 255, 0.25);
+  color: var(--brand);
+}
+
 /* ── Área de mensajes ────────────────────────────── */
 
 .chat-window-messages {

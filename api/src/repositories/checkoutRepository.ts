@@ -9,23 +9,25 @@ export const checkoutRepository = {
     price: number;
     seller_id: string;
     is_sold: boolean;
+    is_reserved: boolean;
     image_url: string | null;
   } | null> => {
-    const { data, error } = await supabase
-      .from('products')
-      .select('id, title, price, seller_id, is_sold, productImages(image_url)')
+    const { data, error } = await (supabase
+      .from('products') as any)
+      .select('id, title, price, seller_id, is_sold, is_reserved, productImages(image_url)')
       .eq('id', productId)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!data) return null;
     const images = (data as any).productImages ?? [];
     return {
-      id:        data.id,
-      title:     data.title,
-      price:     data.price,
-      seller_id: data.seller_id,
-      is_sold:   data.is_sold ?? false,
-      image_url: images[0]?.image_url ?? null,
+      id:          data.id,
+      title:       data.title,
+      price:       data.price,
+      seller_id:   data.seller_id,
+      is_sold:     data.is_sold ?? false,
+      is_reserved: (data as any).is_reserved ?? false,
+      image_url:   images[0]?.image_url ?? null,
     };
   },
 
@@ -77,10 +79,9 @@ export const checkoutRepository = {
     return { orderId: data.id, finalPrice, shippingCost };
   },
 
-  markProductSold: async (productId: string): Promise<void> => {
-    const { error } = await supabase
-      .from('products')
-      .update({ is_sold: true })
+  markProductReserved: async (productId: string): Promise<void> => {
+    const { error } = await (supabase.from('products') as any)
+      .update({ is_reserved: true })
       .eq('id', productId);
     if (error) throw new Error(error.message);
   },

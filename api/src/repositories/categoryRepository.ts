@@ -6,6 +6,7 @@ export const categoryRepository = {
     const { data, error } = await supabase
       .from("categories")
       .select("*")
+      .not("name", "in", '("Ropa interior","Electrónica","Ropa")')
       .order("name", { ascending: true });
 
     if (error) throw new Error(error.message);

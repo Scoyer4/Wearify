@@ -332,13 +332,13 @@
 
 /* ── Fila 1 ── */
 .nav-top {
-  display: grid;
-  grid-template-columns: 200px 1fr 350px;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 1.5rem;
   padding: 0 2rem;
   height: 87px;
   width: 100%;
+  position: relative;
 }
 
 .nav-top .logo-title {
@@ -356,12 +356,13 @@
 
 /* ── Barra de búsqueda ── */
 .nav-search {
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
-  position: relative;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 480px;
   display: flex;
   align-items: center;
+  pointer-events: auto;
 }
 
 .nav-search-icon {

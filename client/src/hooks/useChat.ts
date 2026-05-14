@@ -184,7 +184,7 @@ export function useChat(conversationId: string, session: Session | null) {
     // Optimista: marcar oferta como aceptada + añadir mensaje informativo
     setMessages(prev => updateOfferStatus(prev, messageId, 'accepted'));
     addSystemMessage('✅ Oferta aceptada. El producto ha sido reservado para ti.');
-    setConversation(prev => prev ? { ...prev, product: { ...prev.product, is_sold: true } } : prev);
+    setConversation(prev => prev ? { ...prev, product: { ...prev.product, is_reserved: true } } : prev);
 
     try {
       const result = await chatService.acceptOffer(conversationId, messageId, token);
@@ -192,7 +192,7 @@ export function useChat(conversationId: string, session: Session | null) {
     } catch (e: unknown) {
       // Revertir en caso de error
       setMessages(prev => updateOfferStatus(prev, messageId, 'pending'));
-      setConversation(prev => prev ? { ...prev, product: { ...prev.product, is_sold: false } } : prev);
+      setConversation(prev => prev ? { ...prev, product: { ...prev.product, is_reserved: false } } : prev);
       return errMsg(e);
     }
   }, [conversationId, token, addSystemMessage]);
@@ -249,14 +249,14 @@ export function useChat(conversationId: string, session: Session | null) {
 
     setMessages(prev => updateOfferStatus(prev, messageId, 'accepted'));
     addSystemMessage('🔄 ¡Intercambio aceptado! Accede a "Mis ventas" para enviar tu prenda con número de seguimiento.');
-    setConversation(prev => prev ? { ...prev, product: { ...prev.product, is_sold: true } } : prev);
+    setConversation(prev => prev ? { ...prev, product: { ...prev.product, is_reserved: true } } : prev);
 
     try {
       await chatService.acceptSwap(conversationId, messageId, token);
       return null;
     } catch (e: unknown) {
       setMessages(prev => updateOfferStatus(prev, messageId, 'pending'));
-      setConversation(prev => prev ? { ...prev, product: { ...prev.product, is_sold: false } } : prev);
+      setConversation(prev => prev ? { ...prev, product: { ...prev.product, is_reserved: false } } : prev);
       return errMsg(e);
     }
   }, [conversationId, token, addSystemMessage]);

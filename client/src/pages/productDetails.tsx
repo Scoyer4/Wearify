@@ -43,8 +43,10 @@ export default function ProductDetail({ session }: { session: Session | null }) 
   const [descExpanded, setDescExpanded]   = useState(false);
   const [openAccordion, setOpenAccordion] = useState<number | null>(null);
 
-  const isOwner = !!(session && producto && session.user.id === producto.seller_id);
-  const isSold  = producto?.is_sold ?? false;
+  const isOwner      = !!(session && producto && session.user.id === producto.seller_id);
+  const isSold       = producto?.is_sold ?? false;
+  const isReserved   = producto?.is_reserved ?? false;
+  const isUnavailable = isSold || isReserved;
   const isLongDesc = (producto?.description?.length ?? 0) > 200;
 
   const [showReport, setShowReport] = useState(false);
@@ -467,7 +469,10 @@ export default function ProductDetail({ session }: { session: Session | null }) 
             {isOwner ? (
               <div className="pd-actions-owner">
                 <button className="pd-btn pd-btn--edit" onClick={() => setShowEditModal(true)}>
-                  ✏️ Editar prenda
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: 7, flexShrink: 0, verticalAlign: 'middle', position: 'relative', top: '-1px'}}>
+                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                  </svg>
+                  Editar prenda
                 </button>
                 <button
                   className="pd-btn pd-btn--delete"
@@ -477,9 +482,9 @@ export default function ProductDetail({ session }: { session: Session | null }) 
                   {deleting ? 'Eliminando...' : '🗑 Eliminar'}
                 </button>
               </div>
-            ) : isSold ? (
+            ) : isUnavailable ? (
               <div className="pd-sold-msg">
-                <span>🏷️</span> Este producto ya ha sido vendido.
+                <span>🏷️</span> {isReserved ? 'Este producto está reservado y pendiente de envío.' : 'Este producto ya ha sido vendido.'}
               </div>
             ) : (
               <>
@@ -490,10 +495,10 @@ export default function ProductDetail({ session }: { session: Session | null }) 
                 </div>
                 <div className="pd-actions-row pd-actions-row--secondary">
                   <button className="pd-btn pd-btn--outline" onClick={openOfferModal}>
-                    💰 Hacer una oferta
+                    Hacer una oferta
                   </button>
                   <button className="pd-btn pd-btn--outline" onClick={openSwapModal}>
-                    🔄 Proponer intercambio
+                    Proponer intercambio
                   </button>
                 </div>
                 {producto.seller_id && (
@@ -574,8 +579,9 @@ export default function ProductDetail({ session }: { session: Session | null }) 
           ) : (
             <div className="products-scroll">
               {sellerProducts.map(p => {
-                const vendido = p.is_sold || p.status === 'Vendido';
-                const isOwn   = !!session && p.seller_id === session.user.id;
+                const vendido   = p.is_sold || p.status === 'Vendido';
+                const reservado = !vendido && !!p.is_reserved;
+                const isOwn     = !!session && p.seller_id === session.user.id;
                 const liked   = favoritos.has(p.id);
                 const count   = p.favorites_count ?? 0;
                 return (
@@ -613,9 +619,10 @@ export default function ProductDetail({ session }: { session: Session | null }) 
                           {count > 0 && <span className="fav-count">{count}</span>}
                         </button>
                       )}
-                      {!vendido && p.condition === 'Sin usar' && (
+                      {!vendido && !reservado && p.condition === 'Sin usar' && (
                         <span className="card-badge badge-new">Nuevo</span>
                       )}
+                      {reservado && <span className="card-badge badge-reserved">Reservado</span>}
                       {vendido && <span className="card-badge badge-sold">Vendido</span>}
                     </div>
                     <div className="product-info">

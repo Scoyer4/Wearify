@@ -13,6 +13,7 @@ export interface Producto {
   gender?: string | null;
   status?: string;
   is_sold?: boolean;
+  is_reserved?: boolean;
   favorites_count?: number;
   images?: string[];
 

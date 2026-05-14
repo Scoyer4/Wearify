@@ -277,7 +277,7 @@ export default function EditProductModal({ producto, token, onClose, onSaved }: 
 
             {/* ── Acciones ─────────────────────────── */}
             <div className="edit-modal__actions">
-              <button type="button" className="edit-modal__btn-cancel" onClick={onClose} disabled={saving || uploading}>
+              <button type="button" className="btn-secondary edit-modal__btn-save" onClick={onClose} disabled={saving || uploading}>
                 Cancelar
               </button>
               <button type="submit" className="btn-primary edit-modal__btn-save" disabled={saving || uploading}>

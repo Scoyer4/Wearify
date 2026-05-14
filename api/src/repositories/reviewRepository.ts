@@ -12,14 +12,17 @@ export const reviewRepository = {
 
     if (!conv) return { canReview: false, hasReviewed: false, orderId: null, sellerId: null, existing: null };
 
-    const { data: order } = await supabase
-      .from('orders')
-      .select('id')
+    // Get the most recent order for this buyer+product; only allow review if THAT order is completed
+    const { data: order } = await (supabase
+      .from('orders') as any)
+      .select('id, order_status')
       .eq('product_id', conv.product_id)
       .eq('buyer_id', buyerId)
+      .order('created_at', { ascending: false })
+      .limit(1)
       .maybeSingle();
 
-    if (!order) return { canReview: false, hasReviewed: false, orderId: null, sellerId: null, existing: null };
+    if (!order || order.order_status !== 'completed') return { canReview: false, hasReviewed: false, orderId: null, sellerId: null, existing: null };
 
     const { data: existing } = await supabase
       .from('reviews')

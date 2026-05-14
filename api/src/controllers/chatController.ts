@@ -157,7 +157,7 @@ export const chatController = {
 
       const product = await chatRepository.findProductDetails(productId);
       if (!product) return res.status(404).json({ error: 'Producto no encontrado' });
-      if (product.is_sold) return res.status(400).json({ error: 'Este producto ya ha sido vendido' });
+      if (product.is_sold || product.is_reserved) return res.status(400).json({ error: 'Este producto ya no está disponible' });
       if (product.seller_id === me) {
         return res.status(400).json({ error: 'No puedes hacer una oferta sobre tu propio producto' });
       }
@@ -213,7 +213,7 @@ export const chatController = {
       // Verificar que el producto sigue disponible
       const product = await chatRepository.findProductDetails(conv.product_id);
       if (!product) return res.status(404).json({ error: 'Producto no encontrado' });
-      if (product.is_sold) return res.status(400).json({ error: 'Este producto ya ha sido vendido' });
+      if (product.is_sold || product.is_reserved) return res.status(400).json({ error: 'Este producto ya no está disponible' });
 
       // La oferta no puede ser mayor o igual al precio original (no tendría sentido)
       if (offerPrice >= product.price) {
@@ -267,7 +267,7 @@ export const chatController = {
 
       const product = await chatRepository.findProductDetails(conv.product_id);
       if (!product) return res.status(404).json({ error: 'Producto no encontrado' });
-      if (product.is_sold) return res.status(400).json({ error: 'Este producto ya ha sido vendido' });
+      if (product.is_sold || product.is_reserved) return res.status(400).json({ error: 'Este producto ya no está disponible' });
 
       // 1. Marcar oferta como aceptada
       await chatRepository.updateOfferStatus(messageId, 'accepted');
@@ -342,7 +342,7 @@ export const chatController = {
       // Validar producto destino (del vendedor)
       const targetProduct = await chatRepository.findProductDetails(productId);
       if (!targetProduct) return res.status(404).json({ error: 'Producto no encontrado' });
-      if (targetProduct.is_sold) return res.status(400).json({ error: 'Este producto ya ha sido vendido' });
+      if (targetProduct.is_sold || targetProduct.is_reserved) return res.status(400).json({ error: 'Este producto ya no está disponible' });
       if (targetProduct.seller_id === me) {
         return res.status(400).json({ error: 'No puedes proponer un intercambio sobre tu propio producto' });
       }
@@ -351,7 +351,7 @@ export const chatController = {
       for (const id of swapProductIds) {
         const offered = await chatRepository.findProductDetails(id);
         if (!offered) return res.status(404).json({ error: 'Producto ofrecido no encontrado' });
-        if (offered.is_sold) return res.status(400).json({ error: 'Uno de los productos que ofreces ya ha sido vendido' });
+        if (offered.is_sold || offered.is_reserved) return res.status(400).json({ error: 'Uno de los productos que ofreces ya no está disponible' });
         if (offered.seller_id !== me) {
           return res.status(403).json({ error: 'Solo puedes ofrecer tus propios productos' });
         }
@@ -404,12 +404,12 @@ export const chatController = {
 
       const targetProduct = await chatRepository.findProductDetails(conv.product_id);
       if (!targetProduct) return res.status(404).json({ error: 'Producto no encontrado' });
-      if (targetProduct.is_sold) return res.status(400).json({ error: 'Este producto ya ha sido vendido' });
+      if (targetProduct.is_sold || targetProduct.is_reserved) return res.status(400).json({ error: 'Este producto ya no está disponible' });
 
       for (const id of swapProductIds) {
         const offered = await chatRepository.findProductDetails(id);
         if (!offered) return res.status(404).json({ error: 'Producto ofrecido no encontrado' });
-        if (offered.is_sold) return res.status(400).json({ error: 'Uno de los productos que ofreces ya ha sido vendido' });
+        if (offered.is_sold || offered.is_reserved) return res.status(400).json({ error: 'Uno de los productos que ofreces ya no está disponible' });
         if (offered.seller_id !== me) {
           return res.status(403).json({ error: 'Solo puedes ofrecer tus propios productos' });
         }
@@ -471,7 +471,7 @@ export const chatController = {
 
       // Verificar producto principal sigue disponible
       const targetProduct = await chatRepository.findProductDetails(conv.product_id);
-      if (!targetProduct || targetProduct.is_sold) {
+      if (!targetProduct || targetProduct.is_sold || targetProduct.is_reserved) {
         return res.status(400).json({ error: 'El producto principal ya no está disponible' });
       }
 
@@ -479,7 +479,7 @@ export const chatController = {
       const offeredDetails: Array<{ id: string; price: number }> = [];
       for (const id of offeredIds) {
         const p = await chatRepository.findProductDetails(id);
-        if (!p || p.is_sold) {
+        if (!p || p.is_sold || p.is_reserved) {
           return res.status(400).json({ error: 'Uno de los productos ofrecidos ya no está disponible' });
         }
         offeredDetails.push({ id, price: p.price });
@@ -488,10 +488,10 @@ export const chatController = {
       // Marcar swap como aceptado
       await chatRepository.updateOfferStatus(messageId, 'accepted');
 
-      // Marcar TODOS los productos como vendidos
-      await orderRepository.markProductSold(conv.product_id);
+      // Marcar TODOS los productos como reservados (se marcarán vendidos al enviar)
+      await orderRepository.markProductReserved(conv.product_id);
       for (const { id } of offeredDetails) {
-        await orderRepository.markProductSold(id);
+        await orderRepository.markProductReserved(id);
       }
 
       // Generar un ID de grupo compartido por todas las órdenes de este intercambio
@@ -594,7 +594,7 @@ export const chatController = {
 
       const product = await chatRepository.findProductDetails(conv.product_id);
       if (!product) return res.status(404).json({ error: 'Producto no encontrado' });
-      if (product.is_sold) return res.status(400).json({ error: 'Este producto ya ha sido vendido' });
+      if (product.is_sold || product.is_reserved) return res.status(400).json({ error: 'Este producto ya no está disponible' });
 
       // 1. Marcar la oferta anterior como superada
       await chatRepository.updateOfferStatus(messageId, 'countered');

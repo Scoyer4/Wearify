@@ -24,6 +24,15 @@ export const userRepository = {
     return data as User | null;
   },
 
+  existsByEmail: async (email: string): Promise<boolean> => {
+    const { data } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email.trim().toLowerCase())
+      .maybeSingle();
+    return data !== null;
+  },
+
   findByUsername: async (username: string): Promise<User | null> => {
     const { data, error } = await supabase
       .from("users")

@@ -29,6 +29,7 @@ export const productRepository = {
         productImages ( image_url ),
         favorites ( product_id )
       `)
+      .not("is_sold", "is", true)
       .order("created_at", { ascending: false });
 
     if (error) throw new Error(error.message);

@@ -61,7 +61,7 @@ export default function UserProfile({ session }: { session: Session | null }) {
           ? '¿Cancelar la solicitud de seguimiento?'
           : `¿Dejar de seguir a ${name}?`,
         confirmText: isPending ? 'Cancelar solicitud' : 'Dejar de seguir',
-        variant: 'warning',
+        variant: 'danger',
       });
       if (ok) { await unfollow(); toast.info(`Dejaste de seguir a ${name}`); }
     }

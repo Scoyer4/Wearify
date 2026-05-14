@@ -279,14 +279,6 @@ export default function Navbar({ session, isAdmin }: { session: Session | null; 
                       </span>
                       Pedidos
                     </Link>
-                    <Link to="/pedidos" className="nav-dropdown-item" onClick={closeDropdown}>
-                      <span className="nav-dropdown-icon">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-                        </svg>
-                      </span>
-                      Ventas
-                    </Link>
                     {pendingCount > 0 && (
                       <Link to="/solicitudes" className="nav-dropdown-item" onClick={closeDropdown}>
                         <span className="nav-dropdown-icon">
@@ -389,28 +381,6 @@ export default function Navbar({ session, isAdmin }: { session: Session | null; 
         >
           En Tendencia
         </button>
-        {zapatillasId != null && (
-          <button
-            className={`nav-cat-item${isCatActive(`/?catId=${zapatillasId}`) ? ' nav-cat-item--active' : ''}`}
-            onClick={() => navigate(`/?catId=${zapatillasId}`)}
-          >
-            Zapatillas
-          </button>
-        )}
-        {accesoriosId != null && (
-          <button
-            className={`nav-cat-item${isCatActive(`/?catId=${accesoriosId}`) ? ' nav-cat-item--active' : ''}`}
-            onClick={() => navigate(`/?catId=${accesoriosId}`)}
-          >
-            Accesorios
-          </button>
-        )}
-        <button
-          className={`nav-cat-item${isCatActive('/?orden=precio-asc') ? ' nav-cat-item--active' : ''}`}
-          onClick={() => navigate('/?orden=precio-asc')}
-        >
-          Ofertas
-        </button>
       </nav>}
 
       {/* ── Dropdown de categorías (fixed, fuera del overflow) ── */}
@@ -425,17 +395,7 @@ export default function Navbar({ session, isAdmin }: { session: Session | null; 
             const item = CAT_LINKS.find(c => c.label === activeCat)!;
             return (
               <>
-                <button
-                  className="nav-cat-dropdown-item nav-cat-dropdown-item--all"
-                  onClick={() => { setActiveCat(null); navigate(item.href); }}
-                >
-                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-                    <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
-                  </svg>
-                  Todos
-                </button>
-                {categories.filter(cat => !['Electrónica', 'Ropa'].includes(cat.name)).map(cat => (
+                {categories.map(cat => (
                   <button
                     key={cat.id}
                     className="nav-cat-dropdown-item"
