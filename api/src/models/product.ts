@@ -50,5 +50,4 @@ export type ProductUpdate = {
   gender?: ClothingGender | null;
   status?: ProductStatus;
   image_url?: string | null;
-  image_urls?: string[];
 };

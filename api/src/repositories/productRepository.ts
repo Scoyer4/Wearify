@@ -77,8 +77,8 @@ export const productRepository = {
     return { ...nuevoProducto, image_url: urls[0] ?? null, images: urls } as Product;
   },
 
-  update: async (id: string, updates: ProductUpdate): Promise<Product> => {
-    const { image_url, ...productUpdates } = updates;
+  update: async (id: string, updates: ProductUpdate & { image_urls?: string[] }): Promise<Product> => {
+    const { image_url, image_urls, ...productUpdates } = updates;
 
     if (Object.keys(productUpdates).length > 0) {
       const { error } = await supabase
@@ -87,8 +87,6 @@ export const productRepository = {
         .eq("id", id);
       if (error) throw new Error(error.message);
     }
-
-    const { image_urls } = updates as ProductUpdate & { image_urls?: string[] };
 
     if (image_url !== undefined || image_urls !== undefined) {
       await supabase.from("productImages").delete().eq("product_id", id);
