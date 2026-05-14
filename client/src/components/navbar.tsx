@@ -172,9 +172,6 @@ export default function Navbar({ session, isAdmin }: { session: Session | null; 
     return false;
   }
 
-  const zapatillasId = categories.find(c => c.name.toLowerCase().includes('zapatilla'))?.id;
-  const accesoriosId = categories.find(c => c.name.toLowerCase().includes('accesorio'))?.id;
-
   const isHome      = location.pathname === '/' && !catParam && !ordenParam && !searchParam;
   const isLoginPage = location.pathname === '/login';
 
@@ -381,6 +378,7 @@ export default function Navbar({ session, isAdmin }: { session: Session | null; 
         >
           En Tendencia
         </button>
+
       </nav>}
 
       {/* ── Dropdown de categorías (fixed, fuera del overflow) ── */}

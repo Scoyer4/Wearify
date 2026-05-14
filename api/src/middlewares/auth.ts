@@ -14,7 +14,9 @@ export const verifyAuth = async (req: Request, res: Response, next: NextFunction
     const { data: { user }, error } = await supabase.auth.getUser(token);
 
     if (error || !user) {
-      console.error("Error validando token de Supabase:", error?.message);
+      if (error?.message !== 'Auth session missing!') {
+        console.error("Error validando token de Supabase:", error?.message);
+      }
       return res.status(401).json({ error: "Invalid token or session expired" });
     }
 

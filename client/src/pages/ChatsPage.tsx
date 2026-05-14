@@ -10,7 +10,7 @@ export default function ChatsPage({ session }: Props) {
   if (!session) return <Navigate to="/login" />;
 
   return (
-    <section style={{ maxWidth: 760, margin: '0 auto', padding: '1.5rem 0.75rem' }}>
+    <section style={{ maxWidth: 760, margin: '0 auto', padding: '2.5rem 0.75rem' }}>
       <div className="section-header">
         <h2 className="section-title">Mensajes</h2>
       </div>

@@ -109,7 +109,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!session) {
+    if (!session?.access_token) {
       setIsAdmin(false);
       setBanReason(undefined);
       adminCheckedRef.current = null;
