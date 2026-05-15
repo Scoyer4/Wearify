@@ -352,6 +352,7 @@ export default function Profile({ session }: { session: Session }) {
                       ))}
                     </div>
                   </div>
+                  {r.comment && <p className="review-card-comment" style={{ paddingLeft: 0 }}>{r.comment}</p>}
                   {r.product && (
                     <div
                       className="review-card-product"
@@ -367,7 +368,6 @@ export default function Profile({ session }: { session: Session }) {
                       </svg>
                     </div>
                   )}
-                  {r.comment && <p className="review-card-comment" style={{ paddingLeft: 0 }}>{r.comment}</p>}
                 </div>
               ))}
             </div>

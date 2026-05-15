@@ -170,7 +170,7 @@ export default function UserProfile({ session }: { session: Session | null }) {
                 {productos.map((producto) => (
                   <div
                     key={producto.id}
-                    className="product-card clickable-card"
+                    className={`product-card clickable-card${(producto.is_sold || producto.status === 'Vendido') ? ' product-card--sold' : ''}`}
                     onClick={() => navigate(`/producto/${producto.id}`)}
                   >
                     <div className="product-image-wrapper">
@@ -178,6 +178,9 @@ export default function UserProfile({ session }: { session: Session | null }) {
                         <img src={producto.image_url} alt={producto.title} className="product-image" />
                       ) : (
                         <span className="no-image-text">Sin foto</span>
+                      )}
+                      {(producto.is_sold || producto.status === 'Vendido') && (
+                        <span className="card-badge badge-sold">Vendido</span>
                       )}
                     </div>
                     <div className="product-info">
