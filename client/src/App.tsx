@@ -21,6 +21,7 @@ import CheckoutSuccess from './pages/CheckoutSuccess/CheckoutSuccess';
 import CheckoutCancel from './pages/CheckoutCancel/CheckoutCancel';
 import PaymentProcessing from './pages/PaymentProcessing/PaymentProcessing';
 import Orders from './pages/Orders/Orders';
+import ResetPassword from './pages/ResetPassword/ResetPassword';
 
 // Componentes globales
 import Navbar from './components/navbar';
@@ -81,6 +82,7 @@ function AppLayout({ session, isAdmin }: { session: Session | null; isAdmin: boo
           <Route path="/checkout/:productId" element={<Checkout session={session} />} />
 
           <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           <Route path="/perfil" element={session ? <Profile session={session} /> : <Navigate to="/login" />} />
           <Route path="/notifications" element={session ? <Notifications session={session} /> : <Navigate to="/login" />} />
