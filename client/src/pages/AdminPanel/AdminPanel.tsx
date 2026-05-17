@@ -363,6 +363,7 @@ export default function AdminPanel({ session }: Props) {
               <option value="">Todos los estados</option>
               <option value="Disponible">Disponible</option>
               <option value="Reservado">Reservado</option>
+              <option value="Vendido">Vendido</option>
             </select>
           </div>
 
@@ -404,8 +405,8 @@ export default function AdminPanel({ session }: Props) {
                         <td>{p.categories?.name ?? '—'}</td>
                         <td className="ap-price">{p.price.toFixed(2)} €</td>
                         <td>
-                          <span className={`ap-badge${p.is_sold ? ' ap-badge--sold' : ' ap-badge--available'}`}>
-                            {p.is_sold ? 'Vendido' : p.status}
+                          <span className={`ap-badge${p.is_sold ? ' ap-badge--sold' : p.is_reserved ? ' ap-badge--reserved' : ' ap-badge--available'}`}>
+                            {p.is_sold ? 'Vendido' : p.is_reserved ? 'Reservado' : p.status}
                           </span>
                         </td>
                         <td className="ap-muted">{formatDate(p.created_at)}</td>

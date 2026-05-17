@@ -4,7 +4,7 @@
 
 .login-page {
   display: flex;
-  min-height: calc(100vh - 75px);
+  min-height: 100vh;
   width: 100%;
 }
 
@@ -76,8 +76,15 @@
 }
 
 .login-logo-img {
-  height: 42px;
+  height: 72px;
   margin-bottom: 2.25rem;
+  margin-top: 2rem;
+  transition: transform var(--transition-base);
+  filter: drop-shadow(0 0 12px rgba(108, 99, 255, 0.15));
+}
+.login-logo-img:hover {
+  transform: scale(1.04);
+  filter: drop-shadow(0 0 20px rgba(108, 99, 255, 0.3));
 }
 
 .login-welcome {
@@ -183,7 +190,7 @@
 
   .login-right {
     flex: 1;
-    min-height: calc(100vh - 75px);
+    min-height: 100vh;
     padding: 2.5rem 1.5rem;
     border-left: none;
   }

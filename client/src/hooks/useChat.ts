@@ -183,7 +183,7 @@ export function useChat(conversationId: string, session: Session | null) {
 
     // Optimista: marcar oferta como aceptada + añadir mensaje informativo
     setMessages(prev => updateOfferStatus(prev, messageId, 'accepted'));
-    addSystemMessage('✅ Oferta aceptada. El producto ha sido reservado para ti.');
+    addSystemMessage('Oferta aceptada. El producto ha sido reservado para ti.');
     setConversation(prev => prev ? { ...prev, product: { ...prev.product, is_reserved: true } } : prev);
 
     try {

@@ -26,7 +26,7 @@ export const adminRepository = {
     let query = supabase
       .from('products')
       .select(`
-        id, title, price, status, is_sold, created_at,
+        id, title, price, status, is_sold, is_reserved, created_at,
         seller:users!seller_id(id, username),
         categories(name),
         productImages(image_url)
@@ -35,7 +35,9 @@ export const adminRepository = {
       .range((page - 1) * limit, page * limit - 1);
 
     if (search) query = query.ilike('title', `%${search}%`);
-    if (status) query = query.eq('status', status);
+    if (status === 'Vendido')   query = query.eq('is_sold', true);
+    else if (status === 'Reservado') query = query.eq('is_reserved', true).not('is_sold', 'is', true);
+    else if (status === 'Disponible') query = query.not('is_sold', 'is', true).not('is_reserved', 'is', true);
 
     const { data, error, count } = await query;
     if (error) throw new Error(error.message);

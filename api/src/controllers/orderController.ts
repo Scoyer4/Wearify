@@ -144,7 +144,7 @@ export const orderController = {
           await chatRepository.createSystemMessage(
             conv.id,
             req.user!.id,
-            `📦 Tu pedido está en camino. Nº de seguimiento: ${trackingNumber.trim()}`,
+            `Tu pedido está en camino. Nº de seguimiento: ${trackingNumber.trim()}`,
           );
         }
       } catch (notifErr) {
@@ -206,7 +206,7 @@ export const orderController = {
         return res.status(400).json({ error: 'Solo se pueden cancelar pedidos en estado pagado' });
       }
 
-      const DEADLINE_DAYS = 5;
+      const DEADLINE_DAYS = order.shipping_type === 'express' ? 2 : 5;
       const deadline = new Date(order.created_at);
       deadline.setDate(deadline.getDate() + DEADLINE_DAYS);
       if (Date.now() < deadline.getTime()) {
@@ -225,7 +225,7 @@ export const orderController = {
           await chatRepository.createSystemMessage(
             conv.id,
             order.seller_id!,
-            '❌ Pedido cancelado · El vendedor no realizó el envío en el plazo establecido. El producto vuelve a estar disponible.',
+            'Pedido cancelado · El vendedor no realizó el envío en el plazo establecido. El producto vuelve a estar disponible.',
           );
         }
       } catch (chatErr) {
@@ -266,7 +266,7 @@ export const orderController = {
           await chatRepository.createSystemMessage(
             conv.id,
             order.seller_id!,
-            '❌ Venta cancelada por el vendedor. El producto vuelve a estar disponible.',
+            'Venta cancelada por el vendedor. El producto vuelve a estar disponible.',
           );
         }
       } catch (chatErr) {
@@ -302,7 +302,7 @@ export const orderController = {
           await chatRepository.createSystemMessage(
             conv.id,
             req.user!.id,
-            '🎉 Pedido completado · ¡Gracias por tu compra!',
+            'Pedido completado · ¡Gracias por tu compra!',
           );
         }
       } catch (chatErr) {

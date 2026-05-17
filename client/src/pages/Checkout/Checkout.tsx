@@ -288,7 +288,6 @@ export default function Checkout({ session }: Props) {
                   className={`shipping-card${shippingType === opt.type ? ' shipping-card--active' : ''}`}
                   onClick={() => setShipping(opt.type)}
                 >
-                  <span className="shipping-card-icon">{opt.type === 'express' ? '⚡' : '🚚'}</span>
                   <div className="shipping-card-info">
                     <span className="shipping-card-label">{opt.label}</span>
                     <span className="shipping-card-price">
@@ -355,7 +354,7 @@ export default function Checkout({ session }: Props) {
 
             {submitError && <p className="checkout-submit-error">{submitError}</p>}
 
-            <p className="checkout-security-note">🔒 Pago seguro gestionado por Stripe</p>
+            <p className="checkout-security-note">Pago seguro gestionado por Stripe</p>
           </div>
         </div>
 

@@ -19,12 +19,12 @@ function formatBubbleTime(dateStr: string): string {
 }
 
 const SYSTEM_PREFIXES = [
-  '✅ Compra completada',
-  '✅ Pago completado',
-  '📦 Tu pedido está en camino',
-  '❌ Pedido cancelado',
-  '❌ Venta cancelada',
-  '🎉 Pedido completado',
+  'Compra completada',
+  'Pago completado',
+  'Tu pedido está en camino',
+  'Pedido cancelado',
+  'Venta cancelada',
+  'Pedido completado',
 ];
 
 // ── Tarjeta de oferta ──────────────────────────────────────────────────────────
@@ -45,9 +45,9 @@ function OfferCard({ msg, isMine, onAccept, onReject, onCounter, actionLoading, 
   const canAct      = isRecipient && msg.offer_status === 'pending';
 
   const statusLabel: Record<string, string> = {
-    accepted: '✅ Oferta aceptada',
-    rejected: '❌ Oferta rechazada',
-    countered: '🔄 Contraoferta enviada — sustituida',
+    accepted: 'Oferta aceptada',
+    rejected: 'Oferta rechazada',
+    countered: 'Contraoferta enviada — sustituida',
   };
 
   return (
@@ -567,12 +567,12 @@ export default function ChatWindow({ conversationId, session }: Props) {
       {/* ── Banner estado producto ── */}
       {isReserved && !isSold && (
         <div className="chat-sold-banner chat-sold-banner--reserved">
-          🔒 Este producto está reservado pendiente de envío
+          Este producto está reservado pendiente de envío
         </div>
       )}
       {isSold && (
         <div className="chat-sold-banner">
-          🏷️ Este producto ya ha sido vendido
+          Este producto ya ha sido vendido
         </div>
       )}
 
@@ -595,7 +595,7 @@ export default function ChatWindow({ conversationId, session }: Props) {
                   <span key={i} className={i < (reviewStatus.existing?.rating ?? 0) ? 'star star--filled' : 'star'}>★</span>
                 ))}
               </span>
-              <span className="chat-review-done-text">✅ Ya dejaste tu reseña al vendedor</span>
+              <span className="chat-review-done-text">Ya dejaste tu reseña al vendedor</span>
             </div>
           ) : reviewStatus.canReview ? (
             <div className="chat-review-form">
@@ -691,7 +691,7 @@ export default function ChatWindow({ conversationId, session }: Props) {
         <div className="offer-modal-backdrop" onClick={() => setSwapModal(false)}>
           <div className="offer-modal-card swap-select-modal" onClick={e => e.stopPropagation()}>
             <div className="offer-modal-header">
-              <h3 className="offer-modal-title">🔄 Proponer intercambio</h3>
+              <h3 className="offer-modal-title">Proponer intercambio</h3>
               <button className="offer-modal-close-btn" onClick={() => setSwapModal(false)} aria-label="Cerrar">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />

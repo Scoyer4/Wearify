@@ -64,7 +64,7 @@ export const webhookController = {
             await chatRepository.createSystemMessage(
               conv.id,
               meta.buyerId,
-              `✅ Pago completado · ${(productPrice + shippingCost).toFixed(2)} € · Envío ${meta.shippingType === 'express' ? 'express' : 'estándar'}.`,
+              `Pago completado · ${(productPrice + shippingCost).toFixed(2)} € · Envío ${meta.shippingType === 'express' ? 'express' : 'estándar'}.`,
             );
             await notificationRepository.insert(meta.sellerId, 'new_sale', meta.buyerId, meta.productId);
           } catch (chatErr) {

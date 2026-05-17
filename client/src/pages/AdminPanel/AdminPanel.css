@@ -158,6 +158,7 @@
 }
 
 .ap-select:focus { border-color: var(--brand); }
+.ap-select option { background: var(--ink-800); color: var(--text-primary); }
 
 /* ── Table ──────────────────────────────────────────────────────────────────── */
 
@@ -271,6 +272,7 @@
 
 .ap-badge--available { background: rgba(0,212,170,0.12); color: var(--success); }
 .ap-badge--sold      { background: rgba(255,77,106,0.12); color: var(--danger);  }
+.ap-badge--reserved  { background: rgba(255,184,77,0.12); color: var(--warning); }
 .ap-badge--active    { background: rgba(0,212,170,0.12); color: var(--success); }
 .ap-badge--banned    { background: rgba(255,77,106,0.12); color: var(--danger);  }
 .ap-badge--admin     { background: rgba(124,95,255,0.15); color: var(--brand);   }

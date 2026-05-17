@@ -17,8 +17,6 @@ export default function BannedScreen({ banReason }: Props) {
   return (
     <div className="banned-screen">
       <div className="banned-card">
-        <div className="banned-icon">🚫</div>
-
         <h1 className="banned-title">Cuenta suspendida</h1>
         <p className="banned-subtitle">
           Tu cuenta ha sido suspendida y no puedes acceder a Wearify.
@@ -36,14 +34,7 @@ export default function BannedScreen({ banReason }: Props) {
             Si crees que esta decisión es incorrecta, puedes ponerte en contacto
             con el equipo de Wearify para apelar la suspensión.
           </p>
-          <a href={mailtoLink} className="banned-appeal-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-              <polyline points="22,6 12,13 2,6"/>
-            </svg>
-            Apelar suspensión
-          </a>
-          <p className="banned-appeal-email">{APPEAL_EMAIL}</p>
+          <a href={mailtoLink} className="banned-appeal-email">{APPEAL_EMAIL}</a>
         </div>
 
         <button

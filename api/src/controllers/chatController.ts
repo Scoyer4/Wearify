@@ -276,7 +276,7 @@ export const chatController = {
       await chatRepository.createSystemMessage(
         conversationId,
         me,
-        '✅ Oferta aceptada. El comprador puede proceder al pago para completar la compra.',
+        'Oferta aceptada. El comprador puede proceder al pago para completar la compra.',
       );
 
       return res.json({ ok: true });
@@ -312,7 +312,7 @@ export const chatController = {
       await chatRepository.createMessage(
         conversationId,
         me,
-        '❌ Oferta rechazada.',
+        'Oferta rechazada.',
       );
 
       return res.json({ ok: true });
@@ -525,7 +525,7 @@ export const chatController = {
       await chatRepository.createSystemMessage(
         conversationId,
         me,
-        '🔄 ¡Intercambio aceptado! Accede a "Mis ventas" para enviar tu prenda con número de seguimiento.',
+        '¡Intercambio aceptado! Accede a "Mis ventas" para enviar tu prenda con número de seguimiento.',
       );
 
       return res.json({ ok: true, order1Id: order1.id, extraOrderIds });
@@ -557,7 +557,7 @@ export const chatController = {
       }
 
       await chatRepository.updateOfferStatus(messageId, 'rejected');
-      await chatRepository.createSystemMessage(conversationId, me, '❌ Propuesta de intercambio rechazada.');
+      await chatRepository.createSystemMessage(conversationId, me, 'Propuesta de intercambio rechazada.');
 
       return res.json({ ok: true });
     } catch (error: any) {

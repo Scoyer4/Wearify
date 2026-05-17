@@ -1098,6 +1098,8 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
   padding: 4px 0;
   font-family: var(--font-body);
   transition: color var(--transition-fast);
+  text-align: center;
+  width: 100%;
 }
 .btn-report-link:hover { color: var(--danger); }
 
@@ -1522,6 +1524,7 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 .filter-select:focus { outline: none; border-color: var(--accent); }
 .filter-select option { background: #12122a; color: var(--text-primary); }
+
 .filter-clear-btn {
   background: none;
   border: 1px solid rgba(255, 77, 106, 0.3);

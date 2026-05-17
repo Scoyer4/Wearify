@@ -96,7 +96,7 @@ export const checkoutController = {
           await chatRepository.createSystemMessage(
             conv.id,
             me,
-            `✅ Pago completado · ${(productPrice + shippingCost).toFixed(2)} € · Envío ${meta.shippingType === 'express' ? 'express' : 'estándar'}.`,
+            `Pago completado · ${(productPrice + shippingCost).toFixed(2)} € · Envío ${meta.shippingType === 'express' ? 'express' : 'estándar'}.`,
           );
           await notificationRepository.insert(meta.sellerId, 'new_sale', me, meta.productId);
         } catch (processingErr) {

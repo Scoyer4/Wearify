@@ -379,39 +379,23 @@ export default function Home({ session }: { session: Session | null }) {
           )}
         </div>
         <div className="filter-bar">
-          <select
-            value={filtroGenero}
-            onChange={e => setFiltroGenero(e.target.value)}
-            className="filter-select"
-          >
-            <option value="">Género</option>
+          <select className="filter-select" value={filtroGenero} onChange={e => setFiltroGenero(e.target.value)}>
+            <option value="" hidden>Género</option>
             <option value="Hombre">Hombre</option>
             <option value="Mujer">Mujer</option>
             <option value="Unisex">Unisex</option>
             <option value="Niños">Niños</option>
           </select>
-          <select
-            value={filtroMarca}
-            onChange={e => setFiltroMarca(e.target.value)}
-            className="filter-select"
-          >
-            <option value="">Marca</option>
+          <select className="filter-select" value={filtroMarca} onChange={e => setFiltroMarca(e.target.value)}>
+            <option value="" hidden>Marca</option>
             {marcasUnicas.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
-          <select
-            value={filtroTalla}
-            onChange={e => setFiltroTalla(e.target.value)}
-            className="filter-select"
-          >
-            <option value="">Talla</option>
+          <select className="filter-select" value={filtroTalla} onChange={e => setFiltroTalla(e.target.value)}>
+            <option value="" hidden>Talla</option>
             {sizeOptions.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
-          <select
-            value={filtroCondicion}
-            onChange={e => setFiltroCondicion(e.target.value)}
-            className="filter-select"
-          >
-            <option value="">Estado</option>
+          <select className="filter-select" value={filtroCondicion} onChange={e => setFiltroCondicion(e.target.value)}>
+            <option value="" hidden>Estado</option>
             <option value="Sin usar">Sin usar</option>
             <option value="Como nuevo">Como nuevo</option>
             <option value="Excelente">Excelente</option>

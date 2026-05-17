@@ -714,7 +714,7 @@ button.my-profile-stat:hover .my-profile-stat-num {
   font-size: 0.875rem;
   color: var(--text-secondary);
   line-height: 1.55;
-  padding-left: 44px;
+  padding-left: 0;
 }
 
 .review-card-product {

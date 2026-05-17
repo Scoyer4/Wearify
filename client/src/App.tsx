@@ -59,10 +59,11 @@ function ScrollToTopButton() {
 function AppLayout({ session, isAdmin }: { session: Session | null; isAdmin: boolean }) {
   const location = useLocation();
   const hideFooter = location.pathname === '/login';
+  const hideNav = location.pathname === '/login' || location.pathname === '/reset-password';
 
   return (
     <div className="app-container">
-      <Navbar session={session} isAdmin={isAdmin} />
+      {!hideNav && <Navbar session={session} isAdmin={isAdmin} />}
       <main className="main-content">
         <Routes>
           <Route path="/" element={<Home session={session} />} />

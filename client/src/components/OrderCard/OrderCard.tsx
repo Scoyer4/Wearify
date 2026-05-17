@@ -3,10 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { OrderWithDetails, OrderStatus } from '../../types/order';
 import './OrderCard.css';
 
-const SHIP_DEADLINE_DAYS = 5;
 type CountdownUrgency = 'normal' | 'warning' | 'danger' | 'expired';
 
-function useShippingCountdown(createdAt: string, active: boolean) {
+function useShippingCountdown(createdAt: string, active: boolean, deadlineDays: number) {
   const [text,    setText]    = useState('');
   const [urgency, setUrgency] = useState<CountdownUrgency>('normal');
 
@@ -14,7 +13,7 @@ function useShippingCountdown(createdAt: string, active: boolean) {
     if (!active) return;
 
     const deadline = new Date(createdAt);
-    deadline.setDate(deadline.getDate() + SHIP_DEADLINE_DAYS);
+    deadline.setDate(deadline.getDate() + deadlineDays);
 
     function tick() {
       const diff = deadline.getTime() - Date.now();
@@ -75,7 +74,8 @@ function formatDate(iso: string | null): string {
 export default function OrderCard({ order, role, onShipClick, onReceiveClick, onCompleteClick, onExpiredCancel, onSellerCancel }: Props) {
   const navigate           = useNavigate();
   const currentIdx         = STATUS_ORDER.indexOf(order.order_status);
-  const countdown          = useShippingCountdown(order.created_at, role === 'seller' && order.order_status === 'paid');
+  const deadlineDays       = order.shipping_type === 'express' ? 2 : 5;
+  const countdown          = useShippingCountdown(order.created_at, role === 'seller' && order.order_status === 'paid', deadlineDays);
   const cancelFiredRef     = useRef(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
 

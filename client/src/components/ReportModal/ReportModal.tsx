@@ -55,7 +55,6 @@ export default function ReportModal({ token, productId, userId, targetName, onCl
           <>
             <div className="rm-header">
               <div className="rm-header-text">
-                <span className="rm-flag">🚩</span>
                 <div>
                   <h3 className="rm-title">Reportar {productId ? 'producto' : 'usuario'}</h3>
                   <p className="rm-subtitle">{targetName}</p>

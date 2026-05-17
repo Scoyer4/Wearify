@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { getCategories, updateProduct } from '../services/api';
 import { Producto } from '../types';
+import { CustomSelect } from './CustomSelect/CustomSelect';
 import './EditProductModal.css';
 import './CreateProductForm.css';
 
@@ -56,8 +57,8 @@ export default function EditProductModal({ producto, token, onClose, onSaved }: 
   const selectedCategory = categories.find(c => c.id === parseInt(categoryId));
   const sizeOptions      = getSizeOptions(selectedCategory);
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setCategoryId(e.target.value);
+  const handleCategoryChange = (value: string) => {
+    setCategoryId(value);
     setSize('');
   };
 
@@ -226,40 +227,35 @@ export default function EditProductModal({ producto, token, onClose, onSaved }: 
 
             {/* ── Categoría | Talla ────────────────── */}
             <div className="cpf-row">
-              <select value={categoryId} onChange={handleCategoryChange} required className="cpf-input">
-                <option value="" disabled>Categoría...</option>
-                {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
-              </select>
-
-              <select
-                value={size}
-                onChange={e => setSize(e.target.value)}
-                required
+              <CustomSelect
+                options={categories.map(cat => ({ value: String(cat.id), label: cat.name }))}
+                value={categoryId}
+                onChange={handleCategoryChange}
+                placeholder="Categoría..."
+              />
+              <CustomSelect
+                options={sizeOptions.map(s => ({ value: s, label: s }))}
+                value={size ?? ''}
+                onChange={setSize}
+                placeholder={categoryId ? 'Talla...' : 'Selecciona primero una categoría'}
                 disabled={!categoryId}
-                className="cpf-input"
-              >
-                <option value="" disabled>
-                  {categoryId ? 'Talla...' : 'Selecciona primero una categoría'}
-                </option>
-                {sizeOptions.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
+              />
             </div>
 
             {/* ── Condición | Género ───────────────── */}
             <div className="cpf-row">
-              <select value={condition} onChange={e => setCondition(e.target.value as Producto['condition'])} required className="cpf-input">
-                <option value="" disabled>Condición de la prenda...</option>
-                {['Sin usar', 'Como nuevo', 'Excelente', 'Buen estado', 'Usado'].map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-
-              <select value={gender} onChange={e => setGender(e.target.value)} required className="cpf-input">
-                <option value="" disabled>Para quién es...</option>
-                {['Mujer', 'Hombre', 'Niños', 'Unisex'].map(g => (
-                  <option key={g} value={g}>{g}</option>
-                ))}
-              </select>
+              <CustomSelect
+                options={['Sin usar', 'Como nuevo', 'Excelente', 'Buen estado', 'Usado'].map(c => ({ value: c, label: c }))}
+                value={condition ?? ''}
+                onChange={v => setCondition(v as Producto['condition'])}
+                placeholder="Condición de la prenda..."
+              />
+              <CustomSelect
+                options={['Mujer', 'Hombre', 'Niños', 'Unisex'].map(g => ({ value: g, label: g }))}
+                value={gender}
+                onChange={setGender}
+                placeholder="Para quién es..."
+              />
             </div>
 
             {/* ── Descripción ──────────────────────── */}

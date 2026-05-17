@@ -147,7 +147,7 @@ export default function UserProfile({ session }: { session: Session | null }) {
           )}
           {!esMiPerfil && session && (
             <button className="btn-report-link" onClick={() => setShowReport(true)}>
-              🚩 Reportar usuario
+              Reportar usuario
             </button>
           )}
         </div>
@@ -232,6 +232,7 @@ export default function UserProfile({ session }: { session: Session | null }) {
                           ))}
                         </div>
                       </div>
+                      {r.comment && <p className="review-card-comment">{r.comment}</p>}
                       {r.product && (
                         <div
                           className="review-card-product"
@@ -247,7 +248,6 @@ export default function UserProfile({ session }: { session: Session | null }) {
                           </svg>
                         </div>
                       )}
-                      {r.comment && <p className="review-card-comment">{r.comment}</p>}
                     </div>
                   ))}
                 </div>

@@ -484,7 +484,7 @@ export default function ProductDetail({ session }: { session: Session | null }) 
               </div>
             ) : isUnavailable ? (
               <div className="pd-sold-msg">
-                <span>🏷️</span> {isReserved ? 'Este producto está reservado y pendiente de envío.' : 'Este producto ya ha sido vendido.'}
+                {isReserved ? 'Este producto está reservado y pendiente de envío.' : 'Este producto ya ha sido vendido.'}
               </div>
             ) : (
               <>
@@ -551,7 +551,7 @@ export default function ProductDetail({ session }: { session: Session | null }) 
           {/* Reportar */}
           {session && !isOwner && (
             <button className="pd-report-btn" onClick={() => setShowReport(true)}>
-              🚩 Reportar producto
+              Reportar producto
             </button>
           )}
 
@@ -664,7 +664,7 @@ export default function ProductDetail({ session }: { session: Session | null }) 
         <div className="offer-modal-backdrop" onClick={() => setShowSwapModal(false)}>
           <div className="offer-modal-card swap-select-modal" onClick={e => e.stopPropagation()}>
             <div className="offer-modal-header">
-              <h3 className="offer-modal-title">🔄 Proponer intercambio</h3>
+              <h3 className="offer-modal-title">Proponer intercambio</h3>
               <button className="offer-modal-close-btn" onClick={() => setShowSwapModal(false)} aria-label="Cerrar">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />

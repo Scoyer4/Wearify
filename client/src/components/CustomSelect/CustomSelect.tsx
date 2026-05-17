@@ -7,9 +7,10 @@ interface CustomSelectProps {
   onChange: (value: string) => void;
   placeholder: string;
   disabled?: boolean;
+  className?: string;
 }
 
-export const CustomSelect = ({ options, value, onChange, placeholder, disabled = false }: CustomSelectProps) => {
+export const CustomSelect = ({ options, value, onChange, placeholder, disabled = false, className }: CustomSelectProps) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -46,7 +47,7 @@ export const CustomSelect = ({ options, value, onChange, placeholder, disabled =
 
   return (
     <div
-      className={`cs-wrapper${open ? ' cs-wrapper--open' : ''}${disabled ? ' cs-wrapper--disabled' : ''}`}
+      className={`cs-wrapper${open ? ' cs-wrapper--open' : ''}${disabled ? ' cs-wrapper--disabled' : ''}${className ? ` ${className}` : ''}`}
       ref={ref}
     >
       <div className="cs-trigger" onClick={handleToggle} role="button" aria-expanded={open}>

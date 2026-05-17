@@ -78,7 +78,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ isRegister, setIsRegister })
         }
 
         setStatus({
-          msg: "Registro completado con éxito. ¡Ya puedes iniciar sesión!",
+          msg: "Cuenta creada. Te hemos enviado un correo de verificación. Confirma tu email antes de iniciar sesión.",
           type: "success",
         });
 
