@@ -723,8 +723,10 @@
   line-height: 1.45;
   max-height: 120px;
   overflow-y: auto;
+  scrollbar-width: none;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
+.chat-window-textarea::-webkit-scrollbar { display: none; }
 
 .chat-window-textarea::placeholder { color: var(--text-muted); }
 

@@ -239,7 +239,6 @@ export default function Profile({ session }: { session: Session }) {
               }
             </div>
           </button>
-          {isPrivate && <span className="my-profile-lock" title="Perfil privado">🔒</span>}
           <input
             ref={avatarInputRef}
             type="file"

@@ -89,11 +89,13 @@ export default function ChatInbox({ session }: Props) {
             onClick={() => navigate(`/chats/${conv.id}`)}
           >
             {/* Avatar otro participante */}
-            <div className="chat-inbox-avatar">
-              {conv.otherUser.avatar_url
-                ? <img src={conv.otherUser.avatar_url} alt={conv.otherUser.username ?? ''} />
-                : <span>{initial}</span>
-              }
+            <div className="chat-inbox-avatar-wrapper">
+              <div className="chat-inbox-avatar">
+                {conv.otherUser.avatar_url
+                  ? <img src={conv.otherUser.avatar_url} alt={conv.otherUser.username ?? ''} />
+                  : <span>{initial}</span>
+                }
+              </div>
               {conv.unreadCount > 0 && (
                 <span className="chat-inbox-badge">
                   {conv.unreadCount > 9 ? '9+' : conv.unreadCount}

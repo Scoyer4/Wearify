@@ -268,6 +268,7 @@ export default function Home({ session }: { session: Session | null }) {
         <h3 className="product-title">{producto.title}</h3>
         <p className="product-price">{producto.price} €</p>
         <div className="chip-row">
+          {producto.gender && <span className="chip">{producto.gender}</span>}
           {producto.brand && <span className="chip">{producto.brand}</span>}
           {producto.size && <span className="chip">Talla {producto.size}</span>}
           {producto.condition && (

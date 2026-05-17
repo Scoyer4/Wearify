@@ -156,7 +156,6 @@ export default function UserProfile({ session }: { session: Session | null }) {
       <div className="profile-content" style={{ marginTop: '2rem' }}>
         {perfilPrivado ? (
           <div className="empty-dashboard-box" style={{ textAlign: 'center', padding: '3rem' }}>
-            <p style={{ fontSize: '2rem', marginBottom: '1rem' }}>🔒</p>
             <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Este perfil es privado</p>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
               Sigue a este usuario para ver sus prendas.

@@ -362,22 +362,6 @@ export default function Navbar({ session, isAdmin }: { session: Session | null; 
           </div>
         ))}
 
-        {/* Separador */}
-        <span className="nav-cat-sep" />
-
-        {/* Atajos de descubrimiento */}
-        <button
-          className={`nav-cat-item${isCatActive('/?orden=reciente') ? ' nav-cat-item--active' : ''}`}
-          onClick={() => navigate('/?orden=reciente')}
-        >
-          Nuevo
-        </button>
-        <button
-          className={`nav-cat-item${isCatActive('/?orden=favoritos') ? ' nav-cat-item--active' : ''}`}
-          onClick={() => navigate('/?orden=favoritos')}
-        >
-          En Tendencia
-        </button>
 
       </nav>}
 
