@@ -74,7 +74,7 @@ function OfferCard({ msg, isMine, onAccept, onReject, onCounter, actionLoading, 
 
       {showPayButton && (
         <button className="offer-pay-btn" onClick={onPayNow}>
-          💳 Pagar ahora
+          Pagar ahora
         </button>
       )}
     </div>
