@@ -27,6 +27,7 @@ export interface AdminProduct {
   price: number;
   status: string;
   is_sold: boolean;
+  is_reserved: boolean;
   created_at: string;
   seller: { id: string; username: string | null } | null;
   categories: { name: string } | null;
